@@ -22,7 +22,7 @@ public class EventController(IEventService eventService) : ControllerBase
         }
         catch
         {
-            return BadRequest();
+            return NotFound();
         }
     }
     
@@ -32,6 +32,10 @@ public class EventController(IEventService eventService) : ControllerBase
         try
         {
             return _eventService.GetEventById(id);
+        }
+        catch(ArgumentException ex)
+        {
+            return NotFound();
         }
         catch
         {
@@ -51,17 +55,21 @@ public class EventController(IEventService eventService) : ControllerBase
         }
         catch
         {
-            return BadRequest(); 
+            return StatusCode(500); 
         }
     }
 
     [HttpPut("/{id}")]
-    public ActionResult Create(int id, [FromBody] EventRequestDto @event)
+    public ActionResult Update(int id, [FromBody] EventRequestDto @event)
     {
         try
         {
             _eventService.UpdateEvent(id, @event);
             return Ok();
+        }
+        catch(ArgumentException ex)
+        {
+            return NotFound();
         }
         catch
         {
@@ -74,14 +82,13 @@ public class EventController(IEventService eventService) : ControllerBase
     {
         try
         {
-
             _eventService.DeleteEvent(id);
 
             return Ok();
         }
         catch
         {
-            return NotFound();
+            return StatusCode(500);
         }
     }
 }
