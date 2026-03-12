@@ -16,36 +16,72 @@ public class EventController(IEventService eventService) : ControllerBase
     [HttpGet]
     public ActionResult<List<EventResponseDto>> GetAllEvents()
     {
-        return _eventService.GetAllEvents();
+        try
+        {
+            return _eventService.GetAllEvents();
+        }
+        catch
+        {
+            return BadRequest();
+        }
     }
     
     [HttpGet("/{id}")]
     public ActionResult<EventResponseDto> GetEventById(int id)
     {
-        return _eventService.GetEventById(id);
+        try
+        {
+            return _eventService.GetEventById(id);
+        }
+        catch
+        {
+            return BadRequest();
+        }
+        
     }
 
     [HttpPost]
     public ActionResult Create([FromBody] EventRequestDto @event)
     {
-        _eventService.CreateEvent(@event);
+        try
+        {
+            _eventService.CreateEvent(@event);
 
-        return Ok();
+            return Ok();
+        }
+        catch
+        {
+            return BadRequest(); 
+        }
     }
 
     [HttpPut("/{id}")]
     public ActionResult Create(int id, [FromBody] EventRequestDto @event)
     {
-        _eventService.UpdateEvent(id, @event);
-
-        return Ok();
+        try
+        {
+            _eventService.UpdateEvent(id, @event);
+            return Ok();
+        }
+        catch
+        {
+            return BadRequest();
+        }
     }
 
     [HttpDelete("/{id}")]
     public ActionResult Delete(int id)
     {
-        _eventService.DeleteEvent(id);
+        try
+        {
 
-        return Ok();
+            _eventService.DeleteEvent(id);
+
+            return Ok();
+        }
+        catch
+        {
+            return NotFound();
+        }
     }
 }

@@ -3,16 +3,30 @@ using EventManagement.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Host.UseDefaultServiceProvider(options =>
+    {
+        options.ValidateOnBuild = true;
+        options.ValidateScopes = true;
+    });
+
+    builder.Services.AddSwaggerGen();
+}
+
 builder.Services.AddScoped<IEventValidator, EventValidator>();
 builder.Services.AddScoped<IEventService, EventService>();
-builder.Services.AddOpenApi();
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
+app.UseHttpsRedirection();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+app.MapControllers();
 
-app.UseHttpsRedirection();
 app.Run();
