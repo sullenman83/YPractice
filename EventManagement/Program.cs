@@ -1,5 +1,6 @@
 using EventManagement.Interfaces;
 using EventManagement.Services;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +12,12 @@ if (builder.Environment.IsDevelopment())
         options.ValidateScopes = true;
     });
 
-    builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen(options =>
+    {
+        var file = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var path = Path.Combine(AppContext.BaseDirectory, file);
+        options.IncludeXmlComments(path);
+    });
 }
 
 builder.Services.AddScoped<IEventValidator, EventValidator>();
@@ -19,8 +25,6 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddControllers();
 
 var app = builder.Build();
-
-app.UseHttpsRedirection();
 
 if (app.Environment.IsDevelopment())
 {

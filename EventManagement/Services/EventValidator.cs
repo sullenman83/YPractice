@@ -1,4 +1,5 @@
-﻿using EventManagement.Interfaces;
+﻿using EventManagement.Common.Exceptions;
+using EventManagement.Interfaces;
 using EventManagement.Models;
 namespace EventManagement.Services;
 
@@ -7,9 +8,14 @@ namespace EventManagement.Services;
 /// </summary>
 public class EventValidator : IEventValidator
 {
-    public void  Validate(Event @event)
+    /// <summary>
+    /// Проверить событие
+    /// </summary>
+    /// <param name="event">Данные события</param>
+    /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
+    public void  Validate(EventRequestDto @event)
     {
         if (@event.EndAt < @event.StartAt)
-            throw new ArgumentException("Событие содержит некорректные данные. Дата окончания меньше даты начала.");
+            throw new EventValidationException("Событие содержит некорректные данные. Дата окончания меньше даты начала.");
     }
 }

@@ -24,12 +24,13 @@ public interface IEventService
     /// <summary>
     /// Создать событие
     /// </summary>
-    /// <param name="newEvent">Данные события</param>
+    /// <param name="event">Данные события</param>
     void CreateEvent(EventRequestDto @event);
 
     /// <summary>
     /// Обновить событие
     /// </summary>
+    /// <param name="id">id события</param>
     /// <param name="event">Данные события</param>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
     void UpdateEvent(int id,  EventRequestDto @event);
@@ -38,6 +39,6 @@ public interface IEventService
     /// Удалить событие
     /// </summary>
     /// <param name="id">Идентификатор удаляемого события</param>
+    /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
     void DeleteEvent(int id);
-
 }
