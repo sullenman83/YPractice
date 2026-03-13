@@ -17,4 +17,4 @@
 dotnet build EventManagement\EventManagement.csproj 
 
 ## Запуск осуществляется из директории репозитория командой 
-dotnet run EventManagement\EventManagement.csproj 
+dotnet run --project EventManagement\EventManagement.csproj 
