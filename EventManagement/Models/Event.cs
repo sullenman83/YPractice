@@ -8,7 +8,7 @@ public class Event
     /// <summary>
     /// Идентификатор события
     /// </summary>
-    public required int Id { get; set; } = -1;
+    public required int Id { get; set; }
 
     /// <summary>
     /// Название события
@@ -29,4 +29,20 @@ public class Event
     /// Дата и время окончания события
     /// </summary>
     public required DateTime EndAt { get; set; }
+
+    /// <summary>
+    /// Создать корпию события
+    /// </summary>
+    /// <returns>Копия события</returns>
+    public Event Clone()
+    {
+        return new Event()
+        {
+            Id = Id,
+            Title = Title,
+            Description = Description,
+            StartAt = StartAt,
+            EndAt = EndAt
+        };
+    }
 }
