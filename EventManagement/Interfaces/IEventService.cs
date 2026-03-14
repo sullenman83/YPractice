@@ -11,7 +11,7 @@ public interface IEventService
     /// Получить все события
     /// </summary>
     /// <returns>Список событий</returns>
-    List<EventResponseDto> GetAllEvents();
+    Result<List<EventResponseDto>> GetAllEvents();
 
     /// <summary>
     /// Получить событие по идентификатору
@@ -19,26 +19,28 @@ public interface IEventService
     /// <param name="id">Идентификатор события</param>
     /// <returns>Событие с искомым идентификатором</returns>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    EventResponseDto GetEventById(int id);
+    Result<EventResponseDto> GetEventById(int id);
 
     /// <summary>
     /// Создать событие
     /// </summary>
     /// <param name="event">Данные события</param>
-    void CreateEvent(EventRequestDto @event);
+    /// <returns>Созданное событие</returns>
+    Result<EventResponseDto> CreateEvent(EventRequestDto @event);
 
     /// <summary>
     /// Обновить событие
     /// </summary>
     /// <param name="id">id события</param>
     /// <param name="event">Данные события</param>
+    /// <returns>Обновленное событие</returns>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    void UpdateEvent(int id,  EventRequestDto @event);
+    Result<EventResponseDto> UpdateEvent(int id,  EventRequestDto @event);
 
     /// <summary>
     /// Удалить событие
     /// </summary>
     /// <param name="id">Идентификатор удаляемого события</param>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    void DeleteEvent(int id);
+    Result<EventResponseDto> DeleteEvent(int id);
 }
