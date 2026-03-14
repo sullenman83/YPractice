@@ -30,7 +30,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     [HttpGet]
     [Produces("application/json")]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     public IActionResult GetAllEvents()
     {       
         var res = _eventService.GetAllEvents();
@@ -70,6 +70,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     [Produces("application/json")]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
     [HttpPost]
     public IActionResult Create([FromBody] EventRequestDto @event)
     {      
