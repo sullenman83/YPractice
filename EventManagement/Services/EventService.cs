@@ -149,7 +149,7 @@ public class EventService(IEventValidator eventValidator) : IEventService
             if (!_events.TryUpdate(id, newEv, ev))
                 throw new ArgumentException($"Ошбика при обновлении события по {id}.");
 
-            var res = createEventResponseDto(ev);
+            var res = createEventResponseDto(newEv);
 
             return createResult<EventResponseDto>(res);
         }

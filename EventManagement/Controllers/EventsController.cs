@@ -82,7 +82,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     }
 
     /// <summary>
-    /// Изменить событие сзаданным id
+    /// Изменить событие с заданным id
     /// </summary>
     /// /// <param name="id">id события</param>    
     /// <param name="event">Данные события</param>    
@@ -98,7 +98,7 @@ public class EventsController(IEventService eventService) : ControllerBase
         var res = _eventService.UpdateEvent(id, @event);
 
         if (res.IsSuccess)
-            return CreatedAtAction(nameof(GetEventById), new { id = res.Value?.Id}, res.Value);
+            return Ok(res.Value);
         else
             return error(res);
     }
