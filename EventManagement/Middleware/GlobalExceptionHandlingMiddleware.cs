@@ -66,11 +66,12 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
     {
         return ex switch
         {            
-            ArgumentException arg => StatusCodes.Status400BadRequest,
+            ArgumentException arg => StatusCodes.Status404NotFound,
             NullReferenceException nr => StatusCodes.Status400BadRequest,
             HttpRequestException hr => StatusCodes.Status400BadRequest,
-            ValidationException ve => StatusCodes.Status400BadRequest,   
+            ValidationException ve => StatusCodes.Status400BadRequest,
             IOException io => StatusCodes.Status500InternalServerError,
+            
             SecurityException se => StatusCodes.Status401Unauthorized,
 
             _ => StatusCodes.Status500InternalServerError
