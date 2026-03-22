@@ -1,4 +1,6 @@
-﻿namespace EventManagement.Models.FilterModels;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace EventManagement.Models.FilterModels;
 
 /// <summary>
 /// Фильтр событий
@@ -23,10 +25,12 @@ public class EventFilterRequestDTO
     /// <summary>
     /// страница, которую необходимо вернуть
     /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "только числа больше 1")]
     public int Page { get; set; } = 1;
 
     /// <summary>
     /// количество элементов на странице
     /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "только числа больше 1")]
     public int PageSize { get; set; } = 10;
 }

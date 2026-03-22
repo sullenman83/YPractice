@@ -14,7 +14,7 @@ public interface IEventService
     /// </summary>
     /// <param name="filter">Фильтр событий</param>
     /// <returns>Список событий</returns>
-    Result<PaginatedResultDTO> GetAllEvents(EventFilterRequestDTO filter);
+    Result<PaginatedResultDTO> GetEvents(EventFilterRequestDTO filter);
 
     /// <summary>
     /// Получить событие по идентификатору

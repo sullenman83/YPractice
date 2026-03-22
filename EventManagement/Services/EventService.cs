@@ -1,4 +1,5 @@
-﻿using EventManagement.Common.Exceptions;
+﻿using EventManagement.Common;
+using EventManagement.Common.Exceptions;
 using EventManagement.Common.Results;
 using EventManagement.Extensions;
 using EventManagement.Interfaces;
@@ -24,38 +25,7 @@ public class EventService(IEventValidator eventValidator) : IEventService
     /// </summary>
     private static readonly Lock _lock = new Lock();
 
-    private static ConcurrentDictionary<int, Event> _events = new ConcurrentDictionary<int, Event>()
-    {
-
-        [1] = new Event { Id = 1,
-            Title = "Событие 1",
-            Description = "Описание 1",
-            StartAt = DateTime.Now.Date,
-            EndAt = DateTime.Now.Date,
-        },
-        [2] = new Event { Id = 2,
-            Title = "Событие 2",
-            Description = "Описание 21",
-            StartAt = DateTime.Now.Date,
-            EndAt = DateTime.Now.AddDays(1).Date,
-        },
-        [3] = new Event
-        {
-            Id = 3,
-            Title = "Событие 3",
-            Description = "Описание 31",
-            StartAt = DateTime.Now.AddDays(1).Date,
-            EndAt = DateTime.Now.AddDays(2).Date,
-        },
-        [4] = new Event
-        {
-            Id = 4,
-            Title = "Событие 4",
-            Description = "Описание 41",
-            StartAt = DateTime.Now.AddDays(-1).Date,
-            EndAt = DateTime.Now.AddDays(-1).Date,
-        }
-    };
+    private static ConcurrentDictionary<int, Event> _events = new ConcurrentDictionary<int, Event>(TestData.GetTestData());    
 
     private readonly IEventValidator _eventValidator = eventValidator;
 
@@ -112,7 +82,7 @@ public class EventService(IEventValidator eventValidator) : IEventService
     /// </summary>
     /// <param name="filter">Фильтр событий</param>
     /// <returns>Список событий</returns>
-    public Result<PaginatedResultDTO> GetAllEvents(EventFilterRequestDTO filter)
+    public Result<PaginatedResultDTO> GetEvents(EventFilterRequestDTO filter)
     {
         try
         {

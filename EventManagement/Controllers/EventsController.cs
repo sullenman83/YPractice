@@ -37,7 +37,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     public IActionResult GetAllEvents([FromQuery] EventFilterRequestDTO filter)
     {       
-        var res = _eventService.GetAllEvents(filter);
+        var res = _eventService.GetEvents(filter);
 
         if (!res.IsSuccess)
             raiseError(res.StatusCode, res.Message);
