@@ -19,4 +19,14 @@ public class EventFilterRequestDTO
     /// события, которые заканчиваются не позже указанной даты
     /// </summary>
     public DateTime? To { get; set; }
+
+    /// <summary>
+    /// страница, которую необходимо вернуть
+    /// </summary>
+    public int Page { get; set; } = 1;
+
+    /// <summary>
+    /// количество элементов на странице
+    /// </summary>
+    public int PageSize { get; set; } = 10;
 }

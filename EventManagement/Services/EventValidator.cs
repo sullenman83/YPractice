@@ -1,6 +1,6 @@
 ﻿using EventManagement.Common.Exceptions;
 using EventManagement.Interfaces;
-using EventManagement.Models;
+using EventManagement.Models.Events;
 namespace EventManagement.Services;
 
 /// <summary>

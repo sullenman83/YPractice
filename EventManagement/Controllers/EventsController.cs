@@ -1,7 +1,7 @@
 ﻿using EventManagement.Common.Exceptions;
 using EventManagement.Common.Results;
 using EventManagement.Interfaces;
-using EventManagement.Models;
+using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;

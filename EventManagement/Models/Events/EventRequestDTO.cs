@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace EventManagement.Models;
+namespace EventManagement.Models.Events;
 
 /// <summary>
 /// DTO класс для передачи данных события в WEB API

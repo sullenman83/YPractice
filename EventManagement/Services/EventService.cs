@@ -1,13 +1,15 @@
 ﻿using EventManagement.Common.Exceptions;
 using EventManagement.Common.Results;
+using EventManagement.Extensions;
 using EventManagement.Interfaces;
 using EventManagement.Models;
+using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Runtime.CompilerServices;
-using EventManagement.Extensions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EventManagement.Services;
 
@@ -28,30 +30,30 @@ public class EventService(IEventValidator eventValidator) : IEventService
         [1] = new Event { Id = 1,
             Title = "Событие 1",
             Description = "Описание 1",
-            StartAt = DateTime.Now,
-            EndAt = DateTime.Now,
+            StartAt = DateTime.Now.Date,
+            EndAt = DateTime.Now.Date,
         },
         [2] = new Event { Id = 2,
             Title = "Событие 2",
             Description = "Описание 21",
-            StartAt = DateTime.Now.AddHours(1),
-            EndAt = DateTime.Now.AddDays(1),
+            StartAt = DateTime.Now.Date,
+            EndAt = DateTime.Now.AddDays(1).Date,
         },
         [3] = new Event
         {
             Id = 3,
             Title = "Событие 3",
             Description = "Описание 31",
-            StartAt = DateTime.Now.AddDays(1),
-            EndAt = DateTime.Now.AddDays(2),
+            StartAt = DateTime.Now.AddDays(1).Date,
+            EndAt = DateTime.Now.AddDays(2).Date,
         },
         [4] = new Event
         {
             Id = 4,
             Title = "Событие 4",
             Description = "Описание 41",
-            StartAt = DateTime.Now.AddDays(-1),
-            EndAt = DateTime.Now.AddDays(-1),
+            StartAt = DateTime.Now.AddDays(-1).Date,
+            EndAt = DateTime.Now.AddDays(-1).Date,
         }
     };
 
@@ -110,21 +112,32 @@ public class EventService(IEventValidator eventValidator) : IEventService
     /// </summary>
     /// <param name="filter">Фильтр событий</param>
     /// <returns>Список событий</returns>
-    public Result<List<EventResponseDto>> GetAllEvents(EventFilterRequestDTO filter)
+    public Result<PaginatedResultDTO> GetAllEvents(EventFilterRequestDTO filter)
     {
         try
         {
-            var res = _events.ToArray()
+            var events = _events.ToArray()
                 .Select(o => o.Value)
+                .OrderBy(o => o.StartAt)
                 .Filter(filter)
+                .Paginate(filter)
                 .Select(o => createEventResponseDto(o))
                 .ToList();
 
-            return createResult<List<EventResponseDto>>(res);             
+            var res = new PaginatedResultDTO()
+            {
+                Events = events,
+                EventsCount = _events.Count,
+                Page = filter.Page,
+                EventsCountOnCurrentPage = events.Count
+            };
+
+
+            return createResult<PaginatedResultDTO>(res);             
         }
         catch (Exception ex)
         {
-            return createErrorRsulte<List<EventResponseDto>>(ex);            
+            return createErrorRsulte<PaginatedResultDTO>(ex);            
         }
     }
 

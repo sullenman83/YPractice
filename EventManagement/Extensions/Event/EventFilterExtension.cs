@@ -1,5 +1,5 @@
 ﻿using EventManagement.Models.FilterModels;
-using EventManagement.Models;
+using EventManagement.Models.Events;
 
 namespace EventManagement.Extensions;
 
@@ -29,4 +29,11 @@ internal static class EventFilterExtension
 
         return source;
     }
+
+    public static IEnumerable<Event> Paginate(this IEnumerable<Event> source, EventFilterRequestDTO filter)
+    {
+        return source.Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize);
+    }
+
 }
