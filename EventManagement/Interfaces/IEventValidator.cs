@@ -1,5 +1,5 @@
-﻿using EventManagement.Models;
-using EventManagement.Common.Exceptions;
+﻿using EventManagement.Common.Exceptions;
+using EventManagement.Models.Events;
 
 namespace EventManagement.Interfaces;
 

@@ -1,3 +1,4 @@
+using EventManagement.Common.Exceptions.Middleware;
 using EventManagement.Interfaces;
 using EventManagement.Services;
 using System.Reflection;
@@ -21,11 +22,13 @@ if (builder.Environment.IsDevelopment())
 }
 
 builder.Services.AddScoped<IEventValidator, EventValidator>();
+builder.Services.AddSingleton<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
+app.UseGlobalExceptionHandling();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

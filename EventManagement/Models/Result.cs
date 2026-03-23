@@ -25,6 +25,6 @@ public class Result<T> where T: class
     /// <summary>
     /// Дополнительная информация или сообщение об ошибкее
     /// </summary>
-    public string? Message { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
 
 }

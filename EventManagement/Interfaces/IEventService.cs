@@ -1,4 +1,6 @@
 ﻿using EventManagement.Models;
+using EventManagement.Models.Events;
+using EventManagement.Models.FilterModels;
 
 namespace EventManagement.Interfaces;
 
@@ -10,8 +12,9 @@ public interface IEventService
     /// <summary>
     /// Получить все события
     /// </summary>
+    /// <param name="filter">Фильтр событий</param>
     /// <returns>Список событий</returns>
-    Result<List<EventResponseDto>> GetAllEvents();
+    Result<PaginatedResultDTO> GetEvents(EventFilterRequestDTO filter);
 
     /// <summary>
     /// Получить событие по идентификатору

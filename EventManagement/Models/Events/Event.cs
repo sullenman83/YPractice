@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Models;
+﻿namespace EventManagement.Models.Events;
 
 /// <summary>
 /// Класс события
