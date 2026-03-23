@@ -43,6 +43,32 @@
 		- создание события с некорректными данными (если валидация в сервисе);
 		- обновление события с некорректными датами (EndAt раньше StartAt).
 
+
+пример запроса с фильтрацией (Title = "событие", PAge = 1, PageSize= 10)
+https://localhost:7106/Events?Title=%D1%81%D0%BE%D0%B1%D1%8B%D1%82%D0%B8%D0%B5&Page=1&PageSize=10
+Пример ответа 
+{
+  "events": [
+    {
+      "id": 1,
+      "title": "тестовое событие 1",
+      "description": "Описание 1",
+      "startAt": "2026-03-22T00:00:00",
+      "endAt": "2026-03-22T00:00:00"
+    },
+    {
+      "id": 2,
+      "title": "Другое событие для теста 2",
+      "description": "Описание 21",
+      "startAt": "2026-03-24T00:00:00",
+      "endAt": "2026-03-27T00:00:00"
+    }
+  ],
+  "eventsCount": 2,
+  "page": 1,
+  "eventsCountOnCurrentPage": 2
+}
+
 ## Сборка осуществляется из директории репозитория командой 
 dotnet build EventManagement\EventManagement.csproj 
 
