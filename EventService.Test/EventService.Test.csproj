@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <AssemblyName>EventServiceTest</AssemblyName>
+    <RootNamespace>EventServiceTest</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,28 +6,23 @@ using EventManagement.Interfaces;
 using EventManagement.Models;
 using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
-using Microsoft.AspNetCore.Mvc.Diagnostics;
 using System.Collections.Concurrent;
-using System.Net;
-using System.Runtime.CompilerServices;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EventManagement.Services;
 
 /// <summary>
 /// Сервис для работы с событиями
 /// </summary>
-public class EventService(IEventValidator eventValidator) : IEventService
+public class EventService(IEventValidator eventValidator, IEventRepository repository) : IEventService
 {
     /// <summary>
     /// Костыль для получения id вставляемой записи. Не придумал лучшего способа получить MAX id из словаря.
     /// Когда перйдем на БД все это уберется
     /// </summary>
-    private static readonly Lock _lock = new Lock();
-
-    private static ConcurrentDictionary<int, Event> _events = new ConcurrentDictionary<int, Event>(TestData.GetTestData());    
+    private static readonly Lock _lock = new Lock();    
 
     private readonly IEventValidator _eventValidator = eventValidator;
+    private readonly IEventRepository _repository = repository;
 
     /// <summary>
     /// Создать событие
@@ -45,7 +40,7 @@ public class EventService(IEventValidator eventValidator) : IEventService
             using (_lock.EnterScope())
             {                            
                 var ev = createEvent(@event);
-                (_events as IDictionary<int, Event>).Add(ev.Id, ev);
+                (_repository.Data as IDictionary<int, Event>).Add(ev.Id, ev);
 
                 var res = createEventResponseDto(ev);
                 return createResult<EventResponseDto>(res);            
@@ -66,7 +61,7 @@ public class EventService(IEventValidator eventValidator) : IEventService
     {
         try
         {
-            if (!_events.TryRemove(id, out var ev))
+            if (!_repository.Data.TryRemove(id, out var ev))
                 throw new ArgumentException($"Ошбика при удалении события {id}.");
 
             return createResult<EventResponseDto>();            
@@ -86,7 +81,7 @@ public class EventService(IEventValidator eventValidator) : IEventService
     {
         try
         {
-            var events = _events.ToArray()
+            var events = _repository.Data.ToArray()
                 .Select(o => o.Value)
                 .OrderBy(o => o.StartAt)
                 .Filter(filter)
@@ -97,7 +92,7 @@ public class EventService(IEventValidator eventValidator) : IEventService
             var res = new PaginatedResultDTO()
             {
                 Events = events,
-                EventsCount = _events.Count,
+                EventsCount = _repository.Data.Count,
                 Page = filter.Page,
                 EventsCountOnCurrentPage = events.Count
             };
@@ -121,7 +116,7 @@ public class EventService(IEventValidator eventValidator) : IEventService
     {
         try
         {
-            if (!_events.TryGetValue(id, out var ev))
+            if (!_repository.Data.TryGetValue(id, out var ev))
                 throw new ArgumentException($"Ошбика при получении события по {id}.");
 
             var res = createEventResponseDto(ev);
@@ -150,7 +145,7 @@ public class EventService(IEventValidator eventValidator) : IEventService
             var newEv = ev.Clone() as Event;
 
             updateEvent(@event, newEv);
-            if (!_events.TryUpdate(id, newEv, ev))
+            if (!_repository.Data.TryUpdate(id, newEv, ev))
                 throw new ArgumentException($"Ошбика при обновлении события по {id}.");
 
             var res = createEventResponseDto(newEv);
@@ -166,7 +161,7 @@ public class EventService(IEventValidator eventValidator) : IEventService
 
     private Event createEvent(EventRequestDto source)
     {
-        var id = _events.Keys.Max() + 1;
+        var id = _repository.Data.Keys.Max() + 1;
 
         return createEvent(id, source);        
     }
@@ -205,7 +200,7 @@ public class EventService(IEventValidator eventValidator) : IEventService
 
     private Event getEventById(int id)
     {
-        if (!_events.TryGetValue(id, out var ev))
+        if (!_repository.Data.TryGetValue(id, out var ev))
             throw new ArgumentException($"Не найдено событие с id = {id}");
         
         return ev!;

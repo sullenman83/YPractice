@@ -22,6 +22,7 @@ if (builder.Environment.IsDevelopment())
 }
 
 builder.Services.AddScoped<IEventValidator, EventValidator>();
+builder.Services.AddSingleton<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddControllers();
 

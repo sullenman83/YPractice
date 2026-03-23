@@ -19,7 +19,7 @@ public static class TestData
             new Event
             {
                 Id = 1,
-                Title = "Событие 1",
+                Title = "тестовое событие 1",
                 Description = "Описание 1",
                 StartAt = DateTime.Parse("2026.03.22"),
                 EndAt = DateTime.Parse("2026.03.22"),
@@ -27,7 +27,7 @@ public static class TestData
             new Event
             {
                 Id = 2,
-                Title = "Событие 2",
+                Title = "Другое событие для теста 2",
                 Description = "Описание 21",
                 StartAt = DateTime.Parse("2026.03.24"),
                 EndAt = DateTime.Parse("2026.03.27")
