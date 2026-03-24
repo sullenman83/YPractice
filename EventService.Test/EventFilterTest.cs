@@ -29,9 +29,11 @@ public class EventFilterTest
     [Fact]
     public void Test_EmptyFilter_ReturnAllEvents()
     {
+	    // Act
         var count = TestData.GetTestEvents().Count();
         var result = _service.GetEvents(new EventFilterRequestDTO());
 
+	    // Assert
         result.Value.Should().NotBeNull();
         result.Value.Events.Count.Should().Be(count);
     }
@@ -46,8 +48,10 @@ public class EventFilterTest
     [MemberData(nameof(GetEventFilterByTitle))]    
     public void TestFilter_ByTitle_ReturnRelevantEvents(EventFilterRequestDTO filter, int count, int id)
     {
+	    // Act
         var result = _service.GetEvents(filter);
 
+	    // Assert
         result.Value.Should().NotBeNull();
         result.Value.Events.Count.Should().Be(count);
         result.Value.Events.First().Id.Should().Be(id);
@@ -57,9 +61,11 @@ public class EventFilterTest
     [MemberData(nameof(GetEventFilterByDates))]
     public void TestFilter_ByDate_ReturnRelevantEvents(EventFilterRequestDTO filter, int count, int[] ids)
     {
+	    // Act
         var result = _service.GetEvents(filter);
         var resultIds = result.Value?.Events.Select(o => o.Id).ToArray() ?? new int[] { };
         
+	    // Assert
         result.Value.Should().NotBeNull();
         result.Value.Events.Count.Should().Be(count);
         if (resultIds.Length > 0)
@@ -70,7 +76,10 @@ public class EventFilterTest
     [MemberData(nameof(GetPaginationFilterData))]
     public void TestPagination(EventFilterRequestDTO filter, int currentPage, int eventCount)
     {
+	    // Act
         var result = _service.GetEvents(filter);
+
+	    // Assert
         result.Value.Should().NotBeNull();
         result.Value.Page.Should().Be(currentPage);
         result.Value.EventsCountOnCurrentPage.Should().Be(eventCount);

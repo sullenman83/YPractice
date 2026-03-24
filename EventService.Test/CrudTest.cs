@@ -27,6 +27,7 @@ public class CRUDTest
     [Fact]
     public void CreateEvent_ReturnNewEvent()
     {
+	    // Arrange
         var newEvent = TestData.GetTestEvent();
         var expectedResponse = new Result<EventResponseDto>()
         {
@@ -47,8 +48,10 @@ public class CRUDTest
         //Чтобы они были предсказуемыми и одинаковыми для всех тестов сервис решил создавать внутри каждого теста свой        
         var service = getService(TestData.GetTestData());
 
+	    // Act
         var result = service.CreateEvent(newEvent);
 
+	    // Assert
         _validator.Verify(s => s.Validate(It.IsAny<EventRequestDto>()), Times.Once);
         result.Should().BeEquivalentTo(expectedResponse);
     }
@@ -56,6 +59,7 @@ public class CRUDTest
     [Fact]
     public void UpdateEvent_ReturnChangedEvent()
     {
+	    // Arrange
         var ev = TestData.GetTestEvent();
         var id = 2;
         var expectedResponse = new Result<EventResponseDto>()
@@ -74,8 +78,10 @@ public class CRUDTest
         };
         var service = getService(TestData.GetTestData());
 
+	    // Act
         var result = service.UpdateEvent(id, ev);
         
+	    // Assert
         _validator.Verify(s => s.Validate(It.IsAny<EventRequestDto>()), Times.Once);
         result.Should().BeEquivalentTo(expectedResponse);
     }
@@ -83,6 +89,7 @@ public class CRUDTest
     [Fact]
     public void DeleteEvent_ReturnOk()
     {     
+	    // Arrange
         var id = 2;
         var expectedResponse = new Result<EventResponseDto>()
         {
@@ -91,16 +98,20 @@ public class CRUDTest
             Message = "",
             StatusCode = ResultStatusCode.Ok
         };
+
         var service = getService(TestData.GetTestData());
 
+	    // Act
         var result = service.DeleteEvent(id);
 
+	    // Assert
         result.Should().BeEquivalentTo(expectedResponse);
     }
 
     [Fact]
     public void GetEvent_ById_ReturnEventByID()
     {
+	    // Arrange
         var id = 2;
         var ev = TestData.GetTestData().First(k => k.Key == id).Value;
 
@@ -120,21 +131,26 @@ public class CRUDTest
         };
         var service = getService(TestData.GetTestData());
 
+	    // Act
         var result = service.GetEventById(id);        
 
+	    // Assert
         result.Should().BeEquivalentTo(expectedResponse);
     }
 
     [Fact]
     public void GetEvents_ReturnAllEvent()
     {
+	    // Arrange
         var data = TestData.GetTestData();
         var eventCount = data.Count;
         var filter = new EventFilterRequestDTO();        
         var service = getService(data);
 
+	    // Act
         var result =  service.GetEvents(filter);
 
+	    // Assert
         result.Value?.Events.Count.Should().Be(eventCount);
         result.IsSuccess.Should().BeTrue();
         result.StatusCode.Should().Be(ResultStatusCode.Ok);
@@ -144,6 +160,7 @@ public class CRUDTest
     [Fact]
     public void GetEvent_ByInvalidId_ReturnError()
     {
+	    // Arrange
         var id = 10;
         var service = getService(TestData.GetTestData());
         var expectedResponse = new Result<EventResponseDto>()
@@ -154,14 +171,17 @@ public class CRUDTest
             StatusCode = ResultStatusCode.NotFound
         };
 
+	    // Act
         var result = service.GetEventById(id);
 
+	    // Assert
         result.Should().BeEquivalentTo(expectedResponse);
     }
 
     [Fact]
     public void UpdateEvent_ByInvalidId_ReturnError()
     {
+	    // Arrange
         var id = 10;
         var ev = TestData.GetTestEvent();
         var service = getService(TestData.GetTestData());
@@ -173,14 +193,17 @@ public class CRUDTest
             StatusCode = ResultStatusCode.NotFound
         };
 
+	    // Act
         var result = service.UpdateEvent(id, ev);
 
+	    // Assert
         result.Should().BeEquivalentTo(expectedResponse);
     }
 
     [Fact]
     public void DeleteEvent_ByInvalidId_ReturnError()
     {
+	    // Arrange
         var id = 10;        
         var service = getService(TestData.GetTestData());
         var expectedResponse = new Result<EventResponseDto>()
@@ -191,14 +214,17 @@ public class CRUDTest
             StatusCode = ResultStatusCode.NotFound
         };
 
+	    // Act
         var result = service.DeleteEvent(id);
 
+	    // Assert
         result.Should().BeEquivalentTo(expectedResponse);
     }
 
     [Fact]
     public void Updatevents_InvalidDate_ReturnError()
     {
+	    // Arrange
         var id = 2;
         var ev = TestData.GetTestEvent();
         ev.EndAt = ev.StartAt.AddDays(-1);
@@ -213,14 +239,17 @@ public class CRUDTest
             StatusCode = ResultStatusCode.ValidationError
         };
 
+	    // Act
         var result = service.UpdateEvent(id, ev);
 
+	    // Assert
         result.Should().BeEquivalentTo(expectedResponse);
     }
 
     [Fact]
     public void CreateEvent_EventValidatorThrowsException()
     {
+	    // Arrange
         var newEvent = TestData.GetTestEvent();
         var message = "Ошибка сервиса валидации";
         var expectedResponse = new Result<EventResponseDto>()
@@ -235,8 +264,10 @@ public class CRUDTest
             .Throws(new InvalidOperationException(message));        
         var service = new EventService(validator.Object, new EventRepository());
 
+	    // Act
         var result = service.CreateEvent(newEvent);
 
+	    // Assert
         result.Should().BeEquivalentTo(expectedResponse);
     }
 
