@@ -1,5 +1,5 @@
 ﻿using EventManagement.Common;
-using EventManagement.Common.Results;
+using EventManagement.Common.Exceptions;
 using EventManagement.Interfaces;
 using EventManagement.Models;
 using EventManagement.Models.Events;
@@ -29,19 +29,13 @@ public class CRUDTest
     {
 	    // Arrange
         var newEvent = TestData.GetTestEvent();
-        var expectedResponse = new Result<EventResponseDto>()
+        var expectedResponse = new EventResponseDto()
         {
-            Value = new EventResponseDto()
-            {
-                Title = newEvent.Title,
-                Description = newEvent.Description,
-                EndAt = newEvent.EndAt,
-                StartAt = newEvent.StartAt,
-                Id = 3
-            },
-            IsSuccess = true,
-            Message = "",
-            StatusCode = ResultStatusCode.Ok
+            Title = newEvent.Title,
+            Description = newEvent.Description,
+            EndAt = newEvent.EndAt,
+            StartAt = newEvent.StartAt,
+            Id = 3
         };
 
         //Решил для проверок воспользоваться данными по умолчанию внутри сервиса.
@@ -62,19 +56,13 @@ public class CRUDTest
 	    // Arrange
         var ev = TestData.GetTestEvent();
         var id = 2;
-        var expectedResponse = new Result<EventResponseDto>()
-        {
-            Value = new EventResponseDto()
-            {
-                Title = ev.Title,
-                Description = ev.Description,
-                EndAt = ev.EndAt,
-                StartAt = ev.StartAt,
-                Id = id
-            },
-            IsSuccess = true,
-            Message = "",
-            StatusCode = ResultStatusCode.Ok
+        var expectedResponse = new EventResponseDto()
+        {            
+            Title = ev.Title,
+            Description = ev.Description,
+            EndAt = ev.EndAt,
+            StartAt = ev.StartAt,
+            Id = id
         };
         var service = getService(TestData.GetTestData());
 
@@ -91,21 +79,17 @@ public class CRUDTest
     {     
 	    // Arrange
         var id = 2;
-        var expectedResponse = new Result<EventResponseDto>()
-        {
-            Value = null,
-            IsSuccess = true,
-            Message = "",
-            StatusCode = ResultStatusCode.Ok
-        };
+        var testData = TestData.GetTestData();
+        var eventCount = testData.Count;
+        var filter = new EventFilterRequestDTO();
+        var service = new EventService(new EventValidator(), new EventRepository());
 
-        var service = getService(TestData.GetTestData());
+        // Act
+        service.DeleteEvent(id);
+        var remains = service.GetEvents(filter);
 
-	    // Act
-        var result = service.DeleteEvent(id);
-
-	    // Assert
-        result.Should().BeEquivalentTo(expectedResponse);
+        // Assert        
+        remains.Events.Should().NotContain(o => o.Id == id);
     }
 
     [Fact]
@@ -115,19 +99,13 @@ public class CRUDTest
         var id = 2;
         var ev = TestData.GetTestData().First(k => k.Key == id).Value;
 
-        var expectedResponse = new Result<EventResponseDto>()
-        {
-            Value = new EventResponseDto()
-            {
-                Id = 2,
-                Title = ev.Title,
-                Description = ev.Description,
-                StartAt = ev.StartAt,
-                EndAt = ev.EndAt
-            },
-            IsSuccess = true,
-            Message = "",
-            StatusCode = ResultStatusCode.Ok
+        var expectedResponse = new EventResponseDto()
+        {            
+            Id = 2,
+            Title = ev.Title,
+            Description = ev.Description,
+            StartAt = ev.StartAt,
+            EndAt = ev.EndAt
         };
         var service = getService(TestData.GetTestData());
 
@@ -151,10 +129,7 @@ public class CRUDTest
         var result =  service.GetEvents(filter);
 
 	    // Assert
-        result.Value?.Events.Count.Should().Be(eventCount);
-        result.IsSuccess.Should().BeTrue();
-        result.StatusCode.Should().Be(ResultStatusCode.Ok);
-        result.Message.Should().Be("");
+        result.Events.Count.Should().Be(eventCount);
     }
 
     [Fact]
@@ -162,20 +137,13 @@ public class CRUDTest
     {
 	    // Arrange
         var id = 10;
-        var service = getService(TestData.GetTestData());
-        var expectedResponse = new Result<EventResponseDto>()
-        {
-            Value = null,
-            IsSuccess = false,
-            Message = $"Ошбика при получении события по {id}.",
-            StatusCode = ResultStatusCode.NotFound
-        };
+        var service = getService(TestData.GetTestData());        
 
 	    // Act
-        var result = service.GetEventById(id);
+        Action act = () => service.GetEventById(id);
 
-	    // Assert
-        result.Should().BeEquivalentTo(expectedResponse);
+        // Assert
+        act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -184,20 +152,13 @@ public class CRUDTest
 	    // Arrange
         var id = 10;
         var ev = TestData.GetTestEvent();
-        var service = getService(TestData.GetTestData());
-        var expectedResponse = new Result<EventResponseDto>()
-        {
-            Value = null,
-            IsSuccess = false,
-            Message = $"Не найдено событие с id = {id}",
-            StatusCode = ResultStatusCode.NotFound
-        };
+        var service = getService(TestData.GetTestData());        
 
 	    // Act
-        var result = service.UpdateEvent(id, ev);
+        Action act = () => service.UpdateEvent(id, ev);
 
 	    // Assert
-        result.Should().BeEquivalentTo(expectedResponse);
+        act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -205,20 +166,13 @@ public class CRUDTest
     {
 	    // Arrange
         var id = 10;        
-        var service = getService(TestData.GetTestData());
-        var expectedResponse = new Result<EventResponseDto>()
-        {
-            Value = null,
-            IsSuccess = false,
-            Message = $"Ошбика при удалении события {id}.",
-            StatusCode = ResultStatusCode.NotFound
-        };
+        var service = getService(TestData.GetTestData());        
 
 	    // Act
-        var result = service.DeleteEvent(id);
+        Action act = () => service.DeleteEvent(id);
 
-	    // Assert
-        result.Should().BeEquivalentTo(expectedResponse);
+        // Assert
+        act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -230,20 +184,12 @@ public class CRUDTest
         ev.EndAt = ev.StartAt.AddDays(-1);
         _repository.Setup(v => v.Data).Returns(() => new ConcurrentDictionary<int, Event>(TestData.GetTestData()));
         var service = new EventService(new EventValidator(), _repository.Object);
-        
-        var expectedResponse = new Result<EventResponseDto>()
-        {
-            Value = null,
-            IsSuccess = false,
-            Message = "Событие содержит некорректные данные. Дата окончания меньше даты начала.",
-            StatusCode = ResultStatusCode.ValidationError
-        };
 
 	    // Act
-        var result = service.UpdateEvent(id, ev);
+        Action act = ()=> service.UpdateEvent(id, ev);
 
-	    // Assert
-        result.Should().BeEquivalentTo(expectedResponse);
+        // Assert
+        act.Should().Throw<EventValidationException>();
     }
 
     [Fact]
@@ -252,23 +198,17 @@ public class CRUDTest
 	    // Arrange
         var newEvent = TestData.GetTestEvent();
         var message = "Ошибка сервиса валидации";
-        var expectedResponse = new Result<EventResponseDto>()
-        {
-            Value = null,
-            IsSuccess = false,
-            Message = message,
-            StatusCode = ResultStatusCode.InternalError
-        };
+        
         var validator = new Mock<IEventValidator>();
         validator.Setup(v => v.Validate(It.IsAny<EventRequestDto>()))
             .Throws(new InvalidOperationException(message));        
         var service = new EventService(validator.Object, new EventRepository());
 
 	    // Act
-        var result = service.CreateEvent(newEvent);
+        Action act = () => service.CreateEvent(newEvent);
 
-	    // Assert
-        result.Should().BeEquivalentTo(expectedResponse);
+        // Assert
+        act.Should().Throw<InvalidOperationException>();
     }
 
     private EventService getService(List<KeyValuePair<int, Event>> data)

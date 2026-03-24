@@ -33,9 +33,8 @@ public class EventFilterTest
         var count = TestData.GetTestEvents().Count();
         var result = _service.GetEvents(new EventFilterRequestDTO());
 
-	    // Assert
-        result.Value.Should().NotBeNull();
-        result.Value.Events.Count.Should().Be(count);
+	    // Assert        
+        result.Events.Count.Should().Be(count);
     }
 
     /// <summary>
@@ -52,9 +51,8 @@ public class EventFilterTest
         var result = _service.GetEvents(filter);
 
 	    // Assert
-        result.Value.Should().NotBeNull();
-        result.Value.Events.Count.Should().Be(count);
-        result.Value.Events.First().Id.Should().Be(id);
+        result.Events.Count.Should().Be(count);
+        result.Events.First().Id.Should().Be(id);
     }
 
     [Theory]
@@ -63,11 +61,10 @@ public class EventFilterTest
     {
 	    // Act
         var result = _service.GetEvents(filter);
-        var resultIds = result.Value?.Events.Select(o => o.Id).ToArray() ?? new int[] { };
+        var resultIds = result.Events.Select(o => o.Id).ToArray() ?? new int[] { };
         
 	    // Assert
-        result.Value.Should().NotBeNull();
-        result.Value.Events.Count.Should().Be(count);
+        result.Events.Count.Should().Be(count);
         if (resultIds.Length > 0)
             resultIds.Should().Contain(ids);
     }
@@ -79,10 +76,9 @@ public class EventFilterTest
 	    // Act
         var result = _service.GetEvents(filter);
 
-	    // Assert
-        result.Value.Should().NotBeNull();
-        result.Value.Page.Should().Be(currentPage);
-        result.Value.EventsCountOnCurrentPage.Should().Be(eventCount);
+	    // Assert        
+        result.Page.Should().Be(currentPage);
+        result.EventsCountOnCurrentPage.Should().Be(eventCount);
     }
 
 
