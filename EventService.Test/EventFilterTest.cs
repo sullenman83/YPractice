@@ -29,11 +29,12 @@ public class EventFilterTest
     [Fact]
     public void Test_EmptyFilter_ReturnAllEvents()
     {
+	    // Act
         var count = TestData.GetTestEvents().Count();
         var result = _service.GetEvents(new EventFilterRequestDTO());
 
-        result.Value.Should().NotBeNull();
-        result.Value.Events.Count.Should().Be(count);
+	    // Assert        
+        result.Events.Count.Should().Be(count);
     }
 
     /// <summary>
@@ -46,22 +47,24 @@ public class EventFilterTest
     [MemberData(nameof(GetEventFilterByTitle))]    
     public void TestFilter_ByTitle_ReturnRelevantEvents(EventFilterRequestDTO filter, int count, int id)
     {
+	    // Act
         var result = _service.GetEvents(filter);
 
-        result.Value.Should().NotBeNull();
-        result.Value.Events.Count.Should().Be(count);
-        result.Value.Events.First().Id.Should().Be(id);
+	    // Assert
+        result.Events.Count.Should().Be(count);
+        result.Events.First().Id.Should().Be(id);
     }
 
     [Theory]
     [MemberData(nameof(GetEventFilterByDates))]
     public void TestFilter_ByDate_ReturnRelevantEvents(EventFilterRequestDTO filter, int count, int[] ids)
     {
+	    // Act
         var result = _service.GetEvents(filter);
-        var resultIds = result.Value?.Events.Select(o => o.Id).ToArray() ?? new int[] { };
+        var resultIds = result.Events.Select(o => o.Id).ToArray() ?? new int[] { };
         
-        result.Value.Should().NotBeNull();
-        result.Value.Events.Count.Should().Be(count);
+	    // Assert
+        result.Events.Count.Should().Be(count);
         if (resultIds.Length > 0)
             resultIds.Should().Contain(ids);
     }
@@ -70,10 +73,12 @@ public class EventFilterTest
     [MemberData(nameof(GetPaginationFilterData))]
     public void TestPagination(EventFilterRequestDTO filter, int currentPage, int eventCount)
     {
+	    // Act
         var result = _service.GetEvents(filter);
-        result.Value.Should().NotBeNull();
-        result.Value.Page.Should().Be(currentPage);
-        result.Value.EventsCountOnCurrentPage.Should().Be(eventCount);
+
+	    // Assert        
+        result.Page.Should().Be(currentPage);
+        result.EventsCountOnCurrentPage.Should().Be(eventCount);
     }
 
 

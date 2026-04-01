@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using EventManagement.Common.Exceptions;
+using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Security;
@@ -70,6 +71,7 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
             NullReferenceException nr => StatusCodes.Status400BadRequest,
             HttpRequestException hr => StatusCodes.Status400BadRequest,
             ValidationException ve => StatusCodes.Status400BadRequest,
+            EventValidationException eve => StatusCodes.Status400BadRequest,
             IOException io => StatusCodes.Status500InternalServerError,
             
             SecurityException se => StatusCodes.Status401Unauthorized,

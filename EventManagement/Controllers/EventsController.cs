@@ -1,14 +1,8 @@
-﻿using EventManagement.Common.Exceptions;
-using EventManagement.Common.Results;
-using EventManagement.Interfaces;
+﻿using EventManagement.Interfaces;
 using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Net;
 
 namespace EventManagement.Controllers;
 
@@ -38,11 +32,8 @@ public class EventsController(IEventService eventService) : ControllerBase
     public IActionResult GetAllEvents([FromQuery] EventFilterRequestDTO filter)
     {       
         var res = _eventService.GetEvents(filter);
-
-        if (!res.IsSuccess)
-            raiseError(res.StatusCode, res.Message);
         
-        return Ok(res.Value);
+        return Ok(res);
     }
 
     /// <summary>
@@ -58,10 +49,8 @@ public class EventsController(IEventService eventService) : ControllerBase
     public IActionResult GetEventById(int id)
     {
         var res = _eventService.GetEventById(id);
-        if (!res.IsSuccess)
-            raiseError(res.StatusCode, res.Message);
         
-        return Ok(res.Value);
+        return Ok(res);
     }
         
     /// <summary>
@@ -77,10 +66,8 @@ public class EventsController(IEventService eventService) : ControllerBase
     public IActionResult Create([FromBody] EventRequestDto @event)
     {      
         var res = _eventService.CreateEvent(@event);
-        if (!res.IsSuccess)
-            raiseError(res.StatusCode, res.Message);
-        
-        return CreatedAtAction(nameof(GetEventById), new { id = res.Value?.Id}, res.Value);
+
+        return CreatedAtAction(nameof(GetEventById), new { id = res.Id}, res);
     }
 
     /// <summary>
@@ -98,11 +85,8 @@ public class EventsController(IEventService eventService) : ControllerBase
     public IActionResult Update(int id, [FromBody] EventRequestDto @event)
     {
         var res = _eventService.UpdateEvent(id, @event);
-
-        if (!res.IsSuccess)
-            raiseError(res.StatusCode, res.Message);
         
-        return Ok(res.Value);
+        return Ok(res);
     }
 
 
@@ -117,48 +101,8 @@ public class EventsController(IEventService eventService) : ControllerBase
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     public IActionResult Delete(int id)
     {
-        var res = _eventService.DeleteEvent(id);
-        if (!res.IsSuccess)
-            raiseError(res.StatusCode, res.Message);
+        _eventService.DeleteEvent(id);        
         
         return Ok();
     }
-
-    private void raiseError(ResultStatusCode code, string message)
-    {
-        switch (code)
-        {
-            case ResultStatusCode.NotFound: throw new ArgumentException(message); //HttpStatusCode.NotFound
-            case ResultStatusCode.ValidationError: throw new ValidationException(message);  //HttpStatusCode.BadRequest
-            case ResultStatusCode.InternalError:  throw new InvalidOperationException(message); // HttpStatusCode.InternalServerError
-
-            default: throw new InvalidOperationException(message); // HttpStatusCode.InternalServerError
-        }
-        ;
-    }
-
-
-    //private int getStatusCode(ResultStatusCode code)
-    //{
-    //    switch(code)
-    //    {
-    //        case ResultStatusCode.NotFound: return 404; //HttpStatusCode.NotFound
-    //        case ResultStatusCode.ValidationError: return  400;  //HttpStatusCode.BadRequest
-    //        case ResultStatusCode.InternalError: return 500; // HttpStatusCode.InternalServerError
-
-    //        default: return 500; // HttpStatusCode.InternalServerError
-    //    };
-    //}
-
-    //private ObjectResult error<T>(Result<T> result) where T: class
-    //{
-    //    //Я так понимаю тут возвращаться будет файтически BadRequest. Не знаю имеет смысл пытаться вернуть что-то более типизированное например NotFound?
-    //    var status = getStatusCode(result.StatusCode);
-    //    return Problem(
-    //        result.Message,
-    //        "www.hz_kuda.ru",
-    //        status,
-    //        "Ошибка",
-    //        "www.hz_kuda.ru");
-    //}
 }
