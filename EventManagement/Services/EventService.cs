@@ -10,12 +10,6 @@ namespace EventManagement.Services;
 /// </summary>
 public class EventService(IEventValidator eventValidator, IEventRepository repository) : IEventService
 {
-    /// <summary>
-    /// Костыль для получения id вставляемой записи. Не придумал лучшего способа получить MAX id из словаря.
-    /// Когда перйдем на БД все это уберется
-    /// </summary>
-    private static readonly Lock _lock = new Lock();    
-
     private readonly IEventValidator _eventValidator = eventValidator;
     private readonly IEventRepository _repository = repository;
 
@@ -28,15 +22,11 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     public EventResponseDto CreateEvent(EventRequestDto @event)
     {        
         _eventValidator.Validate(@event);
-        //Блокирую словарь. Получаю максимальный id. Создаю событие и вставляю его используя непотокобезопасный метод add так как солловарь все равно уже залочен
-        //знаю костыль, но как иначе не придумал. А много времени думать у меня к сожалению нет. Если придумается на подсознательном уровне переделаю пока так
-        using (_lock.EnterScope())
-        {                            
-            var ev = createEvent(@event);
-            (_repository.Data as IDictionary<int, Event>).Add(ev.Id, ev);
+         
+        var ev = createEvent(@event);
+        _repository.Data.TryAdd(ev.Id, ev);            
                             
-            return createEventResponseDto(ev);
-        }        
+        return createEventResponseDto(ev);
     }
 
     /// <summary>
@@ -44,7 +34,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// </summary>
     /// <param name="id">Идентификатор удаляемого события</param>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    public void DeleteEvent(int id)
+    public void DeleteEvent(Guid id)
     {
         if (!_repository.Data.TryRemove(id, out var ev))
             throw new ArgumentException($"Ошбика при удалении события {id}.");
@@ -80,7 +70,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// <param name="id">Идентификатор события</param>
     /// <returns>Событие с искомым идентификатором</returns>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    public EventResponseDto GetEventById(int id)
+    public EventResponseDto GetEventById(Guid id)
     {
         if (!_repository.Data.TryGetValue(id, out var ev))
             throw new ArgumentException($"Ошбика при получении события по {id}.");
@@ -95,7 +85,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// <param name="event">Данные события</param>
     /// /// <returns>Обновленное событие</returns>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    public EventResponseDto UpdateEvent(int id, EventRequestDto @event)
+    public EventResponseDto UpdateEvent(Guid id, EventRequestDto @event)
     {
         _eventValidator.Validate(@event);
         var ev = getEventById(id);
@@ -110,16 +100,9 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
 
     private Event createEvent(EventRequestDto source)
     {
-        var id = _repository.Data.Keys.Max() + 1;
-
-        return createEvent(id, source);        
-    }
-
-    private Event createEvent(int id, EventRequestDto source)
-    {
         return new Event()
         {
-            Id = id,
+            Id = Guid.NewGuid(),
             Title = source.Title,
             Description = source.Description,
             StartAt = source.StartAt,
@@ -147,7 +130,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
         dest.Description = source.Description;        
     }
 
-    private Event getEventById(int id)
+    private Event getEventById(Guid id)
     {
         if (!_repository.Data.TryGetValue(id, out var ev))
             throw new ArgumentException($"Не найдено событие с id = {id}");

@@ -1,4 +1,4 @@
-using EventManagement.Common.Exceptions.Middleware;
+using EventManagement.Extensions.Middleware;
 using EventManagement.Interfaces;
 using EventManagement.Services;
 using System.Reflection;

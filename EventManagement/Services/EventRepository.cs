@@ -10,10 +10,10 @@ namespace EventManagement.Services;
 /// </summary>
 public class EventRepository : IEventRepository
 {
-    private readonly ConcurrentDictionary<int, Event> _repository = new (TestData.GetTestData());
+    private readonly ConcurrentDictionary<Guid, Event> _repository = new (TestData.GetTestData());
         
     /// <summary>
     /// Коллекция событий
     /// </summary>
-    public ConcurrentDictionary<int, Event> Data => _repository;
+    public ConcurrentDictionary<Guid, Event> Data => _repository;
 }

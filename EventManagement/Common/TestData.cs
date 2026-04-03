@@ -18,7 +18,7 @@ public static class TestData
         {
             new Event
             {
-                Id = 1,
+                Id = new Guid("65F6C3BD-5ADD-4FB0-96C4-2AE9F99F0347"),
                 Title = "тестовое событие 1",
                 Description = "Описание 1",
                 StartAt = DateTime.Parse("2026.03.22"),
@@ -26,7 +26,7 @@ public static class TestData
             },
             new Event
             {
-                Id = 2,
+                Id = new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2"),
                 Title = "Другое событие для теста 2",
                 Description = "Описание 21",
                 StartAt = DateTime.Parse("2026.03.24"),
@@ -39,13 +39,13 @@ public static class TestData
     /// Сгенерировать коллекцию пар ключ значение 
     /// </summary>
     /// <returns>Коллекция пар ключ значнеие</returns>
-    public static List<KeyValuePair<int, Event>> GetTestData()
+    public static List<KeyValuePair<Guid, Event>> GetTestData()
     {
         var events = GetTestEvents();
-        var result = new List<KeyValuePair<int, Event>>();
+        var result = new List<KeyValuePair<Guid, Event>>();
         foreach (var e in events)
         {                
-            result.Add(new KeyValuePair<int, Event>(e.Id, e));
+            result.Add(new KeyValuePair<Guid, Event>(e.Id, e));
         }
 
         return result;

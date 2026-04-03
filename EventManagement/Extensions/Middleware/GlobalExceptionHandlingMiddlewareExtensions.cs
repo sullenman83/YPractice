@@ -1,6 +1,6 @@
 ﻿using EventManagement.Middleware;
 
-namespace EventManagement.Common.Exceptions.Middleware;
+namespace EventManagement.Extensions.Middleware;
 
 /// <summary>
 /// Расширение для добавления промежуточного по в конвеер

@@ -14,7 +14,6 @@ namespace EventManagement.Controllers;
 [Route("[controller]")]
 public class EventsController(IEventService eventService) : ControllerBase
 {
-
     /// <summary>
     /// Хранилище событий
     /// </summary>
@@ -46,7 +45,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
-    public IActionResult GetEventById(int id)
+    public IActionResult GetEventById(Guid id)
     {
         var res = _eventService.GetEventById(id);
         
@@ -82,7 +81,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     [HttpPut("{id}")]
-    public IActionResult Update(int id, [FromBody] EventRequestDto @event)
+    public IActionResult Update(Guid id, [FromBody] EventRequestDto @event)
     {
         var res = _eventService.UpdateEvent(id, @event);
         
@@ -99,7 +98,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]    
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
-    public IActionResult Delete(int id)
+    public IActionResult Delete(Guid id)
     {
         _eventService.DeleteEvent(id);        
         
