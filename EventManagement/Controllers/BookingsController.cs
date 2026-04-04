@@ -9,7 +9,7 @@ namespace EventManagement.Controllers;
 /// Контроллер для бронирования событий
 /// </summary>
 [Controller]
-[Route("[controllers]")]
+[Route("[controller]")]
 public class BookingsController(IBookingService bookingService) : ControllerBase
 {
     private readonly IBookingService _bookingService = bookingService;
@@ -17,7 +17,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     /// <summary>
     /// Создать новое бронирование
     /// </summary>
-    /// <param name="booking">Объект с информацией о бронировании</param>
+    /// <param name="id">Id события</param>
     /// <param name="token">Токен отмены операции</param>
     /// <response code="202">Возвращает HTTP статус-код 202 в случае успешного ответа</response>
     [Produces("application/json")]
@@ -25,9 +25,9 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost("{id}/book")]
-    public async Task<IActionResult> CreateBooking([FromBody] BookingRequestDTO booking, CancellationToken token)
+    public async Task<IActionResult> CreateBooking(Guid id, CancellationToken token)
     {
-        var result = await _bookingService.CreateBookingAsync(booking.EventId, token);
+        var result = await _bookingService.CreateBookingAsync(id, token);
 
         return Accepted($"/bookings/{result.Id}", result);
     }
@@ -35,7 +35,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     /// <summary>
     /// Получить бронирование по Id
     /// </summary>
-    /// <param name="bookingId">Id бпрнирования</param>
+    /// <param name="id">Id бпрнирования</param>
     /// <param name="token">Токен отмены операции</param>
     /// <response code="200">Возвращает HTTP статус-код 200 в случае успешного ответа</response>
     [Produces("application/json")]
@@ -43,9 +43,9 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetBookingByIdAsync(Guid bookingId, CancellationToken token)
+    public async Task<IActionResult> GetBookingByIdAsync(Guid id, CancellationToken token)
     {
-        var result =await _bookingService.GetBookingByIdAsync(bookingId, token);
+        var result =await _bookingService.GetBookingByIdAsync(id, token);
 
         return Ok(result);
     }
