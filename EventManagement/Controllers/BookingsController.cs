@@ -29,7 +29,13 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     {
         var result = await _bookingService.CreateBookingAsync(id, token);
 
-        return Accepted($"/bookings/{result.Id}", result);
+        var values = new RouteValueDictionary
+        {
+            { "controller", "bookings" },
+            { "action", "GetBookingById" },
+            { "id", result.Id}
+        };
+        return AcceptedAtRoute(values, result);
     }
 
     /// <summary>

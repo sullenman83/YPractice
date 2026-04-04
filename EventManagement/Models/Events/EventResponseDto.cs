@@ -11,7 +11,7 @@ public class EventResponseDto
     /// <summary>
     /// Идентификатор события
     /// </summary>    
-    public required Guid Id { get; set; }
+    public Guid Id { get; set; }
 
     /// <summary>
     /// Название события
