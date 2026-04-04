@@ -1,5 +1,4 @@
 ﻿using EventManagement.Common.Exceptions;
-using EventManagement.Models.BookingModels;
 
 namespace EventManagement.Interfaces
 {

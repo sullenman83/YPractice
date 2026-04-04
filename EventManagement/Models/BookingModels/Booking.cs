@@ -29,4 +29,21 @@ public class Booking
     /// Дата и время обработки брони
     /// </summary>
     public DateTime? ProcessedAt { get; set; }
+
+
+    /// <summary>
+    /// Создать клон объекта
+    /// </summary>
+    /// <returns></returns>
+    public Booking Clone()
+    {
+        return new Booking()
+        {
+            CreatedAt = CreatedAt,
+            Id = Id,
+            Status = Status,
+            EventId = EventId,
+            ProcessedAt = ProcessedAt
+        };
+    }
 }

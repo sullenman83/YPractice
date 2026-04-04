@@ -1,5 +1,4 @@
-﻿using EventManagement.Models;
-using EventManagement.Models.Events;
+﻿using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
 
 namespace EventManagement.Interfaces;

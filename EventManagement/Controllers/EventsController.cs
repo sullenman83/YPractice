@@ -2,7 +2,6 @@
 using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace EventManagement.Controllers;
 

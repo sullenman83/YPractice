@@ -1,5 +1,4 @@
 ﻿using EventManagement.Models.BookingModels;
-using EventManagement.Models.Events;
 using System.Collections.Concurrent;
 
 namespace EventManagement.Interfaces;

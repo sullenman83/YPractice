@@ -1,7 +1,6 @@
 ﻿using EventManagement.Common.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.Net;
 using System.Security;
 
 namespace EventManagement.Middleware;
