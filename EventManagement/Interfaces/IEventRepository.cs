@@ -11,5 +11,5 @@ public interface IEventRepository
     /// <summary>
     /// Коллекция событий
     /// </summary>
-    ConcurrentDictionary<int, Event> Data { get; }
+    ConcurrentDictionary<Guid, Event> Data { get; }
 }

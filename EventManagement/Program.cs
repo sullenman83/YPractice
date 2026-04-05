@@ -1,4 +1,4 @@
-using EventManagement.Common.Exceptions.Middleware;
+using EventManagement.Extensions.Middleware;
 using EventManagement.Interfaces;
 using EventManagement.Services;
 using System.Reflection;
@@ -24,7 +24,14 @@ if (builder.Environment.IsDevelopment())
 builder.Services.AddScoped<IEventValidator, EventValidator>();
 builder.Services.AddSingleton<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventService, EventService>();
-builder.Services.AddControllers();
+builder.Services.AddSingleton<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IBookingValidator, BookingValidator>();
+builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddHostedService<BookingHandlerService>();
+builder.Services.AddControllers(options =>
+{
+    options.SuppressAsyncSuffixInActionNames = false;
+});
 
 var app = builder.Build();
 

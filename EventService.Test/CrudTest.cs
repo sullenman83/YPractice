@@ -1,14 +1,13 @@
 ﻿using EventManagement.Common;
 using EventManagement.Common.Exceptions;
 using EventManagement.Interfaces;
-using EventManagement.Models;
 using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
 using EventManagement.Services;
 using FluentAssertions;
 using Moq;
 using System.Collections.Concurrent;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
 namespace EventServiceTest;
 
 public class CRUDTest
@@ -35,7 +34,6 @@ public class CRUDTest
             Description = newEvent.Description,
             EndAt = newEvent.EndAt,
             StartAt = newEvent.StartAt,
-            Id = 3
         };
 
         //Решил для проверок воспользоваться данными по умолчанию внутри сервиса.
@@ -47,22 +45,24 @@ public class CRUDTest
 
 	    // Assert
         _validator.Verify(s => s.Validate(It.IsAny<EventRequestDto>()), Times.Once);
-        result.Should().BeEquivalentTo(expectedResponse);
+        result.Title.Should().BeEquivalentTo(expectedResponse.Title);
+        result.Description.Should().BeEquivalentTo(expectedResponse.Description);
+        result.EndAt.Should().BeSameDateAs(expectedResponse.EndAt);
+        result.StartAt.Should().BeSameDateAs(expectedResponse.StartAt);
     }
 
     [Fact]
     public void UpdateEvent_ReturnChangedEvent()
     {
-	    // Arrange
+        // Arrange
+        var id = TestData.GetTestEvents().First().Id;
         var ev = TestData.GetTestEvent();
-        var id = 2;
         var expectedResponse = new EventResponseDto()
         {            
             Title = ev.Title,
             Description = ev.Description,
             EndAt = ev.EndAt,
             StartAt = ev.StartAt,
-            Id = id
         };
         var service = getService(TestData.GetTestData());
 
@@ -71,14 +71,17 @@ public class CRUDTest
         
 	    // Assert
         _validator.Verify(s => s.Validate(It.IsAny<EventRequestDto>()), Times.Once);
-        result.Should().BeEquivalentTo(expectedResponse);
+        result.Title.Should().BeEquivalentTo(expectedResponse.Title);
+        result.Description.Should().BeEquivalentTo(expectedResponse.Description);
+        result.EndAt.Should().BeSameDateAs(expectedResponse.EndAt);
+        result.StartAt.Should().BeSameDateAs(expectedResponse.StartAt);
     }
 
     [Fact]
     public void DeleteEvent_ReturnOk()
-    {     
-	    // Arrange
-        var id = 2;
+    {
+        // Arrange
+        var id = TestData.GetTestEvents().First().Id;
         var testData = TestData.GetTestData();
         var eventCount = testData.Count;
         var filter = new EventFilterRequestDTO();
@@ -95,13 +98,13 @@ public class CRUDTest
     [Fact]
     public void GetEvent_ById_ReturnEventByID()
     {
-	    // Arrange
-        var id = 2;
+        // Arrange
+        var id = TestData.GetTestEvents().First().Id;
         var ev = TestData.GetTestData().First(k => k.Key == id).Value;
 
         var expectedResponse = new EventResponseDto()
         {            
-            Id = 2,
+            Id = id,
             Title = ev.Title,
             Description = ev.Description,
             StartAt = ev.StartAt,
@@ -134,9 +137,9 @@ public class CRUDTest
 
     [Fact]
     public void GetEvent_ByInvalidId_ReturnError()
-    {
+    {        
 	    // Arrange
-        var id = 10;
+        var id = new Guid("BBA0E5B9-B2D4-4B54-A9D0-7442969CBBF2");
         var service = getService(TestData.GetTestData());        
 
 	    // Act
@@ -150,7 +153,7 @@ public class CRUDTest
     public void UpdateEvent_ByInvalidId_ReturnError()
     {
 	    // Arrange
-        var id = 10;
+        var id = new Guid("BBA0E5B9-B2D4-4B54-A9D0-7442969CBBF2");
         var ev = TestData.GetTestEvent();
         var service = getService(TestData.GetTestData());        
 
@@ -165,7 +168,7 @@ public class CRUDTest
     public void DeleteEvent_ByInvalidId_ReturnError()
     {
 	    // Arrange
-        var id = 10;        
+        var id = new Guid("BBA0E5B9-B2D4-4B54-A9D0-7442969CBBF2");        
         var service = getService(TestData.GetTestData());        
 
 	    // Act
@@ -178,11 +181,11 @@ public class CRUDTest
     [Fact]
     public void Updatevents_InvalidDate_ReturnError()
     {
-	    // Arrange
-        var id = 2;
+        // Arrange
+        var id = TestData.GetTestEvents().First().Id;
         var ev = TestData.GetTestEvent();
         ev.EndAt = ev.StartAt.AddDays(-1);
-        _repository.Setup(v => v.Data).Returns(() => new ConcurrentDictionary<int, Event>(TestData.GetTestData()));
+        _repository.Setup(v => v.Data).Returns(() => new ConcurrentDictionary<Guid, Event>(TestData.GetTestData()));
         var service = new EventService(new EventValidator(), _repository.Object);
 
 	    // Act
@@ -211,9 +214,9 @@ public class CRUDTest
         act.Should().Throw<InvalidOperationException>();
     }
 
-    private EventService getService(List<KeyValuePair<int, Event>> data)
+    private EventService getService(List<KeyValuePair<Guid, Event>> data)
     {
-        _repository.Setup(v => v.Data).Returns(() => new ConcurrentDictionary<int, Event>(data));
+        _repository.Setup(v => v.Data).Returns(() => new ConcurrentDictionary<Guid, Event>(data));
         return new EventService(_validator.Object, _repository.Object);
     }
 }

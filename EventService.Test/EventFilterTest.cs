@@ -45,7 +45,7 @@ public class EventFilterTest
     /// <param name="id">id найденного события</param>
     [Theory]
     [MemberData(nameof(GetEventFilterByTitle))]    
-    public void TestFilter_ByTitle_ReturnRelevantEvents(EventFilterRequestDTO filter, int count, int id)
+    public void TestFilter_ByTitle_ReturnRelevantEvents(EventFilterRequestDTO filter, int count, Guid id)
     {
 	    // Act
         var result = _service.GetEvents(filter);
@@ -57,11 +57,11 @@ public class EventFilterTest
 
     [Theory]
     [MemberData(nameof(GetEventFilterByDates))]
-    public void TestFilter_ByDate_ReturnRelevantEvents(EventFilterRequestDTO filter, int count, int[] ids)
+    public void TestFilter_ByDate_ReturnRelevantEvents(EventFilterRequestDTO filter, int count, Guid[] ids)
     {
 	    // Act
         var result = _service.GetEvents(filter);
-        var resultIds = result.Events.Select(o => o.Id).ToArray() ?? new int[] { };
+        var resultIds = result.Events.Select(o => o.Id).ToArray() ?? new Guid[] { };
         
 	    // Assert
         result.Events.Count.Should().Be(count);
@@ -90,7 +90,7 @@ public class EventFilterTest
         for(int i = 0; i < titles.Length; ++i)
         {
             var f = new EventFilterRequestDTO() { Title = titles[i] };
-            filters[i] = new object[3] { f, 1, 2 };
+            filters[i] = new object[3] { f, 1, new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2") };
         }
 
         return filters;
@@ -100,19 +100,19 @@ public class EventFilterTest
     {
         var dates = new[]
         {
-            new Tuple<DateTime?, DateTime?, int, int[]>(new DateTime(2026,03,23), new DateTime(2023,03,21), 0, new int []{ }),
-            new Tuple<DateTime?, DateTime?, int, int[]>(new DateTime(2026,03,22), null, 2, new int []{1, 2}),            
-            new Tuple<DateTime?, DateTime?, int, int[]>(new DateTime(2026,03,24), null, 1, new int []{2 }),
-            new Tuple<DateTime?, DateTime?, int, int[]>(new DateTime(2026,03,25), null, 0 ,new int []{}),
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,23), new DateTime(2023,03,21), 0, new Guid []{ }),
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,22), null, 2, new Guid []{new Guid("65F6C3BD-5ADD-4FB0-96C4-2AE9F99F0347"), new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2") }),            
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,24), null, 1, new Guid[]{new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2") }),
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,25), null, 0 ,new Guid []{}),
                                    
-            new Tuple<DateTime?, DateTime?, int, int[]>(null, new DateTime(2026,03,27), 2, new int []{ 1, 2}),            
-            new Tuple<DateTime?, DateTime?, int, int[]>(null, new DateTime(2026,03,22), 1, new int []{1}),
-            new Tuple<DateTime?, DateTime?, int, int[]>(null, new DateTime(2026,03,21), 0, new int []{}),
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(null, new DateTime(2026,03,27), 2, new Guid []{ new Guid("65F6C3BD-5ADD-4FB0-96C4-2AE9F99F0347"), new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2")}),            
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(null, new DateTime(2026,03,22), 1, new Guid []{new Guid("65F6C3BD-5ADD-4FB0-96C4-2AE9F99F0347")}),
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(null, new DateTime(2026,03,21), 0, new Guid []{}),
 
             
-            new Tuple<DateTime?, DateTime?, int, int[]>(new DateTime(2026,03,22), new DateTime(2026,03,27), 2, new int []{ 1, 2}),
-            new Tuple<DateTime?, DateTime?, int, int[]>(new DateTime(2026,03,23), new DateTime(2026,03,27), 1, new int []{2}),            
-            new Tuple<DateTime?, DateTime?, int, int[]>(new DateTime(2026,03,22), new DateTime(2026,03,26), 1, new int []{ 1}),
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,22), new DateTime(2026,03,27), 2, new Guid[]{ new Guid("65F6C3BD-5ADD-4FB0-96C4-2AE9F99F0347"), new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2")}),
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,23), new DateTime(2026,03,27), 1, new Guid []{new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2")}),            
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,22), new DateTime(2026,03,26), 1, new Guid []{ new Guid("65F6C3BD-5ADD-4FB0-96C4-2AE9F99F0347")}),
         };
         var filters = new object[dates.Length][];
 
