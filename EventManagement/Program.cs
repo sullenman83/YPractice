@@ -28,7 +28,10 @@ builder.Services.AddSingleton<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingValidator, BookingValidator>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddHostedService<BookingHandlerService>();
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.SuppressAsyncSuffixInActionNames = false;
+});
 
 var app = builder.Build();
 

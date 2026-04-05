@@ -2,6 +2,7 @@
 using EventManagement.Common.Exceptions;
 using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
+using EventManagement.Models.Events;
 using EventManagement.Services;
 using FluentAssertions;
 using Moq;
@@ -9,6 +10,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EventServiceTest;
 
@@ -98,6 +100,8 @@ public class BookingTest
     public async Task GetBooking_ByInvalidEventId_SholdThrowsBookingValidationException()
     {
         // Arrange
+        var data = TestData.GetBookingTestData();
+
         var service = new BookingService(new BookingRepository(), new BookingValidator(new EventRepository()));
         var eventID = Guid.NewGuid();
 
@@ -107,6 +111,32 @@ public class BookingTest
         // Assert
         await act.Should().ThrowAsync<BookingValidationException>();
     }
+
+    [Fact]
+    public async Task GetBooking_ByDeletedEventId_SholdThrowsBookingValidationException()
+    {
+        // Arrange
+        var bookingData = TestData.GetBookingTestData();
+        var events = TestData.GetTestData();
+        var eventId = events.First().Key;
+        var eventData = new ConcurrentDictionary<Guid, Event>(events);
+        var eventRepository = new Mock<IEventRepository>();
+        eventRepository.Setup(r => r.Data).Returns(() => eventData);
+        _repository.Setup(r => r.Bookings).Returns(() => new ConcurrentDictionary<Guid, Booking>(bookingData));
+        var service = new BookingService(_repository.Object, new BookingValidator(eventRepository.Object));        
+
+        // Act
+        var result = await service.CreateBookingAsync(eventId, CancellationToken.None);
+        eventData.TryRemove(eventId, out var deletedEvent);
+        Func<Task> act = async () => await service.CreateBookingAsync(eventId, CancellationToken.None);
+                
+        // Assert
+        result.EventId.Should().Be(eventId);
+        result.Status.Should().Be(BookingStatus.Pending);
+
+        await act.Should().ThrowAsync<BookingValidationException>();
+    }
+
 
     [Fact]
     public async Task GetBooking_ByInvalidBookingId_ShouldThrowsArgumentException()

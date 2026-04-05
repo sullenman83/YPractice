@@ -1,6 +1,9 @@
 ﻿using EventManagement.Interfaces;
+using EventManagement.Models.BookingModels;
 using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
+using EventManagement.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventManagement.Controllers;
@@ -9,14 +12,16 @@ namespace EventManagement.Controllers;
 /// Контроллер с API для работы с событиями
 /// </summary>
 /// <param name="eventService">Сервис для работы с событиями</param>
+/// <param name="bookingService">Сервис бронирования событий</param>
 [ApiController]
 [Route("[controller]")]
-public class EventsController(IEventService eventService) : ControllerBase
+public class EventsController(IEventService eventService, IBookingService bookingService) : ControllerBase
 {
     /// <summary>
     /// Хранилище событий
     /// </summary>
     private readonly IEventService _eventService = eventService;
+    private readonly IBookingService _bookingService = bookingService;
 
     /// <summary>
     /// Метод получения списка событий
@@ -102,5 +107,31 @@ public class EventsController(IEventService eventService) : ControllerBase
         _eventService.DeleteEvent(id);        
         
         return Ok();
+    }
+
+
+    /// <summary>
+    /// Создать новое бронирование
+    /// </summary>
+    /// <param name="id">Id события</param>
+    /// <param name="token">Токен отмены операции</param>
+    /// <response code="202">Возвращает HTTP статус-код 202 в случае успешного ответа</response>
+    [Produces("application/json")]
+    [ProducesResponseType<BookingResponseDTO>(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPost("{id}/book")]
+    public async Task<IActionResult> CreateBooking(Guid id, CancellationToken token)
+    {
+        var result = await _bookingService.CreateBookingAsync(id, token);
+
+        var values = new RouteValueDictionary
+        {
+            { "controller", "bookings" },
+            { "action", "GetBookingByIdAsync" },
+            { "id", result.Id }
+        };
+
+        return AcceptedAtRoute(values, result);
     }
 }

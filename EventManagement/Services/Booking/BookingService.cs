@@ -35,7 +35,7 @@ public class BookingService(IBookingRepository repository, IBookingValidator boo
 
         _repository.Bookings.TryAdd(booking.Id, booking);
 
-        return createBookingREsponseDTO(booking);
+        return createBookingResponseDTO(booking);
     }
 
     /// <summary>
@@ -52,10 +52,10 @@ public class BookingService(IBookingRepository repository, IBookingValidator boo
         if (!_repository.Bookings.TryGetValue(bookingId, out var booking))
             throw new ArgumentException($"Не найдено бронирование с заданным id: {bookingId}");
 
-        return createBookingREsponseDTO(booking);
+        return createBookingResponseDTO(booking);
     }
 
-    private BookingResponseDTO createBookingREsponseDTO(Booking booking)
+    private BookingResponseDTO createBookingResponseDTO(Booking booking)
     {
         return new BookingResponseDTO()
         {

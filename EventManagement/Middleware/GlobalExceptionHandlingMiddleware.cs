@@ -71,9 +71,8 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
             HttpRequestException hr => StatusCodes.Status400BadRequest,
             ValidationException ve => StatusCodes.Status400BadRequest,
             EventValidationException eve => StatusCodes.Status400BadRequest,
-            BookingValidationException bve => StatusCodes.Status400BadRequest,
-            IOException io => StatusCodes.Status500InternalServerError,
-            
+            BookingValidationException bve => StatusCodes.Status404NotFound,
+            IOException io => StatusCodes.Status500InternalServerError,            
             SecurityException se => StatusCodes.Status401Unauthorized,
 
             _ => StatusCodes.Status500InternalServerError

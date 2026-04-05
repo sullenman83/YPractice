@@ -18,7 +18,7 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
     /// <returns>Пустая задача</returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Фогновый сервис обработки бронирований запущен.");
+        _logger.LogInformation("Фоновый сервис обработки бронирований запущен.");
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -30,15 +30,15 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
 
                 foreach (var booking in bookings)
                 {
+                    await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
+
                     var isConfirmed = Random.Shared.Next(0, 3) > 0 ? true : false;
                     var b = booking.Value.Clone();
                     b.Status = isConfirmed ? BookingStatus.Confirmed : BookingStatus.Rejected;
                     b.ProcessedAt = DateTime.Now;
                     _bookingRepository.Bookings.TryUpdate(booking.Key, b, booking.Value);
 
-                    _logger.LogInformation($"Бронирование с id {booking.Key} обработано.");
-
-                    await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
+                    _logger.LogInformation($"Бронирование с id {booking.Key} обработано.");                   
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
@@ -53,6 +53,6 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
             }
         }
 
-        _logger.LogInformation("Фогновый сервис обработки бронирований остановлен.");
+        _logger.LogInformation("Фоновый сервис обработки бронирований остановлен.");
     }
 }
