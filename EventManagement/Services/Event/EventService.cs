@@ -22,7 +22,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// <exception cref="InvalidOperationException">Ошибка при создании нового события.</exception>
     public async Task<EventResponseDto> CreateEventAsync(EventRequestDto @event, CancellationToken token)
     {        
-        await _eventValidator.Validate(@event, token);
+        await _eventValidator.ValidateAsync(@event, token);
          
         token.ThrowIfCancellationRequested();
         var ev = createEvent(@event);
@@ -95,7 +95,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
     public async Task<EventResponseDto> UpdateEventAsync(Guid id, EventRequestDto @event, CancellationToken token)
     {        
-        await _eventValidator.Validate(@event, token);
+        await _eventValidator.ValidateAsync(@event, token);
 
         token.ThrowIfCancellationRequested();
         var ev = getEventById(id);

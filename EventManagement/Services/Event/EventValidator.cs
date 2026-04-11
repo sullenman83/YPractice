@@ -14,7 +14,7 @@ public class EventValidator : IEventValidator
     /// <param name="event">Данные события</param>
     /// <param name="token">Токен отмены операции</param>
     /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
-    public async Task Validate(EventRequestDto @event, CancellationToken token)
+    public async Task ValidateAsync(EventRequestDto @event, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
 

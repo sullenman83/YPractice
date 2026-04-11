@@ -27,11 +27,11 @@ public class EventFilterTest
     }
 
     [Fact]
-    public void Test_EmptyFilter_ReturnAllEvents()
+    public async Task Test_EmptyFilter_ReturnAllEvents()
     {
 	    // Act
         var count = TestData.GetTestEvents().Count();
-        var result = _service.GetEvents(new EventFilterRequestDTO());
+        var result = await _service.GetEventsAsync(new EventFilterRequestDTO(), CancellationToken.None);
 
 	    // Assert        
         result.Events.Count.Should().Be(count);
@@ -45,10 +45,10 @@ public class EventFilterTest
     /// <param name="id">id найденного события</param>
     [Theory]
     [MemberData(nameof(GetEventFilterByTitle))]    
-    public void TestFilter_ByTitle_ReturnRelevantEvents(EventFilterRequestDTO filter, int count, Guid id)
+    public async Task TestFilter_ByTitle_ReturnRelevantEvents(EventFilterRequestDTO filter, int count, Guid id)
     {
 	    // Act
-        var result = _service.GetEvents(filter);
+        var result = await _service.GetEventsAsync(filter, CancellationToken.None);
 
 	    // Assert
         result.Events.Count.Should().Be(count);
@@ -57,10 +57,10 @@ public class EventFilterTest
 
     [Theory]
     [MemberData(nameof(GetEventFilterByDates))]
-    public void TestFilter_ByDate_ReturnRelevantEvents(EventFilterRequestDTO filter, int count, Guid[] ids)
+    public async Task TestFilter_ByDate_ReturnRelevantEvents(EventFilterRequestDTO filter, int count, Guid[] ids)
     {
 	    // Act
-        var result = _service.GetEvents(filter);
+        var result = await _service.GetEventsAsync(filter, CancellationToken.None);
         var resultIds = result.Events.Select(o => o.Id).ToArray() ?? new Guid[] { };
         
 	    // Assert
@@ -71,10 +71,10 @@ public class EventFilterTest
 
     [Theory]
     [MemberData(nameof(GetPaginationFilterData))]
-    public void TestPagination(EventFilterRequestDTO filter, int currentPage, int eventCount)
+    public async Task TestPagination(EventFilterRequestDTO filter, int currentPage, int eventCount)
     {
 	    // Act
-        var result = _service.GetEvents(filter);
+        var result = await _service.GetEventsAsync(filter, CancellationToken.None);
 
 	    // Assert        
         result.Page.Should().Be(currentPage);

@@ -20,11 +20,11 @@ public class CRUDTest
         _validator = new Mock<IEventValidator>();
         _repository = new Mock<IEventRepository>();        
         
-        _validator.Setup(v => v.Validate(It.IsAny<EventRequestDto>()));
+        _validator.Setup(v => v.ValidateAsync(It.IsAny<EventRequestDto>(), CancellationToken.None));
     }
 
     [Fact]
-    public void CreateEvent_ReturnNewEvent()
+    public async Task CreateEvent_ReturnNewEvent()
     {
 	    // Arrange
         var newEvent = TestData.GetTestEvent();
@@ -41,10 +41,10 @@ public class CRUDTest
         var service = getService(TestData.GetTestData());
 
 	    // Act
-        var result = service.CreateEvent(newEvent);
+        var result = await service.CreateEventAsync(newEvent, CancellationToken.None);
 
 	    // Assert
-        _validator.Verify(s => s.Validate(It.IsAny<EventRequestDto>()), Times.Once);
+        _validator.Verify(s => s.ValidateAsync(It.IsAny<EventRequestDto>(), CancellationToken.None), Times.Once);
         result.Title.Should().BeEquivalentTo(expectedResponse.Title);
         result.Description.Should().BeEquivalentTo(expectedResponse.Description);
         result.EndAt.Should().BeSameDateAs(expectedResponse.EndAt);
@@ -52,7 +52,7 @@ public class CRUDTest
     }
 
     [Fact]
-    public void UpdateEvent_ReturnChangedEvent()
+    public async Task UpdateEvent_ReturnChangedEvent()
     {
         // Arrange
         var id = TestData.GetTestEvents().First().Id;
@@ -67,10 +67,10 @@ public class CRUDTest
         var service = getService(TestData.GetTestData());
 
 	    // Act
-        var result = service.UpdateEvent(id, ev);
+        var result = await service.UpdateEventAsync(id, ev, CancellationToken.None);
         
 	    // Assert
-        _validator.Verify(s => s.Validate(It.IsAny<EventRequestDto>()), Times.Once);
+        _validator.Verify(s => s.ValidateAsync(It.IsAny<EventRequestDto>(), CancellationToken.None), Times.Once);
         result.Title.Should().BeEquivalentTo(expectedResponse.Title);
         result.Description.Should().BeEquivalentTo(expectedResponse.Description);
         result.EndAt.Should().BeSameDateAs(expectedResponse.EndAt);
@@ -78,7 +78,7 @@ public class CRUDTest
     }
 
     [Fact]
-    public void DeleteEvent_ReturnOk()
+    public async Task DeleteEvent_ReturnOk()
     {
         // Arrange
         var id = TestData.GetTestEvents().First().Id;
@@ -88,15 +88,15 @@ public class CRUDTest
         var service = new EventService(new EventValidator(), new EventRepository());
 
         // Act
-        service.DeleteEvent(id);
-        var remains = service.GetEvents(filter);
+        await service.DeleteEventAsync(id, CancellationToken.None);
+        var remains = await service.GetEventsAsync(filter, CancellationToken.None);
 
         // Assert        
         remains.Events.Should().NotContain(o => o.Id == id);
     }
 
     [Fact]
-    public void GetEvent_ById_ReturnEventByID()
+    public async Task GetEvent_ById_ReturnEventByID()
     {
         // Arrange
         var id = TestData.GetTestEvents().First().Id;
@@ -113,14 +113,14 @@ public class CRUDTest
         var service = getService(TestData.GetTestData());
 
 	    // Act
-        var result = service.GetEventById(id);        
+        var result = await service.GetEventByIdAsync(id, CancellationToken.None);        
 
 	    // Assert
         result.Should().BeEquivalentTo(expectedResponse);
     }
 
     [Fact]
-    public void GetEvents_ReturnAllEvent()
+    public async Task GetEvents_ReturnAllEvent()
     {
 	    // Arrange
         var data = TestData.GetTestData();
@@ -129,7 +129,7 @@ public class CRUDTest
         var service = getService(data);
 
 	    // Act
-        var result =  service.GetEvents(filter);
+        var result =  await service.GetEventsAsync(filter, CancellationToken.None);
 
 	    // Assert
         result.Events.Count.Should().Be(eventCount);
@@ -143,10 +143,10 @@ public class CRUDTest
         var service = getService(TestData.GetTestData());        
 
 	    // Act
-        Action act = () => service.GetEventById(id);
+        Func<Task<EventResponseDto>> act = async () => await service.GetEventByIdAsync(id, CancellationToken.None);
 
         // Assert
-        act.Should().Throw<ArgumentException>();
+        act.Should().ThrowAsync<ArgumentException>();
     }
 
     [Fact]
@@ -158,10 +158,10 @@ public class CRUDTest
         var service = getService(TestData.GetTestData());        
 
 	    // Act
-        Action act = () => service.UpdateEvent(id, ev);
+        Func<Task<EventResponseDto>> act = async () => await service.UpdateEventAsync(id, ev, CancellationToken.None);
 
 	    // Assert
-        act.Should().Throw<ArgumentException>();
+        act.Should().ThrowAsync<ArgumentException>();
     }
 
     [Fact]
@@ -172,10 +172,10 @@ public class CRUDTest
         var service = getService(TestData.GetTestData());        
 
 	    // Act
-        Action act = () => service.DeleteEvent(id);
+        Func<Task> act = async () => await service.DeleteEventAsync(id, CancellationToken.None);
 
         // Assert
-        act.Should().Throw<ArgumentException>();
+        act.Should().ThrowAsync<ArgumentException>();
     }
 
     [Fact]
@@ -189,10 +189,10 @@ public class CRUDTest
         var service = new EventService(new EventValidator(), _repository.Object);
 
 	    // Act
-        Action act = ()=> service.UpdateEvent(id, ev);
+        Func<Task<EventResponseDto>> act = async ()=> await service.UpdateEventAsync(id, ev, CancellationToken.None);
 
         // Assert
-        act.Should().Throw<EventValidationException>();
+        act.Should().ThrowAsync<EventValidationException>();
     }
 
     [Fact]
@@ -203,15 +203,15 @@ public class CRUDTest
         var message = "Ошибка сервиса валидации";
         
         var validator = new Mock<IEventValidator>();
-        validator.Setup(v => v.Validate(It.IsAny<EventRequestDto>()))
+        validator.Setup(v => v.ValidateAsync(It.IsAny<EventRequestDto>(), CancellationToken.None))
             .Throws(new InvalidOperationException(message));        
         var service = new EventService(validator.Object, new EventRepository());
 
 	    // Act
-        Action act = () => service.CreateEvent(newEvent);
+        Func<Task<EventResponseDto>> act = async () => await service.CreateEventAsync(newEvent, CancellationToken.None);
 
         // Assert
-        act.Should().Throw<InvalidOperationException>();
+        act.Should().ThrowAsync<InvalidOperationException>();
     }
 
     private EventService getService(List<KeyValuePair<Guid, Event>> data)
