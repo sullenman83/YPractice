@@ -20,7 +20,7 @@ public class BookingValidator(IEventRepository eventRepository) : IBookingValida
     public async Task ValidateAsync(Guid eventId, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        //По идее тут в реальных условиях должен был бы быть асинхронных выхов полкучения записи из БД        
+        //По идее тут в реальных условиях должен был бы быть асинхронный вызов получения записи из БД        
         if (!_eventRepository.Data.TryGetValue(eventId, out var result))
             throw new BookingValidationException($"Не существует события с заданным id: {eventId}");
     }

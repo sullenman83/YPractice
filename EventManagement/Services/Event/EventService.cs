@@ -17,12 +17,14 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// Создать событие
     /// </summary>
     /// <param name="event">Данные события</param>
+    /// <param name="token">Токен отмены операции</param>
     /// <returns>Обновленное событие</returns>
     /// <exception cref="InvalidOperationException">Ошибка при создании нового события.</exception>
-    public EventResponseDto CreateEvent(EventRequestDto @event)
+    public async Task<EventResponseDto> CreateEventAsync(EventRequestDto @event, CancellationToken token)
     {        
-        _eventValidator.Validate(@event);
+        await _eventValidator.Validate(@event, token);
          
+        token.ThrowIfCancellationRequested();
         var ev = createEvent(@event);
         _repository.Data.TryAdd(ev.Id, ev);            
                             
@@ -33,9 +35,11 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// Удалить событие
     /// </summary>
     /// <param name="id">Идентификатор удаляемого события</param>
+    /// <param name="token">Токен отмены операции</param>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    public void DeleteEvent(Guid id)
+    public async Task DeleteEventAsync(Guid id, CancellationToken token)
     {
+        token.ThrowIfCancellationRequested();
         if (!_repository.Data.TryRemove(id, out var ev))
             throw new ArgumentException($"Ошбика при удалении события {id}.");
     }
@@ -44,9 +48,11 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// Получить все события
     /// </summary>
     /// <param name="filter">Фильтр событий</param>
+    /// <param name="token">Токен отмены операции</param>
     /// <returns>Список событий</returns>
-    public PaginatedResultDTO GetEvents(EventFilterRequestDTO filter)
-    {   
+    public async Task<PaginatedResultDTO> GetEventsAsync(EventFilterRequestDTO filter, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
         var events = _repository.Data.ToArray()
             .Select(o => o.Value)
             .OrderBy(o => o.StartAt)
@@ -68,9 +74,10 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// Получить событие по идентификатору
     /// </summary>
     /// <param name="id">Идентификатор события</param>
+    /// <param name="token">Токен отмены операции</param>
     /// <returns>Событие с искомым идентификатором</returns>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    public EventResponseDto GetEventById(Guid id)
+    public async Task<EventResponseDto> GetEventByIdAsync(Guid id, CancellationToken token)
     {
         if (!_repository.Data.TryGetValue(id, out var ev))
             throw new ArgumentException($"Ошбика при получении события по {id}.");
@@ -83,11 +90,14 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// </summary>
     /// <param name="id">id события</param>
     /// <param name="event">Данные события</param>
-    /// /// <returns>Обновленное событие</returns>
+    /// <param name="token">Токен отмены операции</param>
+    /// <returns>Обновленное событие</returns>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    public EventResponseDto UpdateEvent(Guid id, EventRequestDto @event)
-    {
-        _eventValidator.Validate(@event);
+    public async Task<EventResponseDto> UpdateEventAsync(Guid id, EventRequestDto @event, CancellationToken token)
+    {        
+        await _eventValidator.Validate(@event, token);
+
+        token.ThrowIfCancellationRequested();
         var ev = getEventById(id);
         var newEv = ev.Clone() as Event;
 

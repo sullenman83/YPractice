@@ -12,37 +12,42 @@ public interface IEventService
     /// Получить все события
     /// </summary>
     /// <param name="filter">Фильтр событий</param>
+    /// <param name="token">Токен отмены операции</param>
     /// <returns>Список событий</returns>
-    PaginatedResultDTO GetEvents(EventFilterRequestDTO filter);
+    Task<PaginatedResultDTO> GetEventsAsync(EventFilterRequestDTO filter, CancellationToken token);
 
     /// <summary>
     /// Получить событие по идентификатору
     /// </summary>
     /// <param name="id">Идентификатор события</param>
+    /// <param name="token">Токен отмены операции</param>
     /// <returns>Событие с искомым идентификатором</returns>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    EventResponseDto GetEventById(Guid id);
+    Task<EventResponseDto> GetEventByIdAsync(Guid id, CancellationToken token);
 
     /// <summary>
     /// Создать событие
     /// </summary>
     /// <param name="event">Данные события</param>
+    /// <param name="token">Токен отмены операции</param>
     /// <returns>Созданное событие</returns>
-    EventResponseDto CreateEvent(EventRequestDto @event);
+    Task<EventResponseDto> CreateEventAsync(EventRequestDto @event, CancellationToken token);
 
     /// <summary>
     /// Обновить событие
     /// </summary>
     /// <param name="id">id события</param>
     /// <param name="event">Данные события</param>
+    /// <param name="token">Токен отмены операции</param>
     /// <returns>Обновленное событие</returns>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    EventResponseDto UpdateEvent(Guid id,  EventRequestDto @event);
+    Task<EventResponseDto> UpdateEventAsync(Guid id,  EventRequestDto @event, CancellationToken token);
 
     /// <summary>
     /// Удалить событие
     /// </summary>
     /// <param name="id">Идентификатор удаляемого события</param>
+    /// <param name="token">Токен отмены операции</param>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    void DeleteEvent(Guid id);
+    Task DeleteEventAsync(Guid id, CancellationToken token);
 }
