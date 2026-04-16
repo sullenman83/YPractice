@@ -36,10 +36,10 @@ public class EventResponseDto
     /// <summary>
     /// ОБщее количество мест
     /// </summary>
-    public int TotalSeats { get; set; }
+    public required int TotalSeats { get; set; }
 
     /// <summary>
     /// Текущее количество свободных мест
     /// </summary>
-    public int AvailableSeats { get; set; }
+    public required int AvailableSeats { get; set; }
 }

@@ -74,6 +74,7 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
             booking.Reject();
             if (ev != null)
             {
+                //ToDO: хз пока как это освобождать. Надо где-то хранить число мест для бронирования. По идее это в Booking
                 ev.ReleaseSeats();
                 _eventRepository.Update(ev);
             }

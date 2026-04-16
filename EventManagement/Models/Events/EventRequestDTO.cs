@@ -22,21 +22,18 @@ public class EventRequestDto
     /// Дата и время начала события
     /// </summary>
     [Required]
-    public required DateTime StartAt { get; set; }
+    public required DateTime? StartAt { get; set; }
 
     /// <summary>
     /// Дата и время окончания события
     /// </summary>
     [Required]
-    public required DateTime EndAt { get; set; }
+    public required DateTime? EndAt { get; set; }
 
     /// <summary>
     /// ОБщее количество мест
     /// </summary>
-    public int TotalSeats { get; set; }
-
-    /// <summary>
-    /// Текущее количество свободных мест
-    /// </summary>
-    public int AvailableSeats { get; set; }
+    [Required]
+    [Range(0, int.MaxValue, ErrorMessage = "Значени должно быть больше 0")]
+    public required int? TotalSeats { get; set; }    
 }
