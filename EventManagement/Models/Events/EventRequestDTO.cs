@@ -29,4 +29,14 @@ public class EventRequestDto
     /// </summary>
     [Required]
     public required DateTime EndAt { get; set; }
+
+    /// <summary>
+    /// ОБщее количество мест
+    /// </summary>
+    public int TotalSeats { get; set; }
+
+    /// <summary>
+    /// Текущее количество свободных мест
+    /// </summary>
+    public int AvailableSeats { get; set; }
 }

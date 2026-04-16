@@ -27,23 +27,11 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
         {
             try
             {
-                var bookings = _bookingRepository.Bookings
-                    .Where(o => o.Value.Status == BookingStatus.Pending)
-                    .Take(5);
+                var tasks = _bookingRepository.GetPending().
+                    Select(o => ProcessBookingAsync(o, stoppingToken));
 
-                foreach (var booking in bookings)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
-
-                    var isConfirmed = Random.Shared.Next(0, 3) > 0 ? true : false;
-                    var b = booking.Value.Clone();
-                    b.Status = isConfirmed ? BookingStatus.Confirmed : BookingStatus.Rejected;
-                    b.ProcessedAt = DateTime.Now;
-                    _bookingRepository.Bookings.TryUpdate(booking.Key, b, booking.Value);
-
-                    _logger.LogInformation($"Бронирование с id {booking.Key} обработано.");                   
-                }
-
+                await Task.WhenAll(tasks);
+                
                 await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -72,25 +60,29 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
             if (ev == null)
             {
                 booking.Reject();
-                _logger.LogWarning($"Ошибка при обработке бронирования. Не найдено событие {booking.EventId} для брони {booking.Id}");
+                _logger.LogWarning($"Бронирование отклонено. Не найдено событие {booking.EventId} для брони {booking.Id}");
             }
             else
                 booking.Confirm();
+            booking.ProcessedAt = DateTime.Now;
             _bookingRepository.Update(booking);
+
+            _logger.LogInformation($"Бронирование с id {booking.Id} обработано.");
         }
-        catch
+        catch(Exception ex)
         {
             booking.Reject();
-            ev.ReleaseSeats();
-            
-            throw;
+            if (ev != null)
+            {
+                ev.ReleaseSeats();
+                _eventRepository.Update(ev);
+            }
+            _bookingRepository.Update(booking);
+            _logger.LogError(ex, $"Непредвиденная ошибка при обработке бронирования id {booking.Id}");
         }
         finally
         {
             _processingSemaphor.Release();
         }
-
-
-
     }
 }

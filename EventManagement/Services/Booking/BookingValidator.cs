@@ -21,7 +21,7 @@ public class BookingValidator(IEventRepository eventRepository) : IBookingValida
     {
         token.ThrowIfCancellationRequested();
         //По идее тут в реальных условиях должен был бы быть асинхронный вызов получения записи из БД        
-        if (!_eventRepository.Data.TryGetValue(eventId, out var result))
+        if (_eventRepository.GetByID(eventId) == null)
             throw new BookingValidationException($"Не существует события с заданным id: {eventId}");
     }
 }
