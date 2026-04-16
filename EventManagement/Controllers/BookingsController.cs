@@ -19,6 +19,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     /// Получить бронирование по Id
     /// </summary>
     /// <param name="id">Id бронирования</param>
+    /// <param name="seatsCount">Количество мест для бронирования</param> 
     /// <param name="token">Токен отмены операции</param>
     /// <response code="200">Возвращает HTTP статус-код 200 в случае успешного ответа</response>
     [Produces("application/json")]
@@ -27,7 +28,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetBookingByIdAsync(Guid id, CancellationToken token)
+    public async Task<IActionResult> GetBookingByIdAsync(Guid id, int seatsCount, CancellationToken token)
     {
         var result =await _bookingService.GetBookingByIdAsync(id, token);
         

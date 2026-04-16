@@ -7,28 +7,31 @@ namespace EventManagement.Services;
 /// <summary>
 /// Сервис для работы с заявками бронирования событий
 /// </summary>
-public class BookingService(IBookingRepository repository, IBookingValidator bookingValidator) : IBookingService
+public class BookingService(IBookingRepository repository) : IBookingService
 {
     private readonly IBookingRepository _repository = repository;
-    private readonly IBookingValidator _bookingValidator = bookingValidator;
+    private readonly SemaphoreSlim _bookingLock = new (1, 1);
 
     /// <summary>
     /// Создать заявку на бронирование события
     /// </summary>
     /// <param name="eventId">Id события </param>
+    /// <param name="seatsCount">Количество мест для бронирования</param> 
     /// <param name="token">Токен отмены</param>
     /// <returns>Возвращает объект с описанием брони</returns>
     /// <exception cref="InvalidOperationException">Ошибка при создании нового бронирования.</exception>
-    /// <exception cref="BookingValidationException">Ошибка при проверке броинрования.</exception>
-    public async Task<BookingResponseDTO> CreateBookingAsync(Guid eventId, CancellationToken token)
-    {
-        await _bookingValidator.ValidateAsync(eventId, token);
-
-        token.ThrowIfCancellationRequested();
+    public async Task<BookingResponseDTO> CreateBookingAsync(Guid eventId, int seatsCount, CancellationToken token)
+    {        
         var booking = new Booking(BookingStatus.Pending, eventId)
         {
             CreatedAt = DateTime.Now
         };
+
+        await _bookingLock.WaitAsync(token);
+        
+        token.ThrowIfCancellationRequested();
+
+
 
         _repository.Add(booking);
 

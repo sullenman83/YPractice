@@ -25,7 +25,6 @@ builder.Services.AddScoped<IEventValidator, EventValidator>();
 builder.Services.AddSingleton<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddSingleton<IBookingRepository, BookingRepository>();
-builder.Services.AddScoped<IBookingValidator, BookingValidator>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddHostedService<BookingHandlerService>();
 builder.Services.AddControllers(options =>
