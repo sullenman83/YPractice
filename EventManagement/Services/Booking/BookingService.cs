@@ -25,15 +25,12 @@ public class BookingService(IBookingRepository repository, IBookingValidator boo
         await _bookingValidator.ValidateAsync(eventId, token);
 
         token.ThrowIfCancellationRequested();
-        var booking = new Booking()
+        var booking = new Booking(BookingStatus.Pending, eventId)
         {
-            Id = Guid.NewGuid(),
-            EventId = eventId,
-            Status = BookingStatus.Pending,
             CreatedAt = DateTime.Now
         };
 
-        _repository.Bookings.TryAdd(booking.Id, booking);
+        _repository.Add(booking);
 
         return createBookingResponseDTO(booking);
     }
@@ -49,8 +46,7 @@ public class BookingService(IBookingRepository repository, IBookingValidator boo
     {
         token.ThrowIfCancellationRequested();
 
-        if (!_repository.Bookings.TryGetValue(bookingId, out var booking))
-            throw new ArgumentException($"Не найдено бронирование с заданным id: {bookingId}");
+        var booking = _repository.GetById(bookingId);            
 
         return createBookingResponseDTO(booking);
     }

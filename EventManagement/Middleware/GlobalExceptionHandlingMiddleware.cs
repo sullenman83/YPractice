@@ -74,6 +74,7 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
             BookingValidationException bve => StatusCodes.Status404NotFound,
             IOException io => StatusCodes.Status500InternalServerError,            
             SecurityException se => StatusCodes.Status401Unauthorized,
+            NoAvailableSeatsException nae => StatusCodes.Status409Conflict,
 
             _ => StatusCodes.Status500InternalServerError
         };

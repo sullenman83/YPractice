@@ -17,17 +17,15 @@ public static class TestData
     {
         return new List<Event>()
         {
-            new Event
-            {
-                Id = new Guid("65F6C3BD-5ADD-4FB0-96C4-2AE9F99F0347"),
+            new Event(10)
+            {                
                 Title = "тестовое событие 1",
                 Description = "Описание 1",
                 StartAt = DateTime.Parse("2026.03.22"),
                 EndAt = DateTime.Parse("2026.03.22"),
             },
-            new Event
-            {
-                Id = new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2"),
+            new Event(10)
+            {             
                 Title = "Другое событие для теста 2",
                 Description = "Описание 21",
                 StartAt = DateTime.Parse("2026.03.24"),

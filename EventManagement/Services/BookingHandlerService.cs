@@ -1,15 +1,18 @@
 ﻿using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
+using EventManagement.Models.Events;
 
 namespace EventManagement.Services;
 
 /// <summary>
 /// Фоновый сервис обработки бронирований
 /// </summary>
-public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRepository repository ) : BackgroundService
+public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRepository repository, IEventRepository eventRepository) : BackgroundService
 {
     private readonly ILogger<BackgroundService> _logger= logger;
     private readonly IBookingRepository _bookingRepository = repository;
+    private readonly IEventRepository _eventRepository = eventRepository;
+    private readonly SemaphoreSlim _processingSemaphor = new (1, 1);
 
     /// <summary>
     /// Метод сервиса фоновой обработки броней
@@ -54,5 +57,40 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
         }
 
         _logger.LogInformation("Фоновый сервис обработки бронирований остановлен.");
+    }
+
+    private async Task ProcessBookingAsync(Booking booking, CancellationToken stoppingToken)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
+
+        await _processingSemaphor.WaitAsync(stoppingToken);
+
+        Event? ev = null;
+        try
+        {
+            ev = _eventRepository.GetByID(booking.EventId);
+            if (ev == null)
+            {
+                booking.Reject();
+                _logger.LogWarning($"Ошибка при обработке бронирования. Не найдено событие {booking.EventId} для брони {booking.Id}");
+            }
+            else
+                booking.Confirm();
+            _bookingRepository.Update(booking);
+        }
+        catch
+        {
+            booking.Reject();
+            ev.ReleaseSeats();
+            
+            throw;
+        }
+        finally
+        {
+            _processingSemaphor.Release();
+        }
+
+
+
     }
 }

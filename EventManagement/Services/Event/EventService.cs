@@ -26,7 +26,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
          
         token.ThrowIfCancellationRequested();
         var ev = createEvent(@event);
-        _repository.Data.TryAdd(ev.Id, ev);            
+        _repository.Add(ev);            
                             
         return createEventResponseDto(ev);
     }
@@ -40,8 +40,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     public async Task DeleteEventAsync(Guid id, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        if (!_repository.Data.TryRemove(id, out var ev))
-            throw new ArgumentException($"Ошбика при удалении события {id}.");
+        _repository.Delete(id);
     }
 
     /// <summary>
@@ -53,8 +52,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     public async Task<PaginatedResultDTO> GetEventsAsync(EventFilterRequestDTO filter, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        var events = _repository.Data.ToArray()
-            .Select(o => o.Value)
+        var events = _repository.GetAll()
             .OrderBy(o => o.StartAt)
             .Filter(filter)
             .Paginate(filter)
@@ -64,7 +62,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
         return new PaginatedResultDTO()
         {
             Events = events,
-            EventsCount = _repository.Data.Count,
+            EventsCount = _repository.GetCount(),
             Page = filter.Page,
             EventsCountOnCurrentPage = events.Count
         };
@@ -79,8 +77,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
     public async Task<EventResponseDto> GetEventByIdAsync(Guid id, CancellationToken token)
     {
-        if (!_repository.Data.TryGetValue(id, out var ev))
-            throw new ArgumentException($"Ошбика при получении события по {id}.");
+        var ev = _repository.GetByID(id);
 
         return  createEventResponseDto(ev);
     }
@@ -99,20 +96,16 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
 
         token.ThrowIfCancellationRequested();
         var ev = getEventById(id);
-        var newEv = ev.Clone() as Event;
+        updateEvent(@event, ev);
+        _repository.Update(ev);
 
-        updateEvent(@event, newEv);
-        if (!_repository.Data.TryUpdate(id, newEv, ev))
-            throw new ArgumentException($"Ошбика при обновлении события по {id}.");
-
-        return createEventResponseDto(newEv);
+        return createEventResponseDto(ev);
     }
 
     private Event createEvent(EventRequestDto source)
     {
-        return new Event()
+        return new Event(source.TotalSeats)
         {
-            Id = Guid.NewGuid(),
             Title = source.Title,
             Description = source.Description,
             StartAt = source.StartAt,
@@ -122,9 +115,8 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
 
     private EventResponseDto createEventResponseDto(Event source)
     {
-        return new EventResponseDto()
-        {
-            Id = source.Id,
+        return new EventResponseDto(source.Id, source.TotalSeats, source.AvailableSeats)
+        {            
             Title = source.Title,
             Description = source.Description,
             StartAt = source.StartAt,
@@ -137,14 +129,11 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
         dest.EndAt = source.EndAt;
         dest.StartAt = source.StartAt;
         dest.Title = source.Title;
-        dest.Description = source.Description;        
+        dest.Description = source.Description;
     }
 
     private Event getEventById(Guid id)
     {
-        if (!_repository.Data.TryGetValue(id, out var ev))
-            throw new ArgumentException($"Не найдено событие с id = {id}");
-        
-        return ev!;
+        return _repository.GetByID(id);
     }
 }

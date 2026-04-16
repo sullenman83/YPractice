@@ -5,20 +5,36 @@
 /// </summary>
 public class Booking
 {
+    private Guid _id = Guid.NewGuid();
+    private BookingStatus _status;
+    private Guid _eventId;
+
+    /// <summary>
+    /// Конструктор
+    /// </summary>
+    /// <param name="status">Статус брони</param>
+    public Booking(BookingStatus status, Guid eventID)
+    {
+        _eventId = eventID;
+        _status = status; 
+    }
+
+    private Booking() { }
+
     /// <summary>
     /// Идентификатор брони
     /// </summary>
-    public required Guid Id { get; set; }
+    public Guid Id => _id;
 
     /// <summary>
     /// Идентификатор события, к которому привязана бронь
     /// </summary>
-    public required Guid EventId { get; set; }
+    public Guid EventId => _eventId;
 
     /// <summary>
     /// Текущий статус брони
     /// </summary>
-    public required BookingStatus Status  { get; set; }
+    public BookingStatus Status  => _status;
 
     /// <summary>
     /// Дата и время создания брони
@@ -40,10 +56,26 @@ public class Booking
         return new Booking()
         {
             CreatedAt = CreatedAt,
-            Id = Id,
-            Status = Status,
-            EventId = EventId,
+            _id = Id,
+            _status = Status,
+            _eventId = EventId,
             ProcessedAt = ProcessedAt
         };
+    }
+
+    /// <summary>
+    /// Подтвердить бронирование
+    /// </summary>
+    public void Confirm()
+    {
+        _status = BookingStatus.Confirmed;
+    }
+
+    /// <summary>
+    /// Отклонить бронирование
+    /// </summary>
+    public void Reject()
+    {
+        _status = BookingStatus.Rejected;
     }
 }

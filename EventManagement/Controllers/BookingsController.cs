@@ -25,6 +25,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     [ProducesResponseType<BookingResponseDTO>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBookingByIdAsync(Guid id, CancellationToken token)
     {
