@@ -12,13 +12,15 @@ public interface IBookingRepository
     /// Добавить новую бронь
     /// </summary>
     /// <param name="booking">Объект брони</param>
-    void Add(Booking booking);
+    /// <returns>Добавленный объект брони</returns>
+    Booking Add(Booking booking);
 
     /// <summary>
     /// Обновить бронь
     /// </summary>
     /// <param name="booking">Объект брони</param>
-    void Update(Booking booking);
+    /// <returns>Измененный объект брони</returns>
+    Booking Update(Booking booking);
 
     /// <summary>
     /// Получить бронь по id
@@ -30,6 +32,6 @@ public interface IBookingRepository
     /// <summary>
     /// Получить брони в обработке
     /// </summary>
-    /// <returns>Список броней</returns>
+    /// <returns>Список броней с о статусоь Pending</returns>
     IEnumerable<Booking> GetPending();
 }

@@ -1,6 +1,7 @@
 ﻿using EventManagement.Common.Exceptions;
 using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
+using EventManagement.Models.BookingModels.Extensions;
 
 namespace EventManagement.Services;
 
@@ -38,7 +39,7 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
             if (!ev.TryReserveSeats(seatsCount))
                 throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
                         
-            _bookingRepository.Add(booking);
+            booking = _bookingRepository.Add(booking);
             _eventRepository.Update(ev);
         }
         finally
@@ -46,7 +47,7 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
             _bookingLock.Release();
         }        
 
-        return createBookingResponseDTO(booking);
+        return booking.ToResponse();
     }
 
     /// <summary>
@@ -62,16 +63,6 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
 
         var booking = _bookingRepository.GetById(bookingId);            
 
-        return createBookingResponseDTO(booking);
-    }
-
-    private BookingResponseDTO createBookingResponseDTO(Booking booking)
-    {
-        return new BookingResponseDTO()
-        {
-            EventId = booking.EventId,
-            Id = booking.Id,
-            Status = booking.Status,
-        };
+        return booking.ToResponse();
     }
 }

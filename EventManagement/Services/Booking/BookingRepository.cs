@@ -15,23 +15,29 @@ public class BookingRepository : IBookingRepository
     /// Добавить новую бронь
     /// </summary>
     /// <param name="booking">Объект брони</param>
-    public void Add(Booking booking)
+    /// <returns>Добавленный объект брони</returns>
+    public Booking Add(Booking booking)
     {
         if (!_bookings.TryAdd(booking.Id, booking))
             throw new InvalidOperationException("Ошибка при добавлении брони.");
+
+        return booking.Clone();
     }
 
     /// <summary>
     /// Обновить бронь
     /// </summary>
     /// <param name="booking">Объект брони</param>
-    public void Update(Booking booking)
+    /// <returns>Измененный объект брони</returns>
+    public Booking Update(Booking booking)
     {
         if (!_bookings.TryGetValue(booking.Id, out var oldBooking))
             throw new ArgumentException("Ошибка при получении брони по id.");
 
         if (!_bookings.TryUpdate(booking.Id, booking, oldBooking))
             throw new InvalidOperationException("Ошибка при обновлении брони.");
+
+        return booking.Clone();
     }
 
     /// <summary>

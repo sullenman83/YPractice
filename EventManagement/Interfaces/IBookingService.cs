@@ -13,7 +13,7 @@ public interface IBookingService
     /// <param name="eventId">Id события</param>
     /// <param name="seatsCount">Количество мест для бронирования</param> 
     /// <param name="token">Токен отмены</param>
-    /// <returns>Задача с пустым результатом</returns>
+    /// <returns>Возвращает объект с описанием брони</returns>
     Task<BookingResponseDTO> CreateBookingAsync(Guid eventId, int seatsCount, CancellationToken token);
 
     /// <summary>

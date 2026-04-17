@@ -1,4 +1,6 @@
-﻿namespace EventManagement.Models.Events.Extensions;
+﻿using EventManagement.Models.Events;
+
+namespace EventManagement.Models.Events.Extensions;
 
 /// <summary>
 /// Расширения
