@@ -33,7 +33,7 @@ public static class EventExtension
     /// <param name="source">Данные для обновления</param>
     /// <returns>Обновленное событие</returns>
     /// <exception cref="ArgumentNullException"></exception>
-    public static Event Update(this Event ev, UpdateEventDTO source)
+    public static Event Update(this Event ev, EventUpdateDTO source)
     {
         ev.EndAt = source.EndAt ?? throw new ArgumentNullException("EndAt не может быть null");
         ev.StartAt = source.StartAt ?? throw new ArgumentNullException("StartAt не может быть null");

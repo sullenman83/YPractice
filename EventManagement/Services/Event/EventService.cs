@@ -22,7 +22,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// <returns>Обновленное событие</returns>
     /// <exception cref="InvalidOperationException">Ошибка при создании нового события.</exception>
     /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
-    public async Task<EventResponseDto> CreateEventAsync(CreateEventDTO @event, CancellationToken token)
+    public async Task<EventResponseDto> CreateEventAsync(EventCreationDTO @event, CancellationToken token)
     {        
         await _eventValidator.ValidateAsync(@event, token);
          
@@ -92,7 +92,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Обновленное событие</returns>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    public async Task<EventResponseDto> UpdateEventAsync(Guid id, UpdateEventDTO @event, CancellationToken token)
+    public async Task<EventResponseDto> UpdateEventAsync(Guid id, EventUpdateDTO @event, CancellationToken token)
     {        
         await _eventValidator.ValidateAsync(@event, token);
 

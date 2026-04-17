@@ -14,7 +14,7 @@ public static class CreateEventDTOExtension
     /// <param name="source">Данные для Event</param>
     /// <returns>Объект события</returns>
     /// <exception cref="ArgumentNullException"></exception>
-    public static Event ToEvent(this CreateEventDTO source)
+    public static Event ToEvent(this EventCreationDTO source)
     {
         return new Event(
             source.Title,

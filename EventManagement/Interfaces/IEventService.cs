@@ -31,7 +31,7 @@ public interface IEventService
     /// <param name="event">Данные события</param>
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Созданное событие</returns>
-    Task<EventResponseDto> CreateEventAsync(CreateEventDTO @event, CancellationToken token);
+    Task<EventResponseDto> CreateEventAsync(EventCreationDTO @event, CancellationToken token);
 
     /// <summary>
     /// Обновить событие
@@ -41,7 +41,7 @@ public interface IEventService
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Обновленное событие</returns>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    Task<EventResponseDto> UpdateEventAsync(Guid id,  UpdateEventDTO @event, CancellationToken token);
+    Task<EventResponseDto> UpdateEventAsync(Guid id,  EventUpdateDTO @event, CancellationToken token);
 
     /// <summary>
     /// Удалить событие

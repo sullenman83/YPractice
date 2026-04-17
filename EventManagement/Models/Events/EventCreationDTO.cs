@@ -3,9 +3,9 @@
 namespace EventManagement.Models.Events;
 
 /// <summary>
-/// Клас для обновления события
+/// DTO класс для передачи данных события в WEB API
 /// </summary>
-public class UpdateEventDTO
+public class EventCreationDTO
 {
     /// <summary>
     /// Название события
@@ -29,4 +29,11 @@ public class UpdateEventDTO
     /// </summary>
     [Required]
     public required DateTime? EndAt { get; set; }
+
+    /// <summary>
+    /// ОБщее количество мест
+    /// </summary>
+    [Required]
+    [Range(0, int.MaxValue, ErrorMessage = "Значени должно быть больше 0")]
+    public required int? TotalSeats { get; set; }    
 }

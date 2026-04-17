@@ -67,7 +67,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
     [HttpPost]
-    public async Task<IActionResult> CreateAsync([FromBody] CreateEventDTO @event, CancellationToken token)
+    public async Task<IActionResult> CreateAsync([FromBody] EventCreationDTO @event, CancellationToken token)
     {      
         var res = await _eventService.CreateEventAsync(@event, token);
 
@@ -87,7 +87,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateEventDTO @event, CancellationToken token)
+    public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] EventUpdateDTO @event, CancellationToken token)
     {
         var res = await _eventService.UpdateEventAsync(id, @event, token);
         

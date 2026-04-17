@@ -14,7 +14,7 @@ public interface IEventValidator
     /// <param name="event">Данные события</param>
     /// <param name="token">Токен отмены операции</param>
     /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
-    Task ValidateAsync(CreateEventDTO @event, CancellationToken token);
+    Task ValidateAsync(EventCreationDTO @event, CancellationToken token);
 
     /// <summary>
     /// Проверить событие
@@ -22,5 +22,5 @@ public interface IEventValidator
     /// <param name="event">Данные события</param>
     /// <param name="token">Токен отмены операции</param>
     /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
-    Task ValidateAsync(UpdateEventDTO @event, CancellationToken token);
+    Task ValidateAsync(EventUpdateDTO @event, CancellationToken token);
 }

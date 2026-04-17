@@ -51,11 +51,11 @@ public static class TestData
     /// Сгенерировать одиночное событие
     /// </summary>
     /// <returns>Событие</returns>
-    public static CreateEventDTO GetTestEvent()
+    public static EventCreationDTO GetTestEvent()
     {
         var startAt = DateTime.Parse("2026.03.22");
         var endAt = DateTime.Parse("2026.03.24");
-        return new CreateEventDTO()
+        return new EventCreationDTO()
         {
             Title = "Тестовое событие",
             Description = "Описание тестового события",

@@ -20,7 +20,7 @@ public class EventTest
     {
         _validator = new Mock<IEventValidator>();
         _repository = new Mock<IEventRepository>();
-        _validator.Setup(v => v.ValidateAsync(It.IsAny<CreateEventDTO>(), CancellationToken.None));       
+        _validator.Setup(v => v.ValidateAsync(It.IsAny<EventCreationDTO>(), CancellationToken.None));       
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class EventTest
         var result = await service.CreateEventAsync(newEvent, CancellationToken.None);
 
 	    // Assert
-        _validator.Verify(s => s.ValidateAsync(It.IsAny<CreateEventDTO>(), CancellationToken.None), Times.Once);
+        _validator.Verify(s => s.ValidateAsync(It.IsAny<EventCreationDTO>(), CancellationToken.None), Times.Once);
         result.Title.Should().BeEquivalentTo(expectedResponse.Title);
         result.Description.Should().BeEquivalentTo(expectedResponse.Description);
         result.EndAt.Should().BeSameDateAs(expectedResponse.EndAt);
@@ -60,7 +60,7 @@ public class EventTest
         // Arrange
         var data = TestData.GetTestData();
         var ev = data.First().Value;
-        var updateEvent = new UpdateEventDTO()
+        var updateEvent = new EventUpdateDTO()
         {
             Title = ev.Title + "test",
             Description = ev.Description + "TestDescription",
@@ -76,7 +76,7 @@ public class EventTest
         var result = await service.UpdateEventAsync(id, updateEvent, CancellationToken.None);
         
 	    // Assert
-        _validator.Verify(s => s.ValidateAsync(It.IsAny<CreateEventDTO>(), CancellationToken.None), Times.Once);
+        _validator.Verify(s => s.ValidateAsync(It.IsAny<EventCreationDTO>(), CancellationToken.None), Times.Once);
         result.Title.Should().BeEquivalentTo(expectedResponse.Title);
         result.Description.Should().BeEquivalentTo(expectedResponse.Description);
         result.EndAt.Should().BeSameDateAs(expectedResponse.EndAt);
@@ -159,7 +159,7 @@ public class EventTest
 	    // Arrange
         var id = new Guid("BBA0E5B9-B2D4-4B54-A9D0-7442969CBBF2");
         var testEvent = TestData.GetTestEvent();
-        var ev = new UpdateEventDTO()
+        var ev = new EventUpdateDTO()
         {
             Title = testEvent.Title,
             Description = testEvent.Description,
@@ -214,7 +214,7 @@ public class EventTest
         var message = "Ошибка сервиса валидации";
         
         var validator = new Mock<IEventValidator>();
-        validator.Setup(v => v.ValidateAsync(It.IsAny<CreateEventDTO>(), CancellationToken.None))
+        validator.Setup(v => v.ValidateAsync(It.IsAny<EventCreationDTO>(), CancellationToken.None))
             .Throws(new InvalidOperationException(message));        
         var service = new EventService(validator.Object, new EventRepository());
 
