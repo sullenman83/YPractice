@@ -19,13 +19,13 @@ public interface IEventRepository
     /// Добавить событие
     /// </summary>
     /// <param name="ev">Событие</param>
-    void Add(Event ev);
+    Event Add(Event ev);
 
     /// <summary>
     /// Обновить событие
     /// </summary>
     /// <param name="ev">Измененное событие</param>
-    void Update(Event ev);
+    Event Update(Event ev);
 
 
     /// <summary>
@@ -38,7 +38,7 @@ public interface IEventRepository
     /// Удалить событие по id
     /// </summary>
     /// <param name="id">id события</param>
-    void Delete(Guid id);
+    Event Delete(Guid id);
 
     /// <summary>
     /// Получить количество событий

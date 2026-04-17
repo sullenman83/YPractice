@@ -28,7 +28,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
          
         token.ThrowIfCancellationRequested();
         var ev = @event.ToEvent();
-        _repository.Add(ev);            
+        ev = _repository.Add(ev);            
                             
         return ev.ToResponse();
     }
@@ -98,7 +98,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
 
         token.ThrowIfCancellationRequested();
         var ev = _repository.GetByID(id);        
-        _repository.Update(ev.Update(@event));
+        ev = _repository.Update(ev.Update(@event));
 
         return ev.ToResponse();
     }
