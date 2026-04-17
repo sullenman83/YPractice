@@ -13,13 +13,10 @@ namespace EventServiceTest;
 
 public class BookingTest
 {
-    private readonly Mock<IBookingValidator> _validator;
     private readonly Mock<IBookingRepository> _repository;
 
     public BookingTest()
     {
-        _validator = new Mock<IBookingValidator>();        
-        _validator.Setup(v => v.ValidateAsync(It.IsAny<Guid>(), CancellationToken.None)).Returns(() => Task.FromResult(true));
         _repository = new Mock<IBookingRepository>();
     }
 
@@ -27,7 +24,7 @@ public class BookingTest
     public async Task  CreateBooking_ByEventId_ReturnBookingWithPendingStatus()
     {
         // Arrange        
-        var service = new BookingService(new BookingRepository(), _validator.Object);
+        var service = new BookingService(new BookingRepository());
         var eventID = Guid.NewGuid();
 
         // Act
@@ -42,7 +39,7 @@ public class BookingTest
     public async Task CreateSeveralBookings_ByEventID_ReturnsUniqueBookingId()
     {
         // Arrange        
-        var service = new BookingService(new BookingRepository(), _validator.Object);
+        var service = new BookingService(new BookingRepository());
         var eventID = Guid.NewGuid();
         var ids = new List<Guid>();
 
@@ -153,6 +150,6 @@ public class BookingTest
     private BookingService getBookingService(List<KeyValuePair<Guid, Booking>> data)
     {
         _repository.Setup(r => r.Bookings).Returns(() => new ConcurrentDictionary<Guid, Booking>(data));
-        return new BookingService(_repository.Object, _validator.Object);
+        return new BookingService(_repository.Object);
     }
 }

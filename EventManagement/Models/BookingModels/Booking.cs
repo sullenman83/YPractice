@@ -13,9 +13,10 @@ public class Booking
     /// Конструктор
     /// </summary>
     /// <param name="status">Статус брони</param>
-    public Booking(BookingStatus status, Guid eventID)
+    /// /// <param name="eventId">id  события</param>
+    public Booking(BookingStatus status, Guid eventId)
     {
-        _eventId = eventID;
+        _eventId = eventId;
         _status = status; 
     }
 

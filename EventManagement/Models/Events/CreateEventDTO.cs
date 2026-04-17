@@ -5,7 +5,7 @@ namespace EventManagement.Models.Events;
 /// <summary>
 /// DTO класс для передачи данных события в WEB API
 /// </summary>
-public class EventRequestDto
+public class CreateEventDTO
 {
     /// <summary>
     /// Название события

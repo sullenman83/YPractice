@@ -1,6 +1,7 @@
 ﻿using EventManagement.Extensions;
 using EventManagement.Interfaces;
 using EventManagement.Models.Events;
+using EventManagement.Models.Events.Extensions;
 using EventManagement.Models.FilterModels;
 
 namespace EventManagement.Services;
@@ -20,15 +21,16 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Обновленное событие</returns>
     /// <exception cref="InvalidOperationException">Ошибка при создании нового события.</exception>
-    public async Task<EventResponseDto> CreateEventAsync(EventRequestDto @event, CancellationToken token)
+    /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
+    public async Task<EventResponseDto> CreateEventAsync(CreateEventDTO @event, CancellationToken token)
     {        
         await _eventValidator.ValidateAsync(@event, token);
          
         token.ThrowIfCancellationRequested();
-        var ev = createEvent(@event);
+        var ev = @event.ToEvent();
         _repository.Add(ev);            
                             
-        return createEventResponseDto(ev);
+        return ev.ToResponse();
     }
 
     /// <summary>
@@ -56,7 +58,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
             .OrderBy(o => o.StartAt)
             .Filter(filter)
             .Paginate(filter)
-            .Select(o => createEventResponseDto(o))
+            .Select(o => o.ToResponse())
             .ToList();
 
         return new PaginatedResultDTO()
@@ -79,7 +81,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     {
         var ev = _repository.GetByID(id);
 
-        return  createEventResponseDto(ev);
+        return  ev.ToResponse();
     }
 
     /// <summary>
@@ -90,50 +92,14 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Обновленное событие</returns>
     /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
-    public async Task<EventResponseDto> UpdateEventAsync(Guid id, EventRequestDto @event, CancellationToken token)
+    public async Task<EventResponseDto> UpdateEventAsync(Guid id, UpdateEventDTO @event, CancellationToken token)
     {        
         await _eventValidator.ValidateAsync(@event, token);
 
         token.ThrowIfCancellationRequested();
-        var ev = getEventById(id);
-        updateEvent(@event, ev);
-        _repository.Update(ev);
+        var ev = _repository.GetByID(id);        
+        _repository.Update(ev.Update(@event));
 
-        return createEventResponseDto(ev);
-    }
-
-    private Event createEvent(EventRequestDto source)
-    {
-        return new Event(source.TotalSeats)
-        {
-            Title = source.Title,
-            Description = source.Description,
-            StartAt = source.StartAt,
-            EndAt = source.EndAt,
-        };
-    }
-
-    private EventResponseDto createEventResponseDto(Event source)
-    {
-        return new EventResponseDto(source.Id, source.TotalSeats, source.AvailableSeats)
-        {            
-            Title = source.Title,
-            Description = source.Description,
-            StartAt = source.StartAt,
-            EndAt = source.EndAt,
-        };
-    }
-
-    private void updateEvent(EventRequestDto source, Event dest)
-    {
-        dest.EndAt = source.EndAt;
-        dest.StartAt = source.StartAt;
-        dest.Title = source.Title;
-        dest.Description = source.Description;
-    }
-
-    private Event getEventById(Guid id)
-    {
-        return _repository.GetByID(id);
+        return ev.ToResponse();
     }
 }

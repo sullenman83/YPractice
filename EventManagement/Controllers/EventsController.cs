@@ -67,7 +67,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
     [HttpPost]
-    public async Task<IActionResult> CreateAsync([FromBody] EventRequestDto @event, CancellationToken token)
+    public async Task<IActionResult> CreateAsync([FromBody] CreateEventDTO @event, CancellationToken token)
     {      
         var res = await _eventService.CreateEventAsync(@event, token);
 
@@ -87,7 +87,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] EventRequestDto @event, CancellationToken token)
+    public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateEventDTO @event, CancellationToken token)
     {
         var res = await _eventService.UpdateEventAsync(id, @event, token);
         
@@ -115,6 +115,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
     /// Создать новое бронирование
     /// </summary>
     /// <param name="id">Id события</param>
+    /// <param name="seatsCount">Количество мест для бронирования</param> 
     /// <param name="token">Токен отмены операции</param>
     /// <response code="202">Возвращает HTTP статус-код 202 в случае успешного ответа</response>
     [Produces("application/json")]
@@ -122,9 +123,9 @@ public class EventsController(IEventService eventService, IBookingService bookin
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost("{id}/book")]
-    public async Task<IActionResult> CreateBooking(Guid id, CancellationToken token)
+    public async Task<IActionResult> CreateBooking(Guid id, int seatsCount, CancellationToken token)
     {
-        var result = await _bookingService.CreateBookingAsync(id, token);
+        var result = await _bookingService.CreateBookingAsync(id, seatsCount, token);
 
         var values = new RouteValueDictionary
         {

@@ -11,14 +11,32 @@ public class EventValidator : IEventValidator
     /// <summary>
     /// Проверить событие
     /// </summary>
-    /// <param name="event">Данные события</param>
+    /// <param name="ev">Данные события</param>
     /// <param name="token">Токен отмены операции</param>
     /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
-    public async Task ValidateAsync(EventRequestDto @event, CancellationToken token)
+    public async Task ValidateAsync(CreateEventDTO ev, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
 
-        if (@event.EndAt < @event.StartAt)
+        validateDate(ev.StartAt, ev.EndAt);
+    }
+
+    /// <summary>
+    /// Проверить событие
+    /// </summary>
+    /// <param name="ev">Данные события</param>
+    /// <param name="token">Токен отмены операции</param>
+    /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
+    public async Task ValidateAsync(UpdateEventDTO ev, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+
+        validateDate(ev.StartAt, ev.EndAt);
+    }
+
+    private void validateDate(DateTime? statrtAt, DateTime? endAt)
+    {
+        if (endAt < statrtAt)
             throw new EventValidationException("Событие содержит некорректные данные. Дата окончания меньше даты начала.");
     }
 }

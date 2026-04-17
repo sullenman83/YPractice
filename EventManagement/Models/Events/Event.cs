@@ -1,4 +1,6 @@
-﻿namespace EventManagement.Models.Events;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace EventManagement.Models.Events;
 
 /// <summary>
 /// Класс события
@@ -12,11 +14,24 @@ public class Event
     /// <summary>
     /// Конструктор
     /// </summary>
+    /// <param name="title">Название события </param>
+    /// <param name="description">Описание</param>
+    /// <param name="startAt">Дата начала</param>
+    /// <param name="endAt">Дата завершения</param>
     /// <param name="totalSeats">Общее количество мест для события</param>
-    public Event(int totalSeats)
+    [SetsRequiredMembers]
+    public Event(string title, 
+        string? description,
+        DateTime startAt,
+        DateTime endAt,
+        int totalSeats)
     {
         _totalSeats = totalSeats;
         _availableSeats = totalSeats;
+        Title = title;
+        Description = description;
+        StartAt = startAt;
+        EndAt = endAt;
     }
     private Event() { }
 
