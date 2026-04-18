@@ -14,6 +14,9 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
     private readonly IEventRepository _eventRepository = eventRepository;
     private readonly SemaphoreSlim _processingSemaphor = new (1, 1);
 
+    private const int ProcessingDelay = 2;
+    private const int PollingInterval = 5;
+
     /// <summary>
     /// Метод сервиса фоновой обработки броней
     /// </summary>
@@ -32,7 +35,7 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
 
                 await Task.WhenAll(tasks);
                 
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(PollingInterval), stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -49,7 +52,7 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
 
     private async Task ProcessBookingAsync(Booking booking, CancellationToken stoppingToken)
     {
-        await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
+        await Task.Delay(TimeSpan.FromSeconds(ProcessingDelay), stoppingToken);
 
         await _processingSemaphor.WaitAsync(stoppingToken);
 
@@ -66,15 +69,14 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
                 booking.Confirm();            
             _bookingRepository.Update(booking);
 
-            _logger.LogInformation($"Бронирование с id {booking.Id} обработано.");
+            _logger.LogInformation($"Бронирование с id {booking.Id} обработано в {DateTime.Now}.");
         }
         catch(Exception ex)
         {
             booking.Reject();
             if (ev != null)
-            {
-                //ToDO: хз пока как это освобождать. Надо где-то хранить число мест для бронирования. По идее это в Booking
-                ev.ReleaseSeats();
+            {                
+                ev.ReleaseSeats(booking.SeatsCount);
                 _eventRepository.Update(ev);
             }
             _bookingRepository.Update(booking);

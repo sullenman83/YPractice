@@ -315,5 +315,117 @@ public class BookingTest
         result1.ProcessedAt.Should().NotBeNull();
     }
 
+    [Fact]
+    public async Task ReleaseSeatsAfteReject_ReturnRightAvailableSeats()
+    {
+        // Arrange        
+        int cnt = 5;
+        var ev = TestData.GetTestEvent(10);
+        var booking = new Booking(BookingStatus.Confirmed, Guid.NewGuid(), cnt, DateTime.Now);
+        ev.TryReserveSeats(cnt);
+        var availableSeats = ev.AvailableSeats;
+        
+        // Act        
+        booking.Reject();
+        ev.ReleaseSeats(cnt);
+
+        // Assert
+        booking.Status.Should().Be(BookingStatus.Rejected);
+        availableSeats.Should().Be(ev.TotalSeats - cnt);
+        ev.AvailableSeats.Should().Be(ev.TotalSeats);
+    }
+
+    [Fact]
+    public async Task BookingSeatsAfterRelease()
+    {
+        // Arrange        
+        int cnt = 5;
+        var ev = TestData.GetTestEvent(10);
+        var booking = new Booking(BookingStatus.Confirmed, Guid.NewGuid(), cnt, DateTime.Now);
+        ev.TryReserveSeats(cnt);
+        var availableSeats = ev.AvailableSeats;
+
+        // Act        
+        booking.Reject();
+        ev.ReleaseSeats(cnt);
+        var availableSeats1 = ev.AvailableSeats;
+        ev.TryReserveSeats(cnt);        
+
+        // Assert
+        booking.Status.Should().Be(BookingStatus.Rejected);
+        availableSeats.Should().Be(ev.TotalSeats - cnt);        
+        availableSeats1.Should().Be(ev.TotalSeats);
+        ev.AvailableSeats.Should().Be(ev.TotalSeats - cnt);
+    }
+
+    [Fact]
+    public async Task OverbookingProtectionTest_ReturnRightSuccessBooking()
+    {
+        // Arrange
+        int totalSeats = 5;        
+        int requestCnt = 20;
+        var ev = TestData.GetTestEvent(totalSeats);
+        var tasks = new List<Task<BookingResponseDTO>>();
+        var bookingCnt = 1;
+
+        _eventRepository.Setup(o => o.GetByID(ev.Id)).Returns(ev);
+        _bookingRepository.Setup(o => o.Add(It.IsAny<Booking>())).Returns<Booking>(b => b);
+        var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
+        var noAvailableSeatsExceptionCount = 0;
+
+        for (int i = 0; i < requestCnt; ++i)
+        {
+            tasks.Add(Task.Run(async () => await service.CreateBookingAsync(ev.Id, bookingCnt, CancellationToken.None)));
+        }
+        var task = Task.WhenAll(tasks);
+
+        // Act
+        try
+        {
+            await task;
+        }
+        catch(Exception)
+        {
+            noAvailableSeatsExceptionCount = task.Exception?.InnerExceptions.OfType<NoAvailableSeatsException>().Count()
+                ?? throw new Exception("Что-то работает не так");
+        }
+
+        var success = tasks.Where(t => t.Status == TaskStatus.RanToCompletion).Count();
+        var failed = tasks.Where(t => t.Status == TaskStatus.Faulted).Count();
+
+        // Assert
+        success.Should().Be(totalSeats);
+        failed.Should().Be(requestCnt - totalSeats);
+        ev.AvailableSeats.Should().Be(0);
+        noAvailableSeatsExceptionCount.Should().Be(requestCnt - totalSeats);
+    }
+
+
+    [Fact]
+    public async Task ConcurentBooking_ReturnUniqueId()
+    {
+        // Arrange
+        int totalSeats = 10;
+        int requestCnt = 10;
+        var ev = TestData.GetTestEvent(totalSeats);
+        var tasks = new List<Task<BookingResponseDTO>>();
+        var bookingCnt = 1;
+
+        _eventRepository.Setup(o => o.GetByID(ev.Id)).Returns(ev);
+        _bookingRepository.Setup(o => o.Add(It.IsAny<Booking>())).Returns<Booking>(b => b);
+        var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
+        
+        for (int i = 0; i < requestCnt; ++i)
+        {
+            tasks.Add(Task.Run(async () => await service.CreateBookingAsync(ev.Id, bookingCnt, CancellationToken.None)));
+        }
+        var task = Task.WhenAll(tasks);
+
+        // Act        
+        var result = await task;        
+        
+        // Assert
+        result.Should().OnlyHaveUniqueItems(o => o.Id);
+    }
 
 }
