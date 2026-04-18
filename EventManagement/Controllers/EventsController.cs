@@ -49,6 +49,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetEventByIdAsync(Guid id, CancellationToken token)
     {
         var res = await _eventService.GetEventByIdAsync(id, token);
@@ -102,7 +103,8 @@ public class EventsController(IEventService eventService, IBookingService bookin
     /// <response code="200">Возвращает HTTP статус-код 200 в случае успешного ответа</response>    
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]    
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken token)
     {
@@ -120,7 +122,9 @@ public class EventsController(IEventService eventService, IBookingService bookin
     /// <response code="202">Возвращает HTTP статус-код 202 в случае успешного ответа</response>
     [Produces("application/json")]
     [ProducesResponseType<BookingResponseDTO>(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost("{id}/book")]
     public async Task<IActionResult> CreateBooking(Guid id, int seatsCount, CancellationToken token)

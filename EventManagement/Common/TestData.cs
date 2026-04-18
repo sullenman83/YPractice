@@ -13,7 +13,7 @@ public static class TestData
     /// Сгенерировать коллекцию событий
     /// </summary>
     /// <returns>Коллекция событий</returns>
-    public static List<Event> GetTestEvents()
+    public static List<Event> GetTestEvents(int seats = 10)
     {
         return new List<Event>()
         {
@@ -21,13 +21,13 @@ public static class TestData
                 "Описание 1",
                 DateTime.Parse("2026.03.22"),
                 DateTime.Parse("2026.03.22"),
-                10)
+                seats)
             ,
             new Event("Другое событие для теста 2",
                 "Описание 21",
                 DateTime.Parse("2026.03.24"),
                 DateTime.Parse("2026.03.27"),
-                10)           
+                seats)           
         };
     }
 
@@ -68,7 +68,7 @@ public static class TestData
     /// Создать тестовое событие
     /// </summary>
     /// <returns>Событие</returns>
-    public static Event GetTestEvent()
+    public static Event GetTestEvent(int seats = 10)
     {
         var startAt = DateTime.Parse("2026.03.22");
         var endAt = DateTime.Parse("2026.03.24");
@@ -77,7 +77,7 @@ public static class TestData
             "Описание тестового события",
             startAt,
             endAt,
-            10
+            seats
         );
     }
 

@@ -1,4 +1,5 @@
-﻿using EventManagement.Interfaces;
+﻿using EventManagement.Common.Exceptions;
+using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
 using System.Collections.Concurrent;
 
@@ -32,7 +33,7 @@ public class BookingRepository : IBookingRepository
     public Booking Update(Booking booking)
     {
         if (!_bookings.TryGetValue(booking.Id, out var oldBooking))
-            throw new ArgumentException("Ошибка при получении брони по id.");
+            throw new NotFoundException("Ошибка при получении брони по id.");
 
         if (!_bookings.TryUpdate(booking.Id, booking, oldBooking))
             throw new InvalidOperationException("Ошибка при обновлении брони.");
@@ -48,7 +49,7 @@ public class BookingRepository : IBookingRepository
     public Booking GetById(Guid id)
     { 
         if (!_bookings.TryGetValue(id, out var booking))
-            throw new ArgumentException("Ошибка при получении брони по id.");
+            throw new NotFoundException("Ошибка при получении брони по id.");
         
         return booking.Clone();
     }

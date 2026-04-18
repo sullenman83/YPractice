@@ -1,4 +1,5 @@
-﻿using EventManagement.Models.Events;
+﻿using EventManagement.Common.Exceptions;
+using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
 
 namespace EventManagement.Interfaces;
@@ -21,8 +22,7 @@ public interface IEventService
     /// </summary>
     /// <param name="id">Идентификатор события</param>
     /// <param name="token">Токен отмены операции</param>
-    /// <returns>Событие с искомым идентификатором</returns>
-    /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
+    /// <returns>Событие с искомым идентификатором</returns>    
     Task<EventResponseDto> GetEventByIdAsync(Guid id, CancellationToken token);
 
     /// <summary>
@@ -40,14 +40,12 @@ public interface IEventService
     /// <param name="event">Данные события</param>
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Обновленное событие</returns>
-    /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
     Task<EventResponseDto> UpdateEventAsync(Guid id,  EventUpdateDTO @event, CancellationToken token);
 
     /// <summary>
     /// Удалить событие
     /// </summary>
     /// <param name="id">Идентификатор удаляемого события</param>
-    /// <param name="token">Токен отмены операции</param>
-    /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
+    /// <param name="token">Токен отмены операции</param>    
     Task DeleteEventAsync(Guid id, CancellationToken token);
 }

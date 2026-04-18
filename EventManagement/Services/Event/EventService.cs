@@ -1,4 +1,5 @@
-﻿using EventManagement.Extensions;
+﻿using EventManagement.Common.Exceptions;
+using EventManagement.Extensions;
 using EventManagement.Interfaces;
 using EventManagement.Models.Events;
 using EventManagement.Models.Events.Extensions;
@@ -22,6 +23,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// <returns>Обновленное событие</returns>
     /// <exception cref="InvalidOperationException">Ошибка при создании нового события.</exception>
     /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
+    /// <exception cref="EventValidationException">Ошибка валидации</exception>    
     public async Task<EventResponseDto> CreateEventAsync(EventCreationDTO @event, CancellationToken token)
     {        
         await _eventValidator.ValidateAsync(@event, token);
@@ -38,7 +40,8 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// </summary>
     /// <param name="id">Идентификатор удаляемого события</param>
     /// <param name="token">Токен отмены операции</param>
-    /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
+    /// <exception cref="NotFoundException">Не найдено событие с заданным id</exception>
+    /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
     public async Task DeleteEventAsync(Guid id, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
@@ -76,7 +79,8 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// <param name="id">Идентификатор события</param>
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Событие с искомым идентификатором</returns>
-    /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
+    /// <exception cref="NotFoundException">Не найдено событие с заданным id</exception>
+    /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
     public async Task<EventResponseDto> GetEventByIdAsync(Guid id, CancellationToken token)
     {
         var ev = _repository.GetByID(id);
@@ -91,7 +95,9 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// <param name="event">Данные события</param>
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Обновленное событие</returns>
-    /// <exception cref="ArgumentException">Не найдено событие с заданным id</exception>
+    /// <exception cref="NotFoundException">Не найдено событие с заданным id</exception>
+    /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
+    /// <exception cref="EventValidationException">Ошибка валидации</exception>    
     public async Task<EventResponseDto> UpdateEventAsync(Guid id, EventUpdateDTO @event, CancellationToken token)
     {        
         await _eventValidator.ValidateAsync(@event, token);

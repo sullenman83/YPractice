@@ -1,4 +1,5 @@
 ﻿using EventManagement.Common;
+using EventManagement.Common.Exceptions;
 using EventManagement.Interfaces;
 using EventManagement.Models.Events;
 using System.Collections.Concurrent;
@@ -26,7 +27,7 @@ public class EventRepository : IEventRepository
     public Event GetByID(Guid id)
     {
         if (!_repository.TryGetValue(id, out var ev))
-            throw new ArgumentException("Ошибка при получении события по id");
+            throw new NotFoundException("Ошибка при получении события по id");
 
         return ev.Clone();
     }
@@ -51,7 +52,7 @@ public class EventRepository : IEventRepository
     public Event Update(Event ev)
     {
         if (!_repository.TryGetValue(ev.Id, out var oldEvent))
-            throw new ArgumentException("Ошибка при получении события по id");
+            throw new NotFoundException("Ошибка при получении события по id");
 
         if (!_repository.TryUpdate(ev.Id, ev, oldEvent))
             throw new InvalidOperationException("Ошибка при обновлении события");
@@ -75,7 +76,7 @@ public class EventRepository : IEventRepository
     public Event Delete(Guid id)
     {
         if (!_repository.TryRemove(id, out var ev))
-            throw new ArgumentException("Ошибка при удалениисобытия");
+            throw new NotFoundException("Ошибка при удалениисобытия");
 
         return ev;
     }

@@ -23,6 +23,8 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
     /// <returns>Возвращает объект с описанием брони</returns>
     /// <exception cref="InvalidOperationException">Ошибка при создании нового бронирования.</exception>
     /// <exception cref="NoAvailableSeatsException">Недостаточно мест для броинрования</exception>
+    /// <exception cref="NotFoundException">Не найден объект</exception>
+    /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
     public async Task<BookingResponseDTO> CreateBookingAsync(Guid eventId, int seatsCount, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
@@ -53,7 +55,8 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
     /// <param name="bookingId">Иденификатор брони</param>
     /// <param name="token">Токен отмены</param>    
     /// <returns>Возвращает объект с описанием брони</returns>
-    /// <exception cref="ArgumentException">Не найдено бронирование с заданным id</exception>
+    /// <exception cref="NotFoundException">Не найден объект</exception>
+    /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
     public async Task<BookingResponseDTO> GetBookingByIdAsync(Guid bookingId, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();

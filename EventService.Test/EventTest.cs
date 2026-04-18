@@ -143,7 +143,7 @@ public class EventTest
     }
 
     [Fact]
-    public void GetEvent_ByInvalidId_ThrowsArgumentException()
+    public async Task GetEvent_ByInvalidId_ThrowsArgumentException()
     {
         // Arrange
         var id = new Guid("BBA0E5B9-B2D4-4B54-A9D0-7442969CBBF2");
@@ -155,12 +155,12 @@ public class EventTest
         Func<Task<EventResponseDto>> act = async () => await service.GetEventByIdAsync(id, CancellationToken.None);
 
         // Assert        
-        act.Should().ThrowAsync<ArgumentException>();
+        await act.Should().ThrowAsync<ArgumentException>();
         _repository.Verify(o => o.GetByID(id), Times.Once);
     }
 
     [Fact]
-    public void UpdateEvent_ByInvalidId_ThrowsArgumentException()
+    public async Task UpdateEvent_ByInvalidId_ThrowsArgumentException()
     {
         // Arrange
         var id = new Guid("BBA0E5B9-B2D4-4B54-A9D0-7442969CBBF2");
@@ -179,12 +179,12 @@ public class EventTest
         Func<Task<EventResponseDto>> act = async () => await service.UpdateEventAsync(id, ev, CancellationToken.None);
 
         // Assert
-        act.Should().ThrowAsync<ArgumentException>();
+        await act.Should().ThrowAsync<ArgumentException>();
         _repository.Verify(o => o.GetByID(id), Times.Once);
     }
 
     [Fact]
-    public void DeleteEvent_ByInvalidId_ThrowsArgumentException()
+    public async Task  DeleteEvent_ByInvalidId_ThrowsArgumentException()
     {
 
         // Arrange
@@ -197,12 +197,12 @@ public class EventTest
         Func<Task> act = async () => await service.DeleteEventAsync(id, CancellationToken.None);
 
         // Assert        
-        act.Should().ThrowAsync<ArgumentException>();
+        await act.Should().ThrowAsync<ArgumentException>();
         _repository.Verify(o => o.Delete(id), Times.Once);
     }
 
     [Fact]
-    public void Updatevents_InvalidDate_ThrowsArgumentException()
+    public async Task Updatevents_InvalidDate_ThrowsArgumentException()
     {
         // Arrange
         var testEvent = TestData.GetTestEvent();
@@ -221,11 +221,11 @@ public class EventTest
         Func<Task<EventResponseDto>> act = async () => await service.UpdateEventAsync(id, ev, CancellationToken.None);
 
         // Assert
-        act.Should().ThrowAsync<EventValidationException>();
+        await act.Should().ThrowAsync<EventValidationException>();
     }
 
     [Fact]
-    public void CreateEvent_EventValidatorThrowsException()
+    public async Task  CreateEvent_EventValidatorThrowsException()
     {
         // Arrange
         var newEvent = TestData.GetTestEventCreationDTO();
@@ -239,14 +239,8 @@ public class EventTest
         Func<Task<EventResponseDto>> act = async () => await service.CreateEventAsync(newEvent, CancellationToken.None);
 
         // Assert
-        act.Should().ThrowAsync<InvalidOperationException>();
+        await act.Should().ThrowAsync<InvalidOperationException>();
         _validator.Verify(o => o.ValidateAsync(newEvent, CancellationToken.None), Times.Once);
-    }
-
-    //private EventService getService(List<KeyValuePair<Guid, Event>> data)
-    //{
-    //    _repository.Setup(v => v.Data).Returns(() => new ConcurrentDictionary<Guid, Event>(data));
-    //    return new EventService(_validator.Object, _repository.Object);
-    //}
+    }    
 }
 
