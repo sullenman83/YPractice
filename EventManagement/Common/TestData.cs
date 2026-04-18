@@ -51,18 +51,34 @@ public static class TestData
     /// Сгенерировать одиночное событие
     /// </summary>
     /// <returns>Событие</returns>
-    public static EventCreationDTO GetTestEvent()
+    public static EventCreationDTO GetTestEventCreationDTO()
+    {
+        var ev = GetTestEvent();
+        return new EventCreationDTO()
+        {
+            Title = ev.Title,
+            Description = ev.Description,
+            StartAt = ev.StartAt,
+            EndAt = ev.EndAt,
+            TotalSeats = ev.TotalSeats,            
+        };
+    }
+
+    /// <summary>
+    /// Создать тестовое событие
+    /// </summary>
+    /// <returns>Событие</returns>
+    public static Event GetTestEvent()
     {
         var startAt = DateTime.Parse("2026.03.22");
         var endAt = DateTime.Parse("2026.03.24");
-        return new EventCreationDTO()
-        {
-            Title = "Тестовое событие",
-            Description = "Описание тестового события",
-            StartAt = startAt,
-            EndAt = endAt,
-            TotalSeats = 10            
-        };
+        return new Event(        
+            "Тестовое событие",
+            "Описание тестового события",
+            startAt,
+            endAt,
+            10
+        );
     }
 
 
