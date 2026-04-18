@@ -1,4 +1,6 @@
-﻿namespace EventManagement.Models.BookingModels;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace EventManagement.Models.BookingModels;
 
 /// <summary>
 /// Класс бронирования
@@ -12,12 +14,15 @@ public class Booking
     /// <summary>
     /// Конструктор
     /// </summary>
-    /// <param name="status">Статус брони</param>
-    /// /// <param name="eventId">id  события</param>
-    public Booking(BookingStatus status, Guid eventId)
+    /// <param name="status">Статус брони</param>    
+    /// <param name="eventId">id  события</param>
+    /// <param name="createdAt">Дата создания брони</param>
+    [SetsRequiredMembers]
+    public Booking(BookingStatus status, Guid eventId, DateTime createdAt)
     {
         _eventId = eventId;
         _status = status; 
+        CreatedAt = createdAt;
     }
 
     private Booking() { }

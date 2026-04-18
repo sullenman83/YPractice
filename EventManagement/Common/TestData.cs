@@ -92,20 +92,18 @@ public static class TestData
 
         return new List<Booking>()
         {
-            new Booking(BookingStatus.Pending, events[0].Id)
-            {
-                CreatedAt = DateTime.Parse("2026.03.24 22:00:00"),
+            new Booking(BookingStatus.Pending, events[0].Id, DateTime.Parse("2026.03.24 22:00:00"))
+            {                
                 ProcessedAt = DateTime.Parse("2026.03.24 22:00:02"),              
             },
 
-            new Booking(BookingStatus.Rejected, events[1].Id)
+            new Booking(BookingStatus.Rejected, events[1].Id, DateTime.Parse("2026.03.25 22:00:00"))
             {
-                CreatedAt = DateTime.Parse("2026.03.25 22:00:00"),
                 ProcessedAt = DateTime.Parse("2026.03.25 22:00:02"),
             }
         };
     }
-
+        
     /// <summary>
     /// Тестовые данные для бронирования событий
     /// </summary>

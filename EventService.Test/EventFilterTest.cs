@@ -1,5 +1,6 @@
 ﻿using EventManagement.Common;
 using EventManagement.Interfaces;
+using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
 using EventManagement.Services;
 using FluentAssertions;
@@ -16,25 +17,28 @@ namespace EventServiceTest;
 public class EventFilterTest
 {
     private readonly IEventValidator _validator;
-    private readonly IEventRepository _repository;
+    private readonly Mock<IEventRepository> _repository;
     private readonly IEventService _service;
+
+    private static readonly List<Event> _events = TestData.GetTestEvents();
  
     public EventFilterTest()
     {
         _validator = new EventValidator();
-        _repository = new EventRepository();
-        _service = new EventService(_validator, _repository);
+        _repository = new Mock<IEventRepository>();        
+        _repository.Setup(r => r.GetAll()).Returns(_events);        
+        _service = new EventService(_validator, _repository.Object);
     }
 
     [Fact]
     public async Task Test_EmptyFilter_ReturnAllEvents()
     {
 	    // Act
-        var count = TestData.GetTestEvents().Count();
         var result = await _service.GetEventsAsync(new EventFilterRequestDTO(), CancellationToken.None);
 
-	    // Assert        
-        result.Events.Count.Should().Be(count);
+        // Assert        
+        result.Events.Should().BeEquivalentTo(_events);
+        _repository.Verify(o => o.GetAll(), Times.Once);
     }
 
     /// <summary>
@@ -86,11 +90,13 @@ public class EventFilterTest
     {
         var titles = new string[]{ "Другое", "событие для", "теста 2"};
         var filters = new object[titles.Length][];
+        var id = _events.Last().Id;
+
 
         for(int i = 0; i < titles.Length; ++i)
         {
             var f = new EventFilterRequestDTO() { Title = titles[i] };
-            filters[i] = new object[3] { f, 1, new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2") };
+            filters[i] = new object[3] { f, 1, id };
         }
 
         return filters;
@@ -98,21 +104,23 @@ public class EventFilterTest
 
     public static IEnumerable<object[]> GetEventFilterByDates()
     {
+        var id1 = _events.First().Id;
+        var id2 = _events.Last().Id;
         var dates = new[]
         {
             new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,23), new DateTime(2023,03,21), 0, new Guid []{ }),
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,22), null, 2, new Guid []{new Guid("65F6C3BD-5ADD-4FB0-96C4-2AE9F99F0347"), new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2") }),            
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,24), null, 1, new Guid[]{new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2") }),
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,22), null, 2, new Guid []{id1, id2 }),            
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,24), null, 1, new Guid[]{id2}),
             new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,25), null, 0 ,new Guid []{}),
                                    
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(null, new DateTime(2026,03,27), 2, new Guid []{ new Guid("65F6C3BD-5ADD-4FB0-96C4-2AE9F99F0347"), new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2")}),            
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(null, new DateTime(2026,03,22), 1, new Guid []{new Guid("65F6C3BD-5ADD-4FB0-96C4-2AE9F99F0347")}),
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(null, new DateTime(2026,03,27), 2, new Guid []{ id1, id2}),
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(null, new DateTime(2026,03,22), 1, new Guid []{id1}),
             new Tuple<DateTime?, DateTime?, int, Guid[]>(null, new DateTime(2026,03,21), 0, new Guid []{}),
 
             
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,22), new DateTime(2026,03,27), 2, new Guid[]{ new Guid("65F6C3BD-5ADD-4FB0-96C4-2AE9F99F0347"), new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2")}),
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,23), new DateTime(2026,03,27), 1, new Guid []{new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2")}),            
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,22), new DateTime(2026,03,26), 1, new Guid []{ new Guid("65F6C3BD-5ADD-4FB0-96C4-2AE9F99F0347")}),
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,22), new DateTime(2026,03,27), 2, new Guid[]{ id1, id2}),
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,23), new DateTime(2026,03,27), 1, new Guid []{id2}),            
+            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,22), new DateTime(2026,03,26), 1, new Guid []{ id1}),
         };
         var filters = new object[dates.Length][];
 
