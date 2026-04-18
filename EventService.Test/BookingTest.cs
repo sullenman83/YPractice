@@ -116,23 +116,23 @@ public class BookingTest
     }
 
     [Fact]
-    public async Task GetBooking_ByInvalidEventId_SholdThrowsArgumentException()
+    public async Task GetBooking_ByInvalidEventId_SholdThrowsNotFoundException()
     {
         // Arrange        
         var eventId = Guid.NewGuid();
-        _eventRepository.Setup(o => o.GetByID(It.IsAny<Guid>())).Throws<ArgumentException>();
+        _eventRepository.Setup(o => o.GetByID(It.IsAny<Guid>())).Throws<NotFoundException>();
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);        
 
         // Act
         Func<Task> act = async () => await service.CreateBookingAsync(eventId, 2, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<ArgumentException>();
+        await act.Should().ThrowAsync<NotFoundException>();
         _eventRepository.Verify(o => o.GetByID(eventId), Times.Once);
     }
 
     [Fact]
-    public async Task GetBooking_ByDeletedEventId_SholdThrowsArgumentException()
+    public async Task GetBooking_ByDeletedEventId_SholdThrowsNotFoundException()
     {
 
         // Arrange
@@ -144,29 +144,29 @@ public class BookingTest
 
         // Act
         var result =  await service.CreateBookingAsync(eventId, 2, CancellationToken.None);
-        _eventRepository.Setup(o => o.GetByID(It.IsAny<Guid>())).Throws<ArgumentException>();
+        _eventRepository.Setup(o => o.GetByID(It.IsAny<Guid>())).Throws<NotFoundException>();
         Func<Task> act = async () => await service.CreateBookingAsync(eventId, 2, CancellationToken.None);
 
         // Assert
         result.EventId.Should().Be(eventId);
-        await act.Should().ThrowAsync<ArgumentException>();
+        await act.Should().ThrowAsync<NotFoundException>();
         _eventRepository.Verify(o => o.GetByID(eventId), Times.Exactly(2));
     }
 
 
     [Fact]
-    public async Task GetBooking_ByInvalidBookingId_ShouldThrowsArgumentException()
+    public async Task GetBooking_ByInvalidBookingId_ShouldThrowsNotFoundException()
     {
         // Arrange        
         var bookingId = Guid.NewGuid();
-        _bookingRepository.Setup(o => o.GetById(It.IsAny<Guid>())).Throws<ArgumentException>();
+        _bookingRepository.Setup(o => o.GetById(It.IsAny<Guid>())).Throws<NotFoundException>();
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
 
         // Act
         Func<Task> act = async () => await service.GetBookingByIdAsync(bookingId, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<ArgumentException>();
+        await act.Should().ThrowAsync<NotFoundException>();
     }
     
     

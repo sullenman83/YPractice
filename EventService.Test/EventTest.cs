@@ -55,8 +55,6 @@ public class EventTest
         // Arrange
         var ev = TestData.GetTestEvent();
 
-        //var data = TestData.GetTestData();
-        //var ev = data.First().Value;
         var eventUpdateDTO = new EventUpdateDTO()
         {
             Title = ev.Title + "test",
@@ -143,24 +141,24 @@ public class EventTest
     }
 
     [Fact]
-    public async Task GetEvent_ByInvalidId_ThrowsArgumentException()
+    public async Task GetEvent_ByInvalidId_ThrowsNotFoundException()
     {
         // Arrange
         var id = new Guid("BBA0E5B9-B2D4-4B54-A9D0-7442969CBBF2");
 
-        _repository.Setup(o => o.GetByID(It.IsAny<Guid>())).Throws<ArgumentException>();
+        _repository.Setup(o => o.GetByID(It.IsAny<Guid>())).Throws<NotFoundException>();
         var service = new EventService(_validator.Object, _repository.Object);
 
         // Act
         Func<Task<EventResponseDto>> act = async () => await service.GetEventByIdAsync(id, CancellationToken.None);
 
         // Assert        
-        await act.Should().ThrowAsync<ArgumentException>();
+        await act.Should().ThrowAsync<NotFoundException>();
         _repository.Verify(o => o.GetByID(id), Times.Once);
     }
 
     [Fact]
-    public async Task UpdateEvent_ByInvalidId_ThrowsArgumentException()
+    public async Task UpdateEvent_ByInvalidId_ThrowsNotFoundException()
     {
         // Arrange
         var id = new Guid("BBA0E5B9-B2D4-4B54-A9D0-7442969CBBF2");
@@ -172,37 +170,37 @@ public class EventTest
             EndAt = testEvent.EndAt,
             StartAt = testEvent.StartAt,
         };
-        _repository.Setup(o => o.GetByID(It.IsAny<Guid>())).Throws<ArgumentException>();
+        _repository.Setup(o => o.GetByID(It.IsAny<Guid>())).Throws<NotFoundException>();
         var service = new EventService(_validator.Object, _repository.Object);
 
         // Act
         Func<Task<EventResponseDto>> act = async () => await service.UpdateEventAsync(id, ev, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<ArgumentException>();
+        await act.Should().ThrowAsync<NotFoundException>();
         _repository.Verify(o => o.GetByID(id), Times.Once);
     }
 
     [Fact]
-    public async Task  DeleteEvent_ByInvalidId_ThrowsArgumentException()
+    public async Task DeleteEvent_ByInvalidId_ThrowsNotFoundException()
     {
 
         // Arrange
         var id = new Guid("BBA0E5B9-B2D4-4B54-A9D0-7442969CBBF2");
 
-        _repository.Setup(o => o.Delete(It.IsAny<Guid>())).Throws<ArgumentException>();
+        _repository.Setup(o => o.Delete(It.IsAny<Guid>())).Throws<NotFoundException>();
         var service = new EventService(_validator.Object, _repository.Object);
 
         // Act
         Func<Task> act = async () => await service.DeleteEventAsync(id, CancellationToken.None);
 
         // Assert        
-        await act.Should().ThrowAsync<ArgumentException>();
+        await act.Should().ThrowAsync<NotFoundException>();
         _repository.Verify(o => o.Delete(id), Times.Once);
     }
 
     [Fact]
-    public async Task Updatevents_InvalidDate_ThrowsArgumentException()
+    public async Task Updatevents_InvalidDate_ThrowsEventValidationException()
     {
         // Arrange
         var testEvent = TestData.GetTestEvent();
@@ -232,14 +230,14 @@ public class EventTest
         var message = "Ошибка сервиса валидации";
                 
         _validator.Setup(v => v.ValidateAsync(It.IsAny<EventCreationDTO>(), CancellationToken.None))
-            .Throws(new InvalidOperationException(message));
+            .Throws(new EventValidationException(message));
         var service = new EventService(_validator.Object, new EventRepository());
 
         // Act
         Func<Task<EventResponseDto>> act = async () => await service.CreateEventAsync(newEvent, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>();
+        await act.Should().ThrowAsync<EventValidationException>();
         _validator.Verify(o => o.ValidateAsync(newEvent, CancellationToken.None), Times.Once);
     }    
 }
