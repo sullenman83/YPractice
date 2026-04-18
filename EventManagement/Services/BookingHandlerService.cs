@@ -63,8 +63,7 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
                 _logger.LogWarning($"Бронирование отклонено. Не найдено событие {booking.EventId} для брони {booking.Id}");
             }
             else
-                booking.Confirm();
-            booking.ProcessedAt = DateTime.Now;
+                booking.Confirm();            
             _bookingRepository.Update(booking);
 
             _logger.LogInformation($"Бронирование с id {booking.Id} обработано.");

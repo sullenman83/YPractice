@@ -16,7 +16,18 @@ public class BookingResponseDTO
     public required Guid EventId { get; set; }
 
     /// <summary>
+    /// Кр=оличество мест в брони
+    /// </summary>
+    public int SeatsCount { get; set; }
+
+    /// <summary>
     /// Текущий статус брони
     /// </summary>
     public required BookingStatus Status { get; set; }
+
+
+    /// <summary>
+    /// Дата и время обработки брони
+    /// </summary>
+    public DateTime? ProcessedAt { get; set; }
 }

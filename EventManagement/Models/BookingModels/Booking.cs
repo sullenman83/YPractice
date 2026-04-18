@@ -10,19 +10,22 @@ public class Booking
     private Guid _id = Guid.NewGuid();
     private BookingStatus _status;
     private Guid _eventId;
+    private int _seatsCount;
 
     /// <summary>
     /// Конструктор
     /// </summary>
     /// <param name="status">Статус брони</param>    
     /// <param name="eventId">id  события</param>
+    /// <param name="seatsCount">количество мест в брони</param>
     /// <param name="createdAt">Дата создания брони</param>
     [SetsRequiredMembers]
-    public Booking(BookingStatus status, Guid eventId, DateTime createdAt)
+    public Booking(BookingStatus status, Guid eventId, int seatsCount, DateTime createdAt)
     {
         _eventId = eventId;
         _status = status; 
         CreatedAt = createdAt;
+        _seatsCount = seatsCount;
     }
 
     private Booking() { }
@@ -41,6 +44,11 @@ public class Booking
     /// Текущий статус брони
     /// </summary>
     public BookingStatus Status  => _status;
+
+    /// <summary>
+    /// Кр=оличество мест в брони
+    /// </summary>
+    public int SeatsCount => _seatsCount;
 
     /// <summary>
     /// Дата и время создания брони
@@ -65,6 +73,7 @@ public class Booking
             _id = Id,
             _status = Status,
             _eventId = EventId,
+            _seatsCount = SeatsCount,
             ProcessedAt = ProcessedAt
         };
     }
@@ -75,6 +84,7 @@ public class Booking
     public void Confirm()
     {
         _status = BookingStatus.Confirmed;
+        ProcessedAt = DateTime.Now;
     }
 
     /// <summary>
@@ -83,5 +93,6 @@ public class Booking
     public void Reject()
     {
         _status = BookingStatus.Rejected;
+        ProcessedAt = DateTime.Now;
     }
 }

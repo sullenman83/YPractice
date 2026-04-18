@@ -29,21 +29,21 @@ public class BookingTest
         var ev = TestData.GetTestEvent();
         var id = ev.Id;
         var seats = 5;
-        
+
         _eventRepository.Setup(o => o.GetByID(id)).Returns(ev);
         _eventRepository.Setup(o => o.Update(ev));
         _bookingRepository.Setup(o => o.Add(It.IsAny<Booking>())).Returns<Booking>(b => b);
-        
+
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
 
-        
+
 
         // Act
         var result = await service.CreateBookingAsync(id, seats, CancellationToken.None);
 
         // Assert
         result.EventId.Should().Be(id);
-        result.Status.Should().Be(BookingStatus.Pending);        
+        result.Status.Should().Be(BookingStatus.Pending);
         ev.AvailableSeats.Should().Be(ev.TotalSeats - seats);
         _eventRepository.Verify(o => o.GetByID(id), Times.Once);
         _eventRepository.Verify(o => o.Update(ev), Times.Once);
@@ -63,7 +63,7 @@ public class BookingTest
         _bookingRepository.Setup(o => o.Add(It.IsAny<Booking>())).Returns<Booking>(b => b);
 
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
-        
+
         // Act
         for (int i = 0; i < 3; ++i)
         {
@@ -81,11 +81,11 @@ public class BookingTest
     {
         // Arrange
         var eventID = Guid.NewGuid();
-        var booking =  new Booking(BookingStatus.Pending, eventID, DateTime.Now);
+        var booking = new Booking(BookingStatus.Pending, eventID, 1, DateTime.Now);
         var id = booking.Id;
         _bookingRepository.Setup(o => o.GetById(id)).Returns(booking);
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
-        
+
         // Act
         var result = await service.GetBookingByIdAsync(booking.Id, CancellationToken.None);
 
@@ -100,7 +100,7 @@ public class BookingTest
     {
         // Arrange        
         var eventID = Guid.NewGuid();
-        var booking = new Booking(BookingStatus.Pending, eventID, DateTime.Now);
+        var booking = new Booking(BookingStatus.Pending, eventID, 1, DateTime.Now);
         var id = booking.Id;
         _bookingRepository.Setup(o => o.GetById(id)).Returns(booking);
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
@@ -121,7 +121,7 @@ public class BookingTest
         // Arrange        
         var eventId = Guid.NewGuid();
         _eventRepository.Setup(o => o.GetByID(It.IsAny<Guid>())).Throws<NotFoundException>();
-        var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);        
+        var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
 
         // Act
         Func<Task> act = async () => await service.CreateBookingAsync(eventId, 2, CancellationToken.None);
@@ -143,7 +143,7 @@ public class BookingTest
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
 
         // Act
-        var result =  await service.CreateBookingAsync(eventId, 2, CancellationToken.None);
+        var result = await service.CreateBookingAsync(eventId, 2, CancellationToken.None);
         _eventRepository.Setup(o => o.GetByID(It.IsAny<Guid>())).Throws<NotFoundException>();
         Func<Task> act = async () => await service.CreateBookingAsync(eventId, 2, CancellationToken.None);
 
@@ -168,8 +168,8 @@ public class BookingTest
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
     }
-    
-    
+
+
     [Fact]
     public async Task CreateBooking_OneSeat_ReturnReducedSeatsNumber()
     {
@@ -188,7 +188,7 @@ public class BookingTest
         var result = await service.CreateBookingAsync(id, seats, CancellationToken.None);
 
         // Assert
-        result.EventId.Should().Be(id);        
+        result.EventId.Should().Be(id);
         ev.AvailableSeats.Should().Be(0);
         _eventRepository.Verify(o => o.GetByID(id), Times.Once);
         _eventRepository.Verify(o => o.Update(ev), Times.Once);
@@ -252,4 +252,68 @@ public class BookingTest
         ids.Should().OnlyHaveUniqueItems();
         await act.Should().ThrowAsync<NoAvailableSeatsException>();
     }
+
+    [Fact]
+    public async Task CreateBooking_NoAvailableSeats_ThrowsNoAvailableSeatsException()
+    {
+        //Arrange
+        var ev = TestData.GetTestEvent(0);
+        var id = ev.Id;
+        _eventRepository.Setup(o => o.GetByID(id)).Returns(ev);
+        var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
+
+        //Act
+        Func<Task<BookingResponseDTO>> act = async () => await service.CreateBookingAsync(id, 1, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NoAvailableSeatsException>();
+    }
+
+    [Fact]
+    public async Task CreateBooking_SetConfirm_ReturnChangedBooking()
+    {
+        // Arrange                
+        var eventID = Guid.NewGuid();
+        var booking = new Booking(BookingStatus.Pending, eventID, 1, DateTime.Now);
+        var id = booking.Id;
+        _bookingRepository.Setup(o => o.GetById(id)).Returns(booking);
+
+        var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
+
+
+        // Act
+        var result = await service.GetBookingByIdAsync(id, CancellationToken.None);
+        booking.Confirm();
+        var result1 = await service.GetBookingByIdAsync(id, CancellationToken.None);
+
+        // Assert
+        result.Status.Should().Be(BookingStatus.Pending);
+        result1.Status.Should().Be(BookingStatus.Confirmed);
+        result1.ProcessedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateBooking_SetReject_ReturnChangedBooking()
+    {
+        // Arrange                
+        var eventID = Guid.NewGuid();
+        var booking = new Booking(BookingStatus.Pending, eventID, 1, DateTime.Now);
+        var id = booking.Id;
+        _bookingRepository.Setup(o => o.GetById(id)).Returns(booking);
+
+        var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
+
+
+        // Act
+        var result = await service.GetBookingByIdAsync(id, CancellationToken.None);
+        booking.Reject();
+        var result1 = await service.GetBookingByIdAsync(id, CancellationToken.None);
+
+        // Assert
+        result.Status.Should().Be(BookingStatus.Pending);
+        result1.Status.Should().Be(BookingStatus.Rejected);
+        result1.ProcessedAt.Should().NotBeNull();
+    }
+
+
 }
