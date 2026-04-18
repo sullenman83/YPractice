@@ -2,8 +2,6 @@
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
-using EventManagement.Services;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventManagement.Controllers;
@@ -27,14 +25,15 @@ public class EventsController(IEventService eventService, IBookingService bookin
     /// Метод получения списка событий
     /// </summary>
     /// <param name="filter">Фильтр событий</param>
+    /// <param name="token">Токен отмены операции</param>
     /// <response code="200">Возвращает HTTP статус-код 200 в случае успешного ответа</response>    
     [HttpGet]
     [Produces("application/json")]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
-    public IActionResult GetAllEvents([FromQuery] EventFilterRequestDTO filter)
+    public async Task<IActionResult> GetAllEventsAsync([FromQuery] EventFilterRequestDTO filter,CancellationToken token)
     {       
-        var res = _eventService.GetEvents(filter);
+        var res = await _eventService.GetEventsAsync(filter, token);
         
         return Ok(res);
     }
@@ -43,41 +42,45 @@ public class EventsController(IEventService eventService, IBookingService bookin
     /// Получить событие по заданному id
     /// </summary>
     /// <param name="id">Id искомого события</param>
+    /// <param name="token">Токен отмены операции</param>
     /// <response code="200">Возвращает HTTP статус-код 200 в случае успешного ответа</response>
     [HttpGet("{id}")]
     [Produces("application/json")]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
-    public IActionResult GetEventById(Guid id)
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetEventByIdAsync(Guid id, CancellationToken token)
     {
-        var res = _eventService.GetEventById(id);
+        var res = await _eventService.GetEventByIdAsync(id, token);
         
         return Ok(res);
     }
-        
+
     /// <summary>
     /// Создать новое событие
     /// </summary>
     /// <param name="event">Данные события</param>
+    /// <param name="token">Токен отмены операции</param>
     /// <response code="201">Возвращает HTTP статус-код 201 в случае успешного ответа</response>    
     [Produces("application/json")]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
     [HttpPost]
-    public IActionResult Create([FromBody] EventRequestDto @event)
+    public async Task<IActionResult> CreateAsync([FromBody] EventCreationDTO @event, CancellationToken token)
     {      
-        var res = _eventService.CreateEvent(@event);
+        var res = await _eventService.CreateEventAsync(@event, token);
 
-        return CreatedAtAction(nameof(GetEventById), new { id = res.Id}, res);
+        return CreatedAtAction(nameof(GetEventByIdAsync), new { id = res.Id}, res);
     }
 
     /// <summary>
     /// Изменить событие с заданным id
     /// </summary>
-    /// /// <param name="id">id события</param>    
+    /// <param name="id">id события</param>    
     /// <param name="event">Данные события</param>    
+    /// <param name="token">Токен отмены операции</param>
     /// <response code="204">Возвращает HTTP статус-код 204 в случае успешного ответа</response>    
     [Produces("application/json")]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
@@ -85,45 +88,48 @@ public class EventsController(IEventService eventService, IBookingService bookin
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     [HttpPut("{id}")]
-    public IActionResult Update(Guid id, [FromBody] EventRequestDto @event)
+    public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] EventUpdateDTO @event, CancellationToken token)
     {
-        var res = _eventService.UpdateEvent(id, @event);
+        var res = await _eventService.UpdateEventAsync(id, @event, token);
         
         return Ok(res);
     }
-
 
     /// <summary>
     /// Удалить событие с заданным id
     /// </summary>
     /// <param name="id">id события</param>
+    /// <param name="token">Токен отмены операции</param>
     /// <response code="200">Возвращает HTTP статус-код 200 в случае успешного ответа</response>    
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]    
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
-    public IActionResult Delete(Guid id)
+    public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken token)
     {
-        _eventService.DeleteEvent(id);        
+        await _eventService.DeleteEventAsync(id, token);        
         
         return Ok();
     }
-
 
     /// <summary>
     /// Создать новое бронирование
     /// </summary>
     /// <param name="id">Id события</param>
+    /// <param name="seatsCount">Количество мест для бронирования</param> 
     /// <param name="token">Токен отмены операции</param>
     /// <response code="202">Возвращает HTTP статус-код 202 в случае успешного ответа</response>
     [Produces("application/json")]
     [ProducesResponseType<BookingResponseDTO>(StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost("{id}/book")]
-    public async Task<IActionResult> CreateBooking(Guid id, CancellationToken token)
+    public async Task<IActionResult> CreateBooking(Guid id, int seatsCount, CancellationToken token)
     {
-        var result = await _bookingService.CreateBookingAsync(id, token);
+        var result = await _bookingService.CreateBookingAsync(id, seatsCount, token);
 
         var values = new RouteValueDictionary
         {

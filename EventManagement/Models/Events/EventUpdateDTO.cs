@@ -3,9 +3,9 @@
 namespace EventManagement.Models.Events;
 
 /// <summary>
-/// DTO класс для передачи данных события в WEB API
+/// Клас для обновления события
 /// </summary>
-public class EventRequestDto
+public class EventUpdateDTO
 {
     /// <summary>
     /// Название события
@@ -22,11 +22,11 @@ public class EventRequestDto
     /// Дата и время начала события
     /// </summary>
     [Required]
-    public required DateTime StartAt { get; set; }
+    public required DateTime? StartAt { get; set; }
 
     /// <summary>
     /// Дата и время окончания события
     /// </summary>
     [Required]
-    public required DateTime EndAt { get; set; }
+    public required DateTime? EndAt { get; set; }
 }

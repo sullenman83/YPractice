@@ -2,20 +2,15 @@
 
 namespace EventManagement.Models.Events;
 
-
 /// <summary>
-/// DTO класс для передачи данных события из Web API
+/// DTO класс для передачи данных события в WEB API
 /// </summary>
-public class EventResponseDto
+public class EventCreationDTO
 {
     /// <summary>
-    /// Идентификатор события
-    /// </summary>    
-    public Guid Id { get; set; }
-
-    /// <summary>
     /// Название события
-    /// </summary>    
+    /// </summary>
+    [Required]
     public required string Title { get; set; }
 
     /// <summary>
@@ -25,21 +20,20 @@ public class EventResponseDto
 
     /// <summary>
     /// Дата и время начала события
-    /// </summary>    
-    public required DateTime StartAt { get; set; }
+    /// </summary>
+    [Required]
+    public required DateTime? StartAt { get; set; }
 
     /// <summary>
     /// Дата и время окончания события
     /// </summary>
-    public required DateTime EndAt { get; set; }
+    [Required]
+    public required DateTime? EndAt { get; set; }
 
     /// <summary>
     /// ОБщее количество мест
     /// </summary>
-    public required int TotalSeats { get; set; }
-
-    /// <summary>
-    /// Текущее количество свободных мест
-    /// </summary>
-    public required int AvailableSeats { get; set; }
+    [Required]
+    [Range(0, int.MaxValue, ErrorMessage = "Значени должно быть больше 0")]
+    public required int? TotalSeats { get; set; }    
 }

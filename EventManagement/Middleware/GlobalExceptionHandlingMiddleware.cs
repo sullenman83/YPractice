@@ -65,15 +65,18 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
     private int getStatusCode(Exception ex)
     {
         return ex switch
-        {            
+        {
+            ArgumentNullException ane => StatusCodes.Status400BadRequest,
+            NotFoundException nfe => StatusCodes.Status404NotFound,
             ArgumentException arg => StatusCodes.Status404NotFound,
             NullReferenceException nr => StatusCodes.Status400BadRequest,
             HttpRequestException hr => StatusCodes.Status400BadRequest,
             ValidationException ve => StatusCodes.Status400BadRequest,
-            EventValidationException eve => StatusCodes.Status400BadRequest,
-            BookingValidationException bve => StatusCodes.Status404NotFound,
+            EventValidationException eve => StatusCodes.Status400BadRequest,            
             IOException io => StatusCodes.Status500InternalServerError,            
             SecurityException se => StatusCodes.Status401Unauthorized,
+            NoAvailableSeatsException nae => StatusCodes.Status409Conflict,
+            InvalidOperationException ioe => StatusCodes.Status500InternalServerError,
 
             _ => StatusCodes.Status500InternalServerError
         };

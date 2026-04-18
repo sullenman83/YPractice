@@ -1,24 +1,54 @@
-﻿namespace EventManagement.Models.BookingModels;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace EventManagement.Models.BookingModels;
 
 /// <summary>
 /// Класс бронирования
 /// </summary>
 public class Booking
 {
+    private Guid _id = Guid.NewGuid();
+    private BookingStatus _status;
+    private Guid _eventId;
+    private int _seatsCount;
+
+    /// <summary>
+    /// Конструктор
+    /// </summary>
+    /// <param name="status">Статус брони</param>    
+    /// <param name="eventId">id  события</param>
+    /// <param name="seatsCount">количество мест в брони</param>
+    /// <param name="createdAt">Дата создания брони</param>
+    [SetsRequiredMembers]
+    public Booking(BookingStatus status, Guid eventId, int seatsCount, DateTime createdAt)
+    {
+        _eventId = eventId;
+        _status = status; 
+        CreatedAt = createdAt;
+        _seatsCount = seatsCount;
+    }
+
+    private Booking() { }
+
     /// <summary>
     /// Идентификатор брони
     /// </summary>
-    public required Guid Id { get; set; }
+    public Guid Id => _id;
 
     /// <summary>
     /// Идентификатор события, к которому привязана бронь
     /// </summary>
-    public required Guid EventId { get; set; }
+    public Guid EventId => _eventId;
 
     /// <summary>
     /// Текущий статус брони
     /// </summary>
-    public required BookingStatus Status  { get; set; }
+    public BookingStatus Status  => _status;
+
+    /// <summary>
+    /// Кр=оличество мест в брони
+    /// </summary>
+    public int SeatsCount => _seatsCount;
 
     /// <summary>
     /// Дата и время создания брони
@@ -40,10 +70,29 @@ public class Booking
         return new Booking()
         {
             CreatedAt = CreatedAt,
-            Id = Id,
-            Status = Status,
-            EventId = EventId,
+            _id = Id,
+            _status = Status,
+            _eventId = EventId,
+            _seatsCount = SeatsCount,
             ProcessedAt = ProcessedAt
         };
+    }
+
+    /// <summary>
+    /// Подтвердить бронирование
+    /// </summary>
+    public void Confirm()
+    {
+        _status = BookingStatus.Confirmed;
+        ProcessedAt = DateTime.Now;
+    }
+
+    /// <summary>
+    /// Отклонить бронирование
+    /// </summary>
+    public void Reject()
+    {
+        _status = BookingStatus.Rejected;
+        ProcessedAt = DateTime.Now;
     }
 }

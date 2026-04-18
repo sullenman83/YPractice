@@ -1,41 +1,52 @@
 ﻿using EventManagement.Common.Exceptions;
 using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
+using EventManagement.Models.BookingModels.Extensions;
 
 namespace EventManagement.Services;
 
 /// <summary>
 /// Сервис для работы с заявками бронирования событий
 /// </summary>
-public class BookingService(IBookingRepository repository, IBookingValidator bookingValidator) : IBookingService
+public class BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository) : IBookingService
 {
-    private readonly IBookingRepository _repository = repository;
-    private readonly IBookingValidator _bookingValidator = bookingValidator;
+    private readonly IBookingRepository _bookingRepository = bookingRepository;
+    private readonly IEventRepository _eventRepository = eventRepository;
+    private readonly SemaphoreSlim _bookingLock = new (1, 1);
 
     /// <summary>
     /// Создать заявку на бронирование события
     /// </summary>
     /// <param name="eventId">Id события </param>
+    /// <param name="seatsCount">Количество мест для бронирования</param> 
     /// <param name="token">Токен отмены</param>
     /// <returns>Возвращает объект с описанием брони</returns>
     /// <exception cref="InvalidOperationException">Ошибка при создании нового бронирования.</exception>
-    /// <exception cref="BookingValidationException">Ошибка при проверке броинрования.</exception>
-    public async Task<BookingResponseDTO> CreateBookingAsync(Guid eventId, CancellationToken token)
+    /// <exception cref="NoAvailableSeatsException">Недостаточно мест для броинрования</exception>
+    /// <exception cref="NotFoundException">Не найден объект</exception>
+    /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
+    public async Task<BookingResponseDTO> CreateBookingAsync(Guid eventId, int seatsCount, CancellationToken token)
     {
-        await _bookingValidator.ValidateAsync(eventId, token);
-
         token.ThrowIfCancellationRequested();
-        var booking = new Booking()
+
+        var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, DateTime.Now);
+
+        await _bookingLock.WaitAsync(token);        
+        try
         {
-            Id = Guid.NewGuid(),
-            EventId = eventId,
-            Status = BookingStatus.Pending,
-            CreatedAt = DateTime.Now
-        };
+            var ev = _eventRepository.GetByID(eventId);
+            if (!ev.TryReserveSeats(seatsCount))
+                throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
+                        
+            booking = _bookingRepository.Add(booking);
+            _eventRepository.Update(ev);
+        }
+        finally
+        {
+            _bookingLock.Release();
+        }        
 
-        _repository.Bookings.TryAdd(booking.Id, booking);
-
-        return createBookingResponseDTO(booking);
+        return booking.ToResponse();
     }
 
     /// <summary>
@@ -44,24 +55,14 @@ public class BookingService(IBookingRepository repository, IBookingValidator boo
     /// <param name="bookingId">Иденификатор брони</param>
     /// <param name="token">Токен отмены</param>    
     /// <returns>Возвращает объект с описанием брони</returns>
-    /// <exception cref="ArgumentException">Не найдено бронирование с заданным id</exception>
+    /// <exception cref="NotFoundException">Не найден объект</exception>
+    /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
     public async Task<BookingResponseDTO> GetBookingByIdAsync(Guid bookingId, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
 
-        if (!_repository.Bookings.TryGetValue(bookingId, out var booking))
-            throw new ArgumentException($"Не найдено бронирование с заданным id: {bookingId}");
+        var booking = _bookingRepository.GetById(bookingId);            
 
-        return createBookingResponseDTO(booking);
-    }
-
-    private BookingResponseDTO createBookingResponseDTO(Booking booking)
-    {
-        return new BookingResponseDTO()
-        {
-            EventId = booking.EventId,
-            Id = booking.Id,
-            Status = booking.Status,
-        };
+        return booking.ToResponse();
     }
 }
