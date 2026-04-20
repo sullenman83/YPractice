@@ -81,7 +81,7 @@ public class BookingTest
     {
         // Arrange
         var eventID = Guid.NewGuid();
-        var booking = new Booking(BookingStatus.Pending, eventID, 1, DateTime.Now);
+        var booking = new Booking(BookingStatus.Pending, eventID, 1, DateTimeOffset.UtcNow);
         var id = booking.Id;
         _bookingRepository.Setup(o => o.GetById(id)).Returns(booking);
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
@@ -100,7 +100,7 @@ public class BookingTest
     {
         // Arrange        
         var eventID = Guid.NewGuid();
-        var booking = new Booking(BookingStatus.Pending, eventID, 1, DateTime.Now);
+        var booking = new Booking(BookingStatus.Pending, eventID, 1, DateTimeOffset.UtcNow);
         var id = booking.Id;
         _bookingRepository.Setup(o => o.GetById(id)).Returns(booking);
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
@@ -274,7 +274,7 @@ public class BookingTest
     {
         // Arrange                
         var eventID = Guid.NewGuid();
-        var booking = new Booking(BookingStatus.Pending, eventID, 1, DateTime.Now);
+        var booking = new Booking(BookingStatus.Pending, eventID, 1, DateTimeOffset.UtcNow);
         var id = booking.Id;
         _bookingRepository.Setup(o => o.GetById(id)).Returns(booking);
 
@@ -297,7 +297,7 @@ public class BookingTest
     {
         // Arrange                
         var eventID = Guid.NewGuid();
-        var booking = new Booking(BookingStatus.Pending, eventID, 1, DateTime.Now);
+        var booking = new Booking(BookingStatus.Pending, eventID, 1, DateTimeOffset.UtcNow);
         var id = booking.Id;
         _bookingRepository.Setup(o => o.GetById(id)).Returns(booking);
 
@@ -321,7 +321,7 @@ public class BookingTest
         // Arrange        
         int cnt = 5;
         var ev = TestData.GetTestEvent(10);
-        var booking = new Booking(BookingStatus.Confirmed, Guid.NewGuid(), cnt, DateTime.Now);
+        var booking = new Booking(BookingStatus.Confirmed, Guid.NewGuid(), cnt, DateTimeOffset.UtcNow);
         ev.TryReserveSeats(cnt);
         var availableSeats = ev.AvailableSeats;
         
@@ -341,7 +341,7 @@ public class BookingTest
         // Arrange        
         int cnt = 5;
         var ev = TestData.GetTestEvent(10);
-        var booking = new Booking(BookingStatus.Confirmed, Guid.NewGuid(), cnt, DateTime.Now);
+        var booking = new Booking(BookingStatus.Confirmed, Guid.NewGuid(), cnt, DateTimeOffset.UtcNow);
         ev.TryReserveSeats(cnt);
         var availableSeats = ev.AvailableSeats;
 

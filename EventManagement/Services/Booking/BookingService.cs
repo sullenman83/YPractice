@@ -29,7 +29,7 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
     {
         token.ThrowIfCancellationRequested();
 
-        var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, DateTime.Now);
+        var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, DateTimeOffset.UtcNow);
 
         await _bookingLock.WaitAsync(token);        
         try

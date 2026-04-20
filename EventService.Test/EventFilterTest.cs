@@ -108,19 +108,19 @@ public class EventFilterTest
         var id2 = _events.Last().Id;
         var dates = new[]
         {
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,23), new DateTime(2023,03,21), 0, new Guid []{ }),
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,22), null, 2, new Guid []{id1, id2 }),            
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,24), null, 1, new Guid[]{id2}),
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,25), null, 0 ,new Guid []{}),
+            new Tuple<DateTimeOffset?, DateTimeOffset?, int, Guid[]>(new DateTimeOffset(2026,03,23, 1, 30, 30, TimeSpan.Zero), new DateTimeOffset(2023, 03, 21, 20, 30, 30, TimeSpan.Zero), 0, new Guid []{ }),
+            new Tuple<DateTimeOffset?, DateTimeOffset?, int, Guid[]>(new DateTimeOffset(2026,03,22, 1, 30, 30, TimeSpan.Zero), null, 2, new Guid []{id1, id2 }),            
+            new Tuple<DateTimeOffset?, DateTimeOffset?, int, Guid[]>(new DateTimeOffset(2026,03,24, 1, 30, 30, TimeSpan.Zero), null, 1, new Guid[]{id2}),
+            new Tuple<DateTimeOffset?, DateTimeOffset?, int, Guid[]>(new DateTimeOffset(2026,03,25, 1, 30, 30, TimeSpan.Zero), null, 0 ,new Guid []{}),
                                    
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(null, new DateTime(2026,03,27), 2, new Guid []{ id1, id2}),
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(null, new DateTime(2026,03,22), 1, new Guid []{id1}),
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(null, new DateTime(2026,03,21), 0, new Guid []{}),
+            new Tuple<DateTimeOffset?, DateTimeOffset?, int, Guid[]>(null, new DateTimeOffset(2026,03,27, 20, 30, 30, TimeSpan.Zero), 2, new Guid []{ id1, id2}),
+            new Tuple<DateTimeOffset?, DateTimeOffset?, int, Guid[]>(null, new DateTimeOffset(2026,03,22, 20, 30, 30, TimeSpan.Zero), 1, new Guid []{id1}),
+            new Tuple<DateTimeOffset?, DateTimeOffset?, int, Guid[]>(null, new DateTimeOffset(2026,03,21, 20, 30, 30, TimeSpan.Zero), 0, new Guid []{}),
 
             
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,22), new DateTime(2026,03,27), 2, new Guid[]{ id1, id2}),
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,23), new DateTime(2026,03,27), 1, new Guid []{id2}),            
-            new Tuple<DateTime?, DateTime?, int, Guid[]>(new DateTime(2026,03,22), new DateTime(2026,03,26), 1, new Guid []{ id1}),
+            new Tuple<DateTimeOffset?, DateTimeOffset?, int, Guid[]>(new DateTimeOffset(2026,03,22, 1, 30, 30, TimeSpan.Zero), new DateTimeOffset(2026,03,27, 20, 30, 30, TimeSpan.Zero), 2, new Guid[]{ id1, id2}),
+            new Tuple<DateTimeOffset?, DateTimeOffset?, int, Guid[]>(new DateTimeOffset(2026,03,23, 1, 30, 30, TimeSpan.Zero), new DateTimeOffset(2026,03,27, 20, 30, 30, TimeSpan.Zero), 1, new Guid []{id2}),            
+            new Tuple<DateTimeOffset?, DateTimeOffset?, int, Guid[]>(new DateTimeOffset(2026,03,22, 1, 30, 30, TimeSpan.Zero), new DateTimeOffset(2026,03,26, 20, 30, 30, TimeSpan.Zero), 1, new Guid []{ id1}),
         };
         var filters = new object[dates.Length][];
 

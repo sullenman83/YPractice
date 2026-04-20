@@ -2,7 +2,9 @@
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace EventManagement.Controllers;
 
@@ -90,9 +92,9 @@ public class EventsController(IEventService eventService, IBookingService bookin
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] EventUpdateDTO @event, CancellationToken token)
     {
-        var res = await _eventService.UpdateEventAsync(id, @event, token);
+        await _eventService.UpdateEventAsync(id, @event, token);
         
-        return Ok(res);
+        return NoContent();
     }
 
     /// <summary>
@@ -127,7 +129,9 @@ public class EventsController(IEventService eventService, IBookingService bookin
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost("{id}/book")]
-    public async Task<IActionResult> CreateBooking(Guid id, int seatsCount, CancellationToken token)
+    public async Task<IActionResult> CreateBooking(Guid id, 
+        [Required] [Range(1, int.MaxValue)]int seatsCount, 
+        CancellationToken token)
     {
         var result = await _bookingService.CreateBookingAsync(id, seatsCount, token);
 

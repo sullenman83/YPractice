@@ -18,7 +18,7 @@ public class EventValidator : IEventValidator
     {
         token.ThrowIfCancellationRequested();
 
-        validateDate(ev.StartAt, ev.EndAt);
+        ValidateDate(ev.StartAt, ev.EndAt);
     }
 
     /// <summary>
@@ -31,10 +31,10 @@ public class EventValidator : IEventValidator
     {
         token.ThrowIfCancellationRequested();
 
-        validateDate(ev.StartAt, ev.EndAt);
+        ValidateDate(ev.StartAt, ev.EndAt);
     }
 
-    private void validateDate(DateTime? statrtAt, DateTime? endAt)
+    private void ValidateDate(DateTimeOffset? statrtAt, DateTimeOffset? endAt)
     {
         if (endAt < statrtAt)
             throw new EventValidationException("Событие содержит некорректные данные. Дата окончания меньше даты начала.");

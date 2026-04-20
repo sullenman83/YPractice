@@ -26,12 +26,12 @@ public class EventResponseDto
     /// <summary>
     /// Дата и время начала события
     /// </summary>    
-    public required DateTime StartAt { get; set; }
+    public required DateTimeOffset StartAt { get; set; }
 
     /// <summary>
     /// Дата и время окончания события
     /// </summary>
-    public required DateTime EndAt { get; set; }
+    public required DateTimeOffset EndAt { get; set; }
 
     /// <summary>
     /// ОБщее количество мест

@@ -22,11 +22,11 @@ public class EventUpdateDTO
     /// Дата и время начала события
     /// </summary>
     [Required]
-    public required DateTime? StartAt { get; set; }
+    public required DateTimeOffset? StartAt { get; set; }
 
     /// <summary>
     /// Дата и время окончания события
     /// </summary>
     [Required]
-    public required DateTime? EndAt { get; set; }
+    public required DateTimeOffset? EndAt { get; set; }
 }

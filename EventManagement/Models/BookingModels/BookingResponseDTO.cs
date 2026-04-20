@@ -29,5 +29,5 @@ public class BookingResponseDTO
     /// <summary>
     /// Дата и время обработки брони
     /// </summary>
-    public DateTime? ProcessedAt { get; set; }
+    public DateTimeOffset? ProcessedAt { get; set; }
 }

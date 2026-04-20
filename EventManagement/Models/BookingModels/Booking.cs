@@ -7,11 +7,6 @@ namespace EventManagement.Models.BookingModels;
 /// </summary>
 public class Booking
 {
-    private Guid _id = Guid.NewGuid();
-    private BookingStatus _status;
-    private Guid _eventId;
-    private int _seatsCount;
-
     /// <summary>
     /// Конструктор
     /// </summary>
@@ -20,12 +15,13 @@ public class Booking
     /// <param name="seatsCount">количество мест в брони</param>
     /// <param name="createdAt">Дата создания брони</param>
     [SetsRequiredMembers]
-    public Booking(BookingStatus status, Guid eventId, int seatsCount, DateTime createdAt)
+    public Booking(BookingStatus status, Guid eventId, int seatsCount, DateTimeOffset createdAt)
     {
-        _eventId = eventId;
-        _status = status; 
+        Id = Guid.NewGuid();
+        EventId = eventId;
+        Status = status;
         CreatedAt = createdAt;
-        _seatsCount = seatsCount;
+        SeatsCount = seatsCount;
     }
 
     private Booking() { }
@@ -33,32 +29,32 @@ public class Booking
     /// <summary>
     /// Идентификатор брони
     /// </summary>
-    public Guid Id => _id;
+    public Guid Id { get; init; }
 
     /// <summary>
     /// Идентификатор события, к которому привязана бронь
     /// </summary>
-    public Guid EventId => _eventId;
+    public Guid EventId { get; init; }
 
     /// <summary>
     /// Текущий статус брони
     /// </summary>
-    public BookingStatus Status  => _status;
+    public BookingStatus Status { get; private set; }
 
     /// <summary>
     /// Кр=оличество мест в брони
     /// </summary>
-    public int SeatsCount => _seatsCount;
+    public int SeatsCount { get; init; }
 
     /// <summary>
     /// Дата и время создания брони
     /// </summary>
-    public required DateTime CreatedAt { get; set; }
+    public required DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// Дата и время обработки брони
     /// </summary>
-    public DateTime? ProcessedAt { get; set; }
+    public DateTimeOffset? ProcessedAt { get; set; }
 
 
     /// <summary>
@@ -70,10 +66,10 @@ public class Booking
         return new Booking()
         {
             CreatedAt = CreatedAt,
-            _id = Id,
-            _status = Status,
-            _eventId = EventId,
-            _seatsCount = SeatsCount,
+            Id = Id,
+            Status = Status,
+            EventId = EventId,
+            SeatsCount = SeatsCount,
             ProcessedAt = ProcessedAt
         };
     }
@@ -83,8 +79,8 @@ public class Booking
     /// </summary>
     public void Confirm()
     {
-        _status = BookingStatus.Confirmed;
-        ProcessedAt = DateTime.Now;
+        Status = BookingStatus.Confirmed;
+        ProcessedAt = DateTimeOffset.UtcNow;
     }
 
     /// <summary>
@@ -92,7 +88,7 @@ public class Booking
     /// </summary>
     public void Reject()
     {
-        _status = BookingStatus.Rejected;
-        ProcessedAt = DateTime.Now;
+        Status = BookingStatus.Rejected;
+        ProcessedAt = DateTimeOffset.UtcNow;
     }
 }

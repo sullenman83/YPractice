@@ -19,14 +19,14 @@ public static class TestData
         {
             new Event("тестовое событие 1",
                 "Описание 1",
-                DateTime.Parse("2026.03.22"),
-                DateTime.Parse("2026.03.22"),
+                DateTimeOffset.Parse("2026.03.22 18:30:00 +0:00"),
+                DateTimeOffset.Parse("2026.03.2218:30:00 +0:00"),
                 seats)
             ,
             new Event("Другое событие для теста 2",
                 "Описание 21",
-                DateTime.Parse("2026.03.24"),
-                DateTime.Parse("2026.03.27"),
+                DateTimeOffset.Parse("2026.03.24 18:30:00 +0:00"),
+                DateTimeOffset.Parse("2026.03.27 18:30:00 +0:00"),
                 seats)           
         };
     }
@@ -70,8 +70,8 @@ public static class TestData
     /// <returns>Событие</returns>
     public static Event GetTestEvent(int seats = 10)
     {
-        var startAt = DateTime.Parse("2026.03.22");
-        var endAt = DateTime.Parse("2026.03.24");
+        var startAt = DateTimeOffset.Parse("2026.03.22 18:30:00 +0:00");
+        var endAt = DateTimeOffset.Parse("2026.03.24 18:30:00 +0:00");
         return new Event(        
             "Тестовое событие",
             "Описание тестового события",
@@ -92,14 +92,14 @@ public static class TestData
 
         return new List<Booking>()
         {
-            new Booking(BookingStatus.Pending, events[0].Id, 1, DateTime.Parse("2026.03.24 22:00:00"))
+            new Booking(BookingStatus.Pending, events[0].Id, 1, DateTimeOffset.Parse("2026.03.24 18:30:00 +0:00"))
             {                
-                ProcessedAt = DateTime.Parse("2026.03.24 22:00:02"),              
+                ProcessedAt = DateTimeOffset.Parse("2026.03.24 18:30:02 +0:00"),
             },
 
-            new Booking(BookingStatus.Rejected, events[1].Id, 1, DateTime.Parse("2026.03.25 22:00:00"))
+            new Booking(BookingStatus.Rejected, events[1].Id, 1, DateTimeOffset.Parse("2026.03.25 18:30:00 +0:00"))
             {
-                ProcessedAt = DateTime.Parse("2026.03.25 22:00:02"),
+                ProcessedAt = DateTimeOffset.Parse("2026.03.25 18:30:02 +0:00"),
             }
         };
     }

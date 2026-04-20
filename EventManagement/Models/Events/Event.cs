@@ -7,10 +7,6 @@ namespace EventManagement.Models.Events;
 /// </summary>
 public class Event
 {
-    private Guid _id = Guid.NewGuid();
-    private int _totalSeats;
-    private int _availableSeats;
-
     /// <summary>
     /// Конструктор
     /// </summary>
@@ -22,12 +18,13 @@ public class Event
     [SetsRequiredMembers]
     public Event(string title, 
         string? description,
-        DateTime startAt,
-        DateTime endAt,
+        DateTimeOffset startAt,
+        DateTimeOffset endAt,
         int totalSeats)
     {
-        _totalSeats = totalSeats;
-        _availableSeats = totalSeats;
+        Id = Guid.NewGuid();
+        TotalSeats = totalSeats;
+        AvailableSeats = totalSeats;
         Title = title;
         Description = description;
         StartAt = startAt;
@@ -38,7 +35,7 @@ public class Event
     /// <summary>
     /// Идентификатор события
     /// </summary>
-    public Guid Id => _id;
+    public Guid Id { get; init; }
 
     /// <summary>
     /// Название события
@@ -53,22 +50,22 @@ public class Event
     /// <summary>
     /// Дата и время начала события
     /// </summary>
-    public required DateTime StartAt { get; set; }
+    public required DateTimeOffset StartAt { get; set; }
 
     /// <summary>
     /// Дата и время окончания события
     /// </summary>
-    public required DateTime EndAt { get; set; }
+    public required DateTimeOffset EndAt { get; set; }
 
     /// <summary>
     /// ОБщее количество мест
     /// </summary>
-    public int TotalSeats => _totalSeats;
+    public int TotalSeats { get; init; }
 
     /// <summary>
     /// Текущее количество свободных мест
     /// </summary>
-    public int AvailableSeats => _availableSeats;
+    public int AvailableSeats { get; private set; }
     /// <summary>
     /// Создать корпию события
     /// </summary>
@@ -77,13 +74,13 @@ public class Event
     {
         return new Event()
         {
-            _id = Id,
+            Id = Id,
             Title = Title,
             Description = Description,
             StartAt = StartAt,
             EndAt = EndAt,
-            _totalSeats = TotalSeats,
-            _availableSeats = AvailableSeats
+            TotalSeats = TotalSeats,
+            AvailableSeats = AvailableSeats
         };
     }
 
@@ -97,7 +94,7 @@ public class Event
         if (count > AvailableSeats)
             return false;
 
-        _availableSeats -= count;
+        AvailableSeats -= count;
 
         return true;
     }
@@ -109,10 +106,10 @@ public class Event
     /// <returns>true - если освобождено место, false - не освобождено (количество свободных мест равно максимальному числу мест)</returns>
     public bool ReleaseSeats(int count = 1)
     {
-        if (_availableSeats == _totalSeats)
+        if (AvailableSeats == TotalSeats)
             return false;
 
-        _availableSeats += count;
+        AvailableSeats += count;
         return true;
     }
 }

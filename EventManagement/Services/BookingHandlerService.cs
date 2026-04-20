@@ -69,7 +69,7 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
                 booking.Confirm();            
             _bookingRepository.Update(booking);
 
-            _logger.LogInformation($"Бронирование с id {booking.Id} обработано в {DateTime.Now}.");
+            _logger.LogInformation($"Бронирование с id {booking.Id} обработано в {DateTimeOffset.UtcNow}.");
         }
         catch(Exception ex)
         {
