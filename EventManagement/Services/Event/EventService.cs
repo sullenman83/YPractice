@@ -22,6 +22,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository repos
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Обновленное событие</returns>
     /// <exception cref="InvalidOperationException">Ошибка при создании нового события.</exception>
+    /// <exception cref="ArgumentException">Ошибка при создании нового события.</exception>
     /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
     /// <exception cref="EventValidationException">Ошибка валидации</exception>    
     public async Task<EventResponseDto> CreateEventAsync(EventCreationDTO @event, CancellationToken token)

@@ -22,6 +22,8 @@ public class Event
         DateTimeOffset endAt,
         int totalSeats)
     {
+        if (totalSeats <= 0)
+            throw new ArgumentException("Количество мест не может быть отрицательным");
         Id = Guid.NewGuid();
         TotalSeats = totalSeats;
         AvailableSeats = totalSeats;
@@ -91,6 +93,8 @@ public class Event
     /// <returns>true - если зарезервировать удалось, false - доступных мест меньше запрашиваемого количества, зарезервировать не удалось</returns>
     public bool TryReserveSeats(int count = 1)
     {
+        if (count <= 0)
+            throw new ArgumentException("Количество резервируемых мест не может быть отрицательным");
         if (count > AvailableSeats)
             return false;
 
@@ -106,10 +110,14 @@ public class Event
     /// <returns>true - если освобождено место, false - не освобождено (количество свободных мест равно максимальному числу мест)</returns>
     public bool ReleaseSeats(int count = 1)
     {
-        if (AvailableSeats == TotalSeats)
+        if (count <= 0)
+            throw new ArgumentException("Количество освобождаемых мест не может быть отрицательным");
+
+        if (AvailableSeats + count > TotalSeats)
             return false;
 
         AvailableSeats += count;
+
         return true;
     }
 }

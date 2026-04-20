@@ -12,7 +12,7 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
 {
     private readonly IBookingRepository _bookingRepository = bookingRepository;
     private readonly IEventRepository _eventRepository = eventRepository;
-    private readonly SemaphoreSlim _bookingLock = new (1, 1);
+    private static readonly SemaphoreSlim _bookingLock = new (1, 1);
 
     /// <summary>
     /// Создать заявку на бронирование события
@@ -25,6 +25,7 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
     /// <exception cref="NoAvailableSeatsException">Недостаточно мест для броинрования</exception>
     /// <exception cref="NotFoundException">Не найден объект</exception>
     /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
+    /// <exception cref="ArgumentException">Неверные входные данные.</exception>
     public async Task<BookingResponseDTO> CreateBookingAsync(Guid eventId, int seatsCount, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
