@@ -8,6 +8,7 @@ using FluentAssertions;
 using Moq;
 using System;
 using System.Collections.Concurrent;
+using Xunit.Abstractions;
 
 namespace EventServiceTest;
 
@@ -257,10 +258,16 @@ public class BookingTest
     public async Task CreateBooking_NoAvailableSeats_ThrowsNoAvailableSeatsException()
     {
         //Arrange
-        var ev = TestData.GetTestEvent(0);
+        var ev = TestData.GetTestEvent(1);
         var id = ev.Id;
+        var seatsCount = 1;
+
         _eventRepository.Setup(o => o.GetByID(id)).Returns(ev);
+        _eventRepository.Setup(o => o.Update(ev));
+        _bookingRepository.Setup(o => o.Add(It.IsAny<Booking>())).Returns<Booking>(b => b);
+
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
+        await service.CreateBookingAsync(id, seatsCount, CancellationToken.None);
 
         //Act
         Func<Task<BookingResponseDTO>> act = async () => await service.CreateBookingAsync(id, 1, CancellationToken.None);
@@ -324,7 +331,7 @@ public class BookingTest
         var booking = new Booking(BookingStatus.Confirmed, Guid.NewGuid(), cnt, DateTimeOffset.UtcNow);
         ev.TryReserveSeats(cnt);
         var availableSeats = ev.AvailableSeats;
-        
+
         // Act        
         booking.Reject();
         ev.ReleaseSeats(cnt);
@@ -349,11 +356,11 @@ public class BookingTest
         booking.Reject();
         ev.ReleaseSeats(cnt);
         var availableSeats1 = ev.AvailableSeats;
-        ev.TryReserveSeats(cnt);        
+        ev.TryReserveSeats(cnt);
 
         // Assert
         booking.Status.Should().Be(BookingStatus.Rejected);
-        availableSeats.Should().Be(ev.TotalSeats - cnt);        
+        availableSeats.Should().Be(ev.TotalSeats - cnt);
         availableSeats1.Should().Be(ev.TotalSeats);
         ev.AvailableSeats.Should().Be(ev.TotalSeats - cnt);
     }
@@ -362,7 +369,7 @@ public class BookingTest
     public async Task OverbookingProtectionTest_ReturnRightSuccessBooking()
     {
         // Arrange
-        int totalSeats = 5;        
+        int totalSeats = 5;
         int requestCnt = 20;
         var ev = TestData.GetTestEvent(totalSeats);
         var tasks = new List<Task<BookingResponseDTO>>();
@@ -384,7 +391,7 @@ public class BookingTest
         {
             await task;
         }
-        catch(Exception)
+        catch (Exception)
         {
             noAvailableSeatsExceptionCount = task.Exception?.InnerExceptions.OfType<NoAvailableSeatsException>().Count()
                 ?? throw new Exception("Что-то работает не так");
@@ -414,7 +421,7 @@ public class BookingTest
         _eventRepository.Setup(o => o.GetByID(ev.Id)).Returns(ev);
         _bookingRepository.Setup(o => o.Add(It.IsAny<Booking>())).Returns<Booking>(b => b);
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
-        
+
         for (int i = 0; i < requestCnt; ++i)
         {
             tasks.Add(Task.Run(async () => await service.CreateBookingAsync(ev.Id, bookingCnt, CancellationToken.None)));
@@ -422,10 +429,51 @@ public class BookingTest
         var task = Task.WhenAll(tasks);
 
         // Act        
-        var result = await task;        
-        
+        var result = await task;
+
         // Assert
         result.Should().OnlyHaveUniqueItems(o => o.Id);
     }
+
+
+    [Fact]
+    public async Task CreateBooking_NegativeSeatsCount_ThrowsArgumentException()
+    {
+        // Arrange
+        int totalSeats = 10;        
+        var ev = TestData.GetTestEvent(totalSeats);
+        var id = ev.Id;
+        var bookingCnt = -1;
+
+        _eventRepository.Setup(o => o.GetByID(ev.Id)).Returns(ev);
+        _bookingRepository.Setup(o => o.Add(It.IsAny<Booking>())).Returns<Booking>(b => b);
+        var service = new BookingService(_bookingRepository.Object, _eventRepository.Object);
+
+        // Act
+        Func<Task<BookingResponseDTO>> act = async () => await service.CreateBookingAsync(id, bookingCnt, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Fact]
+    public async Task ReleaseSeats_MoreThenTotalSeats_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        int totalSeats = 10;
+        var ev = TestData.GetTestEvent(totalSeats);
+        var seatsCount = 1;
+
+        // Act
+        ev.TryReserveSeats(seatsCount);
+        var result1 = ev.ReleaseSeats(seatsCount);
+        var result2 = ev.ReleaseSeats(seatsCount);
+
+        // Assert
+        result1.Should().BeTrue();
+        result2.Should().BeFalse();
+    }
+
+
 
 }

@@ -20,7 +20,7 @@ public static class TestData
             new Event("тестовое событие 1",
                 "Описание 1",
                 DateTimeOffset.Parse("2026.03.22 18:30:00 +0:00"),
-                DateTimeOffset.Parse("2026.03.2218:30:00 +0:00"),
+                DateTimeOffset.Parse("2026.03.22 18:30:00 +0:00"),
                 seats)
             ,
             new Event("Другое событие для теста 2",

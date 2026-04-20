@@ -75,8 +75,10 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
         {
             booking.Reject();
             if (ev != null)
-            {                
-                ev.ReleaseSeats(booking.SeatsCount);
+            {
+                if (!ev.ReleaseSeats(booking.SeatsCount))
+                    throw new InvalidOperationException("Количество доступных мест не может быть больше общего количества мест");
+
                 _eventRepository.Update(ev);
             }
             _bookingRepository.Update(booking);
