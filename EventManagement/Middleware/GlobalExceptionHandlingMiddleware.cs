@@ -34,14 +34,14 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
 
     private async Task HandleException(Exception ex, HttpContext httpContext)
     {
-        logError(ex, httpContext);
+        LogError(ex, httpContext);
 
         if (httpContext.Response.HasStarted)
         {
             return;
         }
 
-        var statusCode = getStatusCode(ex);
+        var statusCode = GetStatusCode(ex);
 
         httpContext.Response.StatusCode = statusCode;
         httpContext.Response.ContentType = "application/json";
@@ -56,24 +56,27 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
         await httpContext.Response.WriteAsJsonAsync(error);
     }
     
-    private void logError(Exception ex, HttpContext httpContext)
+    private void LogError(Exception ex, HttpContext httpContext)
     {
         _logger.LogError(ex,
             $"Unhandled exception. Method={httpContext.Request.Method}, Path={httpContext.Request.Path}");
     }
 
-    private int getStatusCode(Exception ex)
+    private int GetStatusCode(Exception ex)
     {
         return ex switch
-        {            
-            ArgumentException arg => StatusCodes.Status404NotFound,
+        {
+            ArgumentNullException ane => StatusCodes.Status400BadRequest,
+            NotFoundException nfe => StatusCodes.Status404NotFound,
+            ArgumentException arg => StatusCodes.Status400BadRequest,
             NullReferenceException nr => StatusCodes.Status400BadRequest,
             HttpRequestException hr => StatusCodes.Status400BadRequest,
             ValidationException ve => StatusCodes.Status400BadRequest,
-            EventValidationException eve => StatusCodes.Status400BadRequest,
-            BookingValidationException bve => StatusCodes.Status404NotFound,
+            EventValidationException eve => StatusCodes.Status400BadRequest,            
             IOException io => StatusCodes.Status500InternalServerError,            
             SecurityException se => StatusCodes.Status401Unauthorized,
+            NoAvailableSeatsException nae => StatusCodes.Status409Conflict,
+            InvalidOperationException ioe => StatusCodes.Status500InternalServerError,
 
             _ => StatusCodes.Status500InternalServerError
         };

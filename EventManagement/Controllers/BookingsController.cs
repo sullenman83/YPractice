@@ -23,14 +23,15 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     /// <response code="200">Возвращает HTTP статус-код 200 в случае успешного ответа</response>
     [Produces("application/json")]
     [ProducesResponseType<BookingResponseDTO>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]    
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]    
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBookingByIdAsync(Guid id, CancellationToken token)
     {
         var result =await _bookingService.GetBookingByIdAsync(id, token);
         
         return Ok(result);
-    }
-    
+    }    
 }
