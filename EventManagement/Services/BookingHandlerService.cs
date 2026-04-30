@@ -1,18 +1,18 @@
-﻿using EventManagement.Interfaces;
+﻿using EventManagement.Data;
+using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.Events;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Services;
 
 /// <summary>
 /// Фоновый сервис обработки бронирований
 /// </summary>
-public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRepository repository, IEventRepository eventRepository) : BackgroundService
+public class BookingHandlerService(ILogger<BackgroundService> logger, IDbContextFactory<AppDbContext> dbContextFactory) : BackgroundService
 {
     private readonly ILogger<BackgroundService> _logger= logger;
-    private readonly IBookingRepository _bookingRepository = repository;
-    private readonly IEventRepository _eventRepository = eventRepository;
-    private readonly SemaphoreSlim _processingSemaphor = new (1, 1);
+    private readonly IDbContextFactory<AppDbContext> _dbContextFactory = dbContextFactory;
 
     private const int ProcessingDelay = 2;
     private const int PollingInterval = 5;
@@ -30,8 +30,11 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
         {
             try
             {
-                var tasks = _bookingRepository.GetPending().
-                    Select(o => ProcessBookingAsync(o, stoppingToken));
+                var context = _dbContextFactory.CreateDbContext();
+                var tasks = context.Bookings
+                    .Where(b => b.Status == BookingStatus.Pending)
+                    .Select(o => o.Id)
+                    .Select(o => ProcessBookingAsync(o, stoppingToken));
 
                 await Task.WhenAll(tasks);
                 
@@ -50,15 +53,24 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
         _logger.LogInformation("Фоновый сервис обработки бронирований остановлен.");
     }
 
-    private async Task ProcessBookingAsync(Booking booking, CancellationToken stoppingToken)
+    private async Task ProcessBookingAsync(Guid id, CancellationToken stoppingToken)
     {
         await Task.Delay(TimeSpan.FromSeconds(ProcessingDelay), stoppingToken);
 
-        await _processingSemaphor.WaitAsync(stoppingToken);
-
+        var context = _dbContextFactory.CreateDbContext();
+        
         Event? ev = null;
         try
         {
+            using var transaction = await context.Database.BeginTransactionAsync();
+
+            var booking = context.Bookings.FromSql<Booking>(
+@$"SELECT * FROM bookings b 
+JOIN events e ON e.id == b.EventId
+WHERE b.id == {id}
+FOR UPDATE");
+
+
             ev = _eventRepository.GetByID(booking.EventId);
             if (ev == null)
             {
@@ -67,7 +79,7 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
             }
             else
                 booking.Confirm();            
-            _bookingRepository.Update(booking);
+            _dbContextFactory.Update(booking);
 
             _logger.LogInformation($"Бронирование с id {booking.Id} обработано в {DateTimeOffset.UtcNow}.");
         }
@@ -81,12 +93,12 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IBookingRe
 
                 _eventRepository.Update(ev);
             }
-            _bookingRepository.Update(booking);
+            _dbContextFactory.Update(booking);
             _logger.LogError(ex, $"Непредвиденная ошибка при обработке бронирования id {booking.Id}");
         }
         finally
         {
-            _processingSemaphor.Release();
+            
         }
     }
 }

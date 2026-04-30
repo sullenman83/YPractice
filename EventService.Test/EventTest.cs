@@ -5,6 +5,7 @@ using EventManagement.Models.Events;
 using EventManagement.Models.Events.Extensions;
 using EventManagement.Models.FilterModels;
 using EventManagement.Services;
+using EventManagement.Services.EventServices;
 using FluentAssertions;
 using Moq;
 using System.Collections.Concurrent;
