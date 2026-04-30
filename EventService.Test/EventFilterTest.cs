@@ -3,7 +3,6 @@ using EventManagement.Interfaces;
 using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
 using EventManagement.Services;
-using EventManagement.Services.EventServices;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.RazorPages;

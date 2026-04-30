@@ -4,7 +4,6 @@ using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.Events;
 using EventManagement.Services;
-using EventManagement.Services.BookingServices;
 using FluentAssertions;
 using Moq;
 using System;

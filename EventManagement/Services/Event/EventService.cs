@@ -1,21 +1,19 @@
 ﻿using EventManagement.Common.Exceptions;
-using EventManagement.Data;
 using EventManagement.Extensions;
-using EventManagement.Extensions.EventExt;
 using EventManagement.Interfaces;
 using EventManagement.Models.Events;
 using EventManagement.Models.Events.Extensions;
 using EventManagement.Models.FilterModels;
 
-namespace EventManagement.Services.EventServices;
+namespace EventManagement.Services;
 
 /// <summary>
 /// Сервис для работы с событиями
 /// </summary>
-public class EventService(IEventValidator eventValidator, AppDbContext dbContext) : IEventService
+public class EventService(IEventValidator eventValidator, IEventRepository repository) : IEventService
 {
     private readonly IEventValidator _eventValidator = eventValidator;
-    private readonly AppDbContext _dbContext = dbContext;
+    private readonly IEventRepository _repository = repository;
 
     /// <summary>
     /// Создать событие
@@ -32,9 +30,8 @@ public class EventService(IEventValidator eventValidator, AppDbContext dbContext
         await _eventValidator.ValidateAsync(@event, token);
          
         token.ThrowIfCancellationRequested();
-        Event ev = @event.ToEvent();
-        await _dbContext.Events.AddAsync(ev, token);
-        await _dbContext.SaveChangesAsync(token);
+        var ev = @event.ToEvent();
+        ev = _repository.Add(ev);            
                             
         return ev.ToResponse();
     }
@@ -49,8 +46,7 @@ public class EventService(IEventValidator eventValidator, AppDbContext dbContext
     public async Task DeleteEventAsync(Guid id, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        var ev = GetById(id);
-        _dbContext.Events.Remove(ev);
+        _repository.Delete(id);
     }
 
     /// <summary>
@@ -62,7 +58,7 @@ public class EventService(IEventValidator eventValidator, AppDbContext dbContext
     public async Task<PaginatedResultDTO> GetEventsAsync(EventFilterRequestDTO filter, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        var events = _dbContext.Events
+        var events = _repository.GetAll()
             .OrderBy(o => o.StartAt)
             .Filter(filter)
             .Paginate(filter)
@@ -72,7 +68,7 @@ public class EventService(IEventValidator eventValidator, AppDbContext dbContext
         return new PaginatedResultDTO()
         {
             Events = events,
-            EventsCount = _dbContext.Events.Count(),
+            EventsCount = _repository.GetCount(),
             Page = filter.Page,
             EventsCountOnCurrentPage = events.Count
         };
@@ -88,7 +84,7 @@ public class EventService(IEventValidator eventValidator, AppDbContext dbContext
     /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
     public async Task<EventResponseDto> GetEventByIdAsync(Guid id, CancellationToken token)
     {
-        var ev = GetById(id);
+        var ev = _repository.GetByID(id);
 
         return  ev.ToResponse();
     }
@@ -108,20 +104,9 @@ public class EventService(IEventValidator eventValidator, AppDbContext dbContext
         await _eventValidator.ValidateAsync(@event, token);
 
         token.ThrowIfCancellationRequested();
-        var ev = GetById(id);
-        _dbContext.Events.Update(ev.Update(@event));
-        await _dbContext.SaveChangesAsync(token);
+        var ev = _repository.GetByID(id);        
+        ev = _repository.Update(ev.Update(@event));
 
         return ev.ToResponse();
-    }
-
-
-    private Event GetById(Guid id)
-    {
-        var ev = _dbContext.Events.FirstOrDefault(o => o.Id == id);
-        if (ev == null)
-            throw new NotFoundException($"Событие с id {id} не найдено в базе данных.");
-
-        return ev;
     }
 }

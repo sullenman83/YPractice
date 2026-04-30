@@ -1,5 +1,4 @@
-﻿using EventManagement.Models.Events;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace EventManagement.Models.BookingModels;
 
@@ -31,7 +30,12 @@ public class Booking
     /// Идентификатор брони
     /// </summary>
     public Guid Id { get; init; }
-    
+
+    /// <summary>
+    /// Идентификатор события, к которому привязана бронь
+    /// </summary>
+    public Guid EventId { get; init; }
+
     /// <summary>
     /// Текущий статус брони
     /// </summary>
@@ -40,7 +44,7 @@ public class Booking
     /// <summary>
     /// Кр=оличество мест в брони
     /// </summary>
-    public required int SeatsCount { get; init; }
+    public int SeatsCount { get; init; }
 
     /// <summary>
     /// Дата и время создания брони
@@ -52,15 +56,6 @@ public class Booking
     /// </summary>
     public DateTimeOffset? ProcessedAt { get; set; }
 
-    /// <summary>
-    /// Идентификатор события, к которому привязана бронь
-    /// </summary>
-    public required Guid EventId { get; init; }
-
-    /// <summary>
-    /// Событие
-    /// </summary>
-    public Event? Event { get; init; }
 
     /// <summary>
     /// Создать клон объекта
@@ -75,8 +70,7 @@ public class Booking
             Status = Status,
             EventId = EventId,
             SeatsCount = SeatsCount,
-            ProcessedAt = ProcessedAt,
-            Event = Event,
+            ProcessedAt = ProcessedAt
         };
     }
 

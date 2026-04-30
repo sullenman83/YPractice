@@ -1,17 +1,17 @@
 ﻿using EventManagement.Common.Exceptions;
-using EventManagement.Data;
 using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.BookingModels.Extensions;
 
-namespace EventManagement.Services.BookingServices;
+namespace EventManagement.Services;
 
 /// <summary>
 /// Сервис для работы с заявками бронирования событий
 /// </summary>
-public class BookingService(AppDbContext dbContext) : IBookingService
+public class BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository) : IBookingService
 {
-    private readonly AppDbContext _dbContext = dbContext;
+    private readonly IBookingRepository _bookingRepository = bookingRepository;
+    private readonly IEventRepository _eventRepository = eventRepository;
     private static readonly SemaphoreSlim _bookingLock = new (1, 1);
 
     /// <summary>
@@ -35,15 +35,12 @@ public class BookingService(AppDbContext dbContext) : IBookingService
         await _bookingLock.WaitAsync(token);        
         try
         {
-            var ev = _dbContext.Events.FirstOrDefault(o => o.Id == eventId);
-            if (ev == null)
-                throw new NotFoundException($"Событие с id {eventId} не найдено в базе данных.");
-            
+            var ev = _eventRepository.GetByID(eventId);
             if (!ev.TryReserveSeats(seatsCount))
                 throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
                         
-            await _dbContext.Bookings.AddAsync(booking);
-            await _dbContext.SaveChangesAsync();
+            booking = _bookingRepository.Add(booking);
+            _eventRepository.Update(ev);
         }
         finally
         {
@@ -65,10 +62,8 @@ public class BookingService(AppDbContext dbContext) : IBookingService
     {
         token.ThrowIfCancellationRequested();
 
-        var booking = _dbContext.Bookings.FirstOrDefault(o => o.Id == bookingId);
-        if (booking == null)
-            throw new NotFoundException($"Бронирование с id {bookingId} не найдено в базе данных.");
-                
+        var booking = _bookingRepository.GetById(bookingId);            
+
         return booking.ToResponse();
     }
 }

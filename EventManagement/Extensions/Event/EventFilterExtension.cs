@@ -1,7 +1,7 @@
 ﻿using EventManagement.Models.FilterModels;
 using EventManagement.Models.Events;
 
-namespace EventManagement.Extensions.EventExt;
+namespace EventManagement.Extensions;
 
 /// <summary>
 /// Класс расширение для событий для фильтрации данных

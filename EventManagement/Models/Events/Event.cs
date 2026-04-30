@@ -1,6 +1,4 @@
-﻿using EventManagement.Models.BookingModels;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace EventManagement.Models.Events;
 
@@ -9,7 +7,6 @@ namespace EventManagement.Models.Events;
 /// </summary>
 public class Event
 {
-    #region Конструкторы
     /// <summary>
     /// Конструктор
     /// </summary>
@@ -36,9 +33,7 @@ public class Event
         EndAt = endAt;
     }
     private Event() { }
-    #endregion
 
-    #region Свойства
     /// <summary>
     /// Идентификатор события
     /// </summary>
@@ -67,20 +62,12 @@ public class Event
     /// <summary>
     /// ОБщее количество мест
     /// </summary>
-    public required int TotalSeats { get; init; }
+    public int TotalSeats { get; init; }
 
     /// <summary>
     /// Текущее количество свободных мест
     /// </summary>
     public int AvailableSeats { get; private set; }
-
-    /// <summary>
-    /// Коллекция бронирований
-    /// </summary>
-    public List<Booking>? Bookings { get; set; }
-    #endregion
-
-    #region Методы
     /// <summary>
     /// Создать корпию события
     /// </summary>
@@ -132,6 +119,5 @@ public class Event
         AvailableSeats += count;
 
         return true;
-    }    
-    #endregion
+    }
 }

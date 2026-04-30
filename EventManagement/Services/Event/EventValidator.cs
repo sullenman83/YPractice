@@ -1,7 +1,7 @@
 ﻿using EventManagement.Common.Exceptions;
 using EventManagement.Interfaces;
 using EventManagement.Models.Events;
-namespace EventManagement.Services.EventServices;
+namespace EventManagement.Services;
 
 /// <summary>
 /// Класс валидации событий
