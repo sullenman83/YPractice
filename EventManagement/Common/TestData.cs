@@ -13,26 +13,21 @@ public static class TestData
     /// Сгенерировать коллекцию событий
     /// </summary>
     /// <returns>Коллекция событий</returns>
-    public static List<Event> GetTestEvents()
+    public static List<Event> GetTestEvents(int seats = 10)
     {
         return new List<Event>()
         {
-            new Event
-            {
-                Id = new Guid("65F6C3BD-5ADD-4FB0-96C4-2AE9F99F0347"),
-                Title = "тестовое событие 1",
-                Description = "Описание 1",
-                StartAt = DateTime.Parse("2026.03.22"),
-                EndAt = DateTime.Parse("2026.03.22"),
-            },
-            new Event
-            {
-                Id = new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2"),
-                Title = "Другое событие для теста 2",
-                Description = "Описание 21",
-                StartAt = DateTime.Parse("2026.03.24"),
-                EndAt = DateTime.Parse("2026.03.27")
-            }
+            new Event("тестовое событие 1",
+                "Описание 1",
+                DateTimeOffset.Parse("2026.03.22 18:30:00 +0:00"),
+                DateTimeOffset.Parse("2026.03.22 18:30:00 +0:00"),
+                seats)
+            ,
+            new Event("Другое событие для теста 2",
+                "Описание 21",
+                DateTimeOffset.Parse("2026.03.24 18:30:00 +0:00"),
+                DateTimeOffset.Parse("2026.03.27 18:30:00 +0:00"),
+                seats)           
         };
     }
 
@@ -56,17 +51,34 @@ public static class TestData
     /// Сгенерировать одиночное событие
     /// </summary>
     /// <returns>Событие</returns>
-    public static EventRequestDto GetTestEvent()
+    public static EventCreationDTO GetTestEventCreationDTO()
     {
-        var startAt = DateTime.Parse("2026.03.22");
-        var endAt = DateTime.Parse("2026.03.24");
-        return new EventRequestDto()
+        var ev = GetTestEvent();
+        return new EventCreationDTO()
         {
-            Title = "Тестовое событие",
-            Description = "Описание тестового события",
-            StartAt = startAt,
-            EndAt = endAt,
+            Title = ev.Title,
+            Description = ev.Description,
+            StartAt = ev.StartAt,
+            EndAt = ev.EndAt,
+            TotalSeats = ev.TotalSeats,            
         };
+    }
+
+    /// <summary>
+    /// Создать тестовое событие
+    /// </summary>
+    /// <returns>Событие</returns>
+    public static Event GetTestEvent(int seats = 10)
+    {
+        var startAt = DateTimeOffset.Parse("2026.03.22 18:30:00 +0:00");
+        var endAt = DateTimeOffset.Parse("2026.03.24 18:30:00 +0:00");
+        return new Event(        
+            "Тестовое событие",
+            "Описание тестового события",
+            startAt,
+            endAt,
+            seats
+        );
     }
 
 
@@ -76,28 +88,22 @@ public static class TestData
     /// <returns></returns>
     public static List<Booking> GetTestBookings()
     {
+        var events = GetTestEvents();
+
         return new List<Booking>()
         {
-            new Booking()
-            {
-                Id = new Guid("821300A1-4EB9-4006-BF35-A3CC0F756C70"),
-                Status = BookingStatus.Pending,
-                CreatedAt = DateTime.Parse("2026.03.24 22:00:00"),
-                ProcessedAt = DateTime.Parse("2026.03.24 22:00:02"),
-                EventId = new Guid("65F6C3BD-5ADD-4FB0-96C4-2AE9F99F0347")
+            new Booking(BookingStatus.Pending, events[0].Id, 1, DateTimeOffset.Parse("2026.03.24 18:30:00 +0:00"))
+            {                
+                ProcessedAt = DateTimeOffset.Parse("2026.03.24 18:30:02 +0:00"),
             },
 
-            new Booking()
+            new Booking(BookingStatus.Rejected, events[1].Id, 1, DateTimeOffset.Parse("2026.03.25 18:30:00 +0:00"))
             {
-                Id = new Guid("AF883307-2419-4564-A5C9-88E6DBA40D55"),
-                Status = BookingStatus.Rejected,
-                CreatedAt = DateTime.Parse("2026.03.25 22:00:00"),
-                ProcessedAt = DateTime.Parse("2026.03.25 22:00:02"),
-                EventId = new Guid("DF5C3DB1-DA49-4CC2-A646-076F8A6B99C2")
+                ProcessedAt = DateTimeOffset.Parse("2026.03.25 18:30:02 +0:00"),
             }
         };
     }
-
+        
     /// <summary>
     /// Тестовые данные для бронирования событий
     /// </summary>

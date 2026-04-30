@@ -1,4 +1,6 @@
-﻿namespace EventManagement.Models.BookingModels;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace EventManagement.Models.BookingModels;
 
 /// <summary>
 /// Класс бронирования
@@ -6,29 +8,53 @@
 public class Booking
 {
     /// <summary>
+    /// Конструктор
+    /// </summary>
+    /// <param name="status">Статус брони</param>    
+    /// <param name="eventId">id  события</param>
+    /// <param name="seatsCount">количество мест в брони</param>
+    /// <param name="createdAt">Дата создания брони</param>
+    [SetsRequiredMembers]
+    public Booking(BookingStatus status, Guid eventId, int seatsCount, DateTimeOffset createdAt)
+    {
+        Id = Guid.NewGuid();
+        EventId = eventId;
+        Status = status;
+        CreatedAt = createdAt;
+        SeatsCount = seatsCount;
+    }
+
+    private Booking() { }
+
+    /// <summary>
     /// Идентификатор брони
     /// </summary>
-    public required Guid Id { get; set; }
+    public Guid Id { get; init; }
 
     /// <summary>
     /// Идентификатор события, к которому привязана бронь
     /// </summary>
-    public required Guid EventId { get; set; }
+    public Guid EventId { get; init; }
 
     /// <summary>
     /// Текущий статус брони
     /// </summary>
-    public required BookingStatus Status  { get; set; }
+    public BookingStatus Status { get; private set; }
+
+    /// <summary>
+    /// Кр=оличество мест в брони
+    /// </summary>
+    public int SeatsCount { get; init; }
 
     /// <summary>
     /// Дата и время создания брони
     /// </summary>
-    public required DateTime CreatedAt { get; set; }
+    public required DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// Дата и время обработки брони
     /// </summary>
-    public DateTime? ProcessedAt { get; set; }
+    public DateTimeOffset? ProcessedAt { get; set; }
 
 
     /// <summary>
@@ -43,7 +69,26 @@ public class Booking
             Id = Id,
             Status = Status,
             EventId = EventId,
+            SeatsCount = SeatsCount,
             ProcessedAt = ProcessedAt
         };
+    }
+
+    /// <summary>
+    /// Подтвердить бронирование
+    /// </summary>
+    public void Confirm()
+    {
+        Status = BookingStatus.Confirmed;
+        ProcessedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Отклонить бронирование
+    /// </summary>
+    public void Reject()
+    {
+        Status = BookingStatus.Rejected;
+        ProcessedAt = DateTimeOffset.UtcNow;
     }
 }
