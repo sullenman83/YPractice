@@ -6,6 +6,7 @@ using EventManagement.Interfaces;
 using EventManagement.Models.Events;
 using EventManagement.Models.Events.Extensions;
 using EventManagement.Models.FilterModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Services.EventServices;
 
@@ -51,6 +52,7 @@ public class EventService(IEventValidator eventValidator, AppDbContext dbContext
         token.ThrowIfCancellationRequested();
         var ev = GetById(id);
         _dbContext.Events.Remove(ev);
+        await _dbContext.SaveChangesAsync();
     }
 
     /// <summary>
@@ -62,12 +64,12 @@ public class EventService(IEventValidator eventValidator, AppDbContext dbContext
     public async Task<PaginatedResultDTO> GetEventsAsync(EventFilterRequestDTO filter, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        var events = _dbContext.Events
+        var events = await _dbContext.Events
             .OrderBy(o => o.StartAt)
             .Filter(filter)
             .Paginate(filter)
             .Select(o => o.ToResponse())
-            .ToList();
+            .ToListAsync(token);
 
         return new PaginatedResultDTO()
         {

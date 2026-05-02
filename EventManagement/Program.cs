@@ -35,13 +35,13 @@ if (builder.Environment.IsDevelopment())
         .EnableSensitiveDataLogging();
     });
 
-    builder.Services.AddDbContextFactory<AppDbContext>(options =>
-    {
-        options.UseNpgsql(connectionString)
-        .LogTo(Console.WriteLine)
-        .EnableDetailedErrors()
-        .EnableSensitiveDataLogging();
-    });
+    //builder.Services.AddDbContextFactory<AppDbContext>(options =>
+    //{
+    //    options.UseNpgsql(connectionString)
+    //    .LogTo(Console.WriteLine)
+    //    .EnableDetailedErrors()
+    //    .EnableSensitiveDataLogging();
+    //});
 }
 else
 {
@@ -50,10 +50,10 @@ else
         options.UseNpgsql(connectionString);
     });
 
-    builder.Services.AddDbContextFactory<AppDbContext>(options =>
-    {
-        options.UseNpgsql(connectionString);
-    });
+    //builder.Services.AddDbContextFactory<AppDbContext>(options =>
+    //{
+    //    options.UseNpgsql(connectionString);
+    //});
 }
 
 builder.Services.AddScoped<IEventValidator, EventValidator>();

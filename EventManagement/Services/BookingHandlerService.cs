@@ -9,10 +9,10 @@ namespace EventManagement.Services;
 /// <summary>
 /// Фоновый сервис обработки бронирований
 /// </summary>
-public class BookingHandlerService(ILogger<BackgroundService> logger, IDbContextFactory<AppDbContext> dbContextFactory) : BackgroundService
+public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceScopeFactory serviceFactory) : BackgroundService
 {
     private readonly ILogger<BackgroundService> _logger= logger;
-    private readonly IDbContextFactory<AppDbContext> _dbContextFactory = dbContextFactory;
+    private readonly IServiceScopeFactory _serviceFactory = serviceFactory;
 
     private const int ProcessingDelay = 2;
     private const int PollingInterval = 5;
@@ -30,11 +30,16 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IDbContext
         {
             try
             {
-                var context = _dbContextFactory.CreateDbContext();
-                var tasks = context.Bookings
-                    .Where(b => b.Status == BookingStatus.Pending)
-                    .Select(o => o.Id)
-                    .Select(o => ProcessBookingAsync(o, stoppingToken));
+                await using var scope = _serviceFactory.CreateAsyncScope();
+                List<Guid> ids;
+                using (var context = scope.ServiceProvider.GetRequiredService<AppDbContext>())
+                {
+                    ids = await context.Bookings
+                        .Where(b => b.Status == BookingStatus.Pending)
+                        .Select(o => o.Id)
+                        .ToListAsync();
+                }                    
+               var tasks = ids.Select(o => ProcessBookingAsync(o, stoppingToken));
 
                 await Task.WhenAll(tasks);
                 
@@ -57,47 +62,49 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IDbContext
     {
         await Task.Delay(TimeSpan.FromSeconds(ProcessingDelay), stoppingToken);
 
-        var context = _dbContextFactory.CreateDbContext();
+        await using var scope = _serviceFactory.CreateAsyncScope();
+        using var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        Event? ev = null;
+        Booking? booking = null;
         try
         {
             using var transaction = await context.Database.BeginTransactionAsync();
 
-            var booking = context.Bookings.FromSql(
-@$"SELECT * FROM bookings b 
-JOIN events e ON e.id == b.EventId
-WHERE b.id == {id}
-FOR UPDATE");
+            booking = await context.Bookings.FromSql(
+@$"SELECT b.*    
+FROM bookings b 
+JOIN events e ON e.id = b.event_id
+WHERE b.id = {id}
+FOR UPDATE")
+                .Include(o => o.Event)
+                .FirstAsync();
 
-            ev = _eventRepository.GetByID(booking.EventId);
-            if (ev == null)
-            {
-                booking.Reject();
-                _logger.LogWarning($"Бронирование отклонено. Не найдено событие {booking.EventId} для брони {booking.Id}");
-            }
-            else
-                booking.Confirm();            
-            _dbContextFactory.Update(booking);
+            if (booking == null)
+                throw new DirectoryNotFoundException($"Не найдено бронирование с id {id}");
+
+            booking.Confirm();
+            //var ev = await context.Events.FirstOrDefaultAsync(o => o.Id == booking.EventId);
+            //if (ev == null)
+            //{
+            //    booking.Reject();
+            //    _logger.LogWarning($"Бронирование отклонено. Не найдено событие {booking.EventId} для брони {booking.Id}");
+            //}
+            //else
+            //    booking.Confirm();
 
             _logger.LogInformation($"Бронирование с id {booking.Id} обработано в {DateTimeOffset.UtcNow}.");
         }
         catch(Exception ex)
         {
-            booking.Reject();
-            if (ev != null)
+            if (booking != null)
             {
-                if (!ev.ReleaseSeats(booking.SeatsCount))
+                booking.Reject();
+                if (!booking.Event?.ReleaseSeats(booking.SeatsCount) ?? false)
                     throw new InvalidOperationException("Количество доступных мест не может быть больше общего количества мест");
-
-                _eventRepository.Update(ev);
+                await context.SaveChangesAsync();
             }
-            _dbContextFactory.Update(booking);
-            _logger.LogError(ex, $"Непредвиденная ошибка при обработке бронирования id {booking.Id}");
-        }
-        finally
-        {
             
-        }
+            _logger.LogError(ex, $"Непредвиденная ошибка при обработке бронирования id {booking?.Id}");
+        }        
     }
 }

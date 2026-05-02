@@ -1,5 +1,6 @@
 ﻿using EventManagement.Models.FilterModels;
 using EventManagement.Models.Events;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Extensions.EventExt;
 
@@ -8,11 +9,11 @@ namespace EventManagement.Extensions.EventExt;
 /// </summary>
 internal static class EventFilterExtension
 {
-    public static IEnumerable<Event> Filter(this IEnumerable<Event> source, EventFilterRequestDTO filter)
+    public static IQueryable<Event> Filter(this IQueryable<Event> source, EventFilterRequestDTO filter)
     {        
         if (!string.IsNullOrEmpty(filter.Title))
-        {            
-            source = source.Where(e => e.Title.Contains(filter.Title, StringComparison.OrdinalIgnoreCase));
+        {
+            source = source.Where(e => EF.Functions.ILike(e.Title, $"%{filter.Title}%"));
         }
 
         if (filter.From != null)
@@ -30,7 +31,7 @@ internal static class EventFilterExtension
         return source;
     }
 
-    public static IEnumerable<Event> Paginate(this IEnumerable<Event> source, EventFilterRequestDTO filter)
+    public static IQueryable<Event> Paginate(this IQueryable<Event> source, EventFilterRequestDTO filter)
     {
         return source.Skip((filter.Page - 1) * filter.PageSize)
             .Take(filter.PageSize);

@@ -17,12 +17,12 @@ public class EventConfiguratino : IEntityTypeConfiguration<Event>
     public void Configure(EntityTypeBuilder<Event> builder)
     {
         builder.ToTable("events")
-            .ToTable(t => t.HasCheckConstraint("chk_events_end_at", "CHECK(end_at >= start_at)"))
-            .ToTable(t => t.HasCheckConstraint("chk_events_total_seats", "CHECK(total_seats > 0)"))
-            .ToTable(t=> t.HasCheckConstraint("chk_events_available_seats", "CHECK(available_seats <= total_seats)"))
-            .ToTable(t => t.HasCheckConstraint("chk_events_title", "CHECK(LENGTH(title)) > 0"))
+            .ToTable(t => t.HasCheckConstraint("chk_events_end_at", "end_at >= start_at"))
+            .ToTable(t => t.HasCheckConstraint("chk_events_total_seats", "total_seats > 0"))
+            .ToTable(t => t.HasCheckConstraint("chk_events_available_seats", "available_seats <= total_seats"))
+            .ToTable(t => t.HasCheckConstraint("chk_events_title", "LENGTH(title) > 0"))            
             .HasKey(e => e.Id);
-
+            
         builder.Property(p => p.Id)
             .HasColumnName("id")
             .IsRequired()
@@ -33,10 +33,13 @@ public class EventConfiguratino : IEntityTypeConfiguration<Event>
             .IsRequired()
             .HasMaxLength(100);
 
+        builder.Property(p => p.Description)
+            .HasColumnName("description")
+            .HasMaxLength(256);
+
         builder.Property(p => p.StartAt)
             .HasColumnName("start_at")
-            .IsRequired()
-            .HasMaxLength(256);
+            .IsRequired();            
 
         builder.Property(p => p.EndAt)
             .HasColumnName("end_at")            
@@ -52,6 +55,11 @@ public class EventConfiguratino : IEntityTypeConfiguration<Event>
 
         builder.HasMany(e => e.Bookings)
             .WithOne(b => b.Event)
-            .HasForeignKey(k => k.EventId);
+            .HasForeignKey(k => k.EventId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(e => e.Title);
+        builder.HasIndex(e => e.StartAt);
+        builder.HasIndex(e => e.EndAt);
     }
 }
