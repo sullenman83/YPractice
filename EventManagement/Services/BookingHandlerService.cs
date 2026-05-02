@@ -64,12 +64,11 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
 
         await using var scope = _serviceFactory.CreateAsyncScope();
         using var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        using var transaction = await context.Database.BeginTransactionAsync();
 
         Booking? booking = null;
         try
         {
-            using var transaction = await context.Database.BeginTransactionAsync();
-
             booking = await context.Bookings.FromSql(
 @$"SELECT b.*    
 FROM bookings b 
@@ -77,21 +76,14 @@ JOIN events e ON e.id = b.event_id
 WHERE b.id = {id}
 FOR UPDATE")
                 .Include(o => o.Event)
-                .FirstAsync();
+                .FirstOrDefaultAsync();
 
             if (booking == null)
                 throw new DirectoryNotFoundException($"Не найдено бронирование с id {id}");
 
             booking.Confirm();
-            //var ev = await context.Events.FirstOrDefaultAsync(o => o.Id == booking.EventId);
-            //if (ev == null)
-            //{
-            //    booking.Reject();
-            //    _logger.LogWarning($"Бронирование отклонено. Не найдено событие {booking.EventId} для брони {booking.Id}");
-            //}
-            //else
-            //    booking.Confirm();
-
+            await context.SaveChangesAsync();
+            transaction.Commit();
             _logger.LogInformation($"Бронирование с id {booking.Id} обработано в {DateTimeOffset.UtcNow}.");
         }
         catch(Exception ex)
@@ -102,6 +94,7 @@ FOR UPDATE")
                 if (!booking.Event?.ReleaseSeats(booking.SeatsCount) ?? false)
                     throw new InvalidOperationException("Количество доступных мест не может быть больше общего количества мест");
                 await context.SaveChangesAsync();
+                transaction.Commit();
             }
             
             _logger.LogError(ex, $"Непредвиденная ошибка при обработке бронирования id {booking?.Id}");
