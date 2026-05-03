@@ -3,6 +3,7 @@ using EventManagement.Data;
 using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.BookingModels.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Services.BookingServices;
 
@@ -12,7 +13,6 @@ namespace EventManagement.Services.BookingServices;
 public class BookingService(AppDbContext dbContext) : IBookingService
 {
     private readonly AppDbContext _dbContext = dbContext;
-    private static readonly SemaphoreSlim _bookingLock = new (1, 1);
 
     /// <summary>
     /// Создать заявку на бронирование события
@@ -32,10 +32,15 @@ public class BookingService(AppDbContext dbContext) : IBookingService
 
         var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, DateTimeOffset.UtcNow);
 
-        await _bookingLock.WaitAsync(token);        
+        var transaction = await _dbContext.Database.BeginTransactionAsync();        
         try
         {
-            var ev = _dbContext.Events.FirstOrDefault(o => o.Id == eventId);
+            var ev = await _dbContext.Events
+                .FromSql(
+@$"SELECT * FROM events
+WHERE id = {eventId}
+FOR UPDATE ")
+                .FirstOrDefaultAsync();
             if (ev == null)
                 throw new NotFoundException($"Событие с id {eventId} не найдено в базе данных.");
             
@@ -44,11 +49,13 @@ public class BookingService(AppDbContext dbContext) : IBookingService
                         
             await _dbContext.Bookings.AddAsync(booking);
             await _dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
         }
-        finally
+        catch
         {
-            _bookingLock.Release();
-        }        
+            await transaction.RollbackAsync();
+            throw;
+        }
 
         return booking.ToResponse();
     }
@@ -65,7 +72,7 @@ public class BookingService(AppDbContext dbContext) : IBookingService
     {
         token.ThrowIfCancellationRequested();
 
-        var booking = _dbContext.Bookings.FirstOrDefault(o => o.Id == bookingId);
+        var booking = await _dbContext.Bookings.FirstOrDefaultAsync(o => o.Id == bookingId);
         if (booking == null)
             throw new NotFoundException($"Бронирование с id {bookingId} не найдено в базе данных.");
                 

@@ -50,7 +50,7 @@ public class EventService(IEventValidator eventValidator, AppDbContext dbContext
     public async Task DeleteEventAsync(Guid id, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        var ev = GetById(id);
+        var ev = await GetById(id);
         _dbContext.Events.Remove(ev);
         await _dbContext.SaveChangesAsync();
     }
@@ -90,7 +90,7 @@ public class EventService(IEventValidator eventValidator, AppDbContext dbContext
     /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
     public async Task<EventResponseDto> GetEventByIdAsync(Guid id, CancellationToken token)
     {
-        var ev = GetById(id);
+        var ev = await GetById(id);
 
         return  ev.ToResponse();
     }
@@ -110,7 +110,7 @@ public class EventService(IEventValidator eventValidator, AppDbContext dbContext
         await _eventValidator.ValidateAsync(@event, token);
 
         token.ThrowIfCancellationRequested();
-        var ev = GetById(id);
+        var ev = await GetById(id);
         _dbContext.Events.Update(ev.Update(@event));
         await _dbContext.SaveChangesAsync(token);
 
@@ -118,9 +118,9 @@ public class EventService(IEventValidator eventValidator, AppDbContext dbContext
     }
 
 
-    private Event GetById(Guid id)
+    private async Task<Event> GetById(Guid id)
     {
-        var ev = _dbContext.Events.FirstOrDefault(o => o.Id == id);
+        var ev = await _dbContext.Events.FirstOrDefaultAsync(o => o.Id == id);
         if (ev == null)
             throw new NotFoundException($"Событие с id {id} не найдено в базе данных.");
 
