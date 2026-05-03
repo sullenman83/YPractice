@@ -1,45 +1,56 @@
 ﻿using EventManagement.Common;
+using EventManagement.Data;
 using EventManagement.Interfaces;
 using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
-using EventManagement.Services;
 using EventManagement.Services.EventServices;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using static System.Net.WebRequestMethods;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EventServiceTest;
 
-public class EventFilterTest
+public class EventFilterTest : IDisposable
 {
-    private readonly IEventValidator _validator;
-    private readonly Mock<IEventRepository> _repository;
-    private readonly IEventService _service;
+    private readonly IEventValidator _eventValidator;
+    private readonly ServiceProvider _serviceProvider;
+    private readonly IEventService _eventService;
+    private readonly IServiceScope _scope;
 
     private static readonly List<Event> _events = TestData.GetTestEvents();
  
     public EventFilterTest()
     {
-        _validator = new EventValidator();
-        _repository = new Mock<IEventRepository>();        
-        _repository.Setup(r => r.GetAll()).Returns(_events);        
-        _service = new EventService(_validator, _repository.Object);
+        var services = new ServiceCollection();
+        services.AddScoped<IEventService, EventService>();
+        services.AddScoped<IEventValidator, EventValidator>();
+        var dbName = Guid.NewGuid().ToString();
+        services.AddDbContext<AppDbContext>(options =>
+        {
+            options.UseInMemoryDatabase(dbName);
+        });
+
+        _serviceProvider = services.BuildServiceProvider();
+        _scope = _serviceProvider.CreateScope();
+        _eventService = _scope.ServiceProvider.GetRequiredService<IEventService>();
+        _eventValidator = _scope.ServiceProvider.GetRequiredService<IEventValidator>();
     }
+    public void Dispose()
+    {
+        _scope.Dispose();
+        _serviceProvider.Dispose();
+    }
+
 
     [Fact]
     public async Task Test_EmptyFilter_ReturnAllEvents()
     {
 	    // Act
-        var result = await _service.GetEventsAsync(new EventFilterRequestDTO(), CancellationToken.None);
+        var result = await _eventService.GetEventsAsync(new EventFilterRequestDTO(), CancellationToken.None);
 
-        // Assert        
-        result.Events.Should().BeEquivalentTo(_events);
-        _repository.Verify(o => o.GetAll(), Times.Once);
+        // Assert
+        result.Should().NotBeNull();
+        result.Events.Should().BeEquivalentTo(_events);        
     }
 
     /// <summary>
@@ -53,9 +64,10 @@ public class EventFilterTest
     public async Task TestFilter_ByTitle_ReturnRelevantEvents(EventFilterRequestDTO filter, int count, Guid id)
     {
 	    // Act
-        var result = await _service.GetEventsAsync(filter, CancellationToken.None);
+        var result = await _eventService.GetEventsAsync(filter, CancellationToken.None);
 
-	    // Assert
+        // Assert
+        result.Should().NotBeNull();
         result.Events.Count.Should().Be(count);
         result.Events.First().Id.Should().Be(id);
     }
@@ -65,10 +77,11 @@ public class EventFilterTest
     public async Task TestFilter_ByDate_ReturnRelevantEvents(EventFilterRequestDTO filter, int count, Guid[] ids)
     {
 	    // Act
-        var result = await _service.GetEventsAsync(filter, CancellationToken.None);
+        var result = await _eventService.GetEventsAsync(filter, CancellationToken.None);
         var resultIds = result.Events.Select(o => o.Id).ToArray() ?? new Guid[] { };
-        
-	    // Assert
+
+        // Assert
+        result.Should().NotBeNull();
         result.Events.Count.Should().Be(count);
         if (resultIds.Length > 0)
             resultIds.Should().Contain(ids);
@@ -79,18 +92,18 @@ public class EventFilterTest
     public async Task TestPagination(EventFilterRequestDTO filter, int currentPage, int eventCount)
     {
 	    // Act
-        var result = await _service.GetEventsAsync(filter, CancellationToken.None);
+        var result = await _eventService.GetEventsAsync(filter, CancellationToken.None);
 
-	    // Assert        
+        // Assert
+        result.Should().NotBeNull();
         result.Page.Should().Be(currentPage);
         result.EventsCountOnCurrentPage.Should().Be(eventCount);
     }
 
-
     public static IEnumerable<object[]> GetEventFilterByTitle()
     {
         var titles = new string[]{ "Другое", "событие для", "теста 2"};
-        var filters = new object[titles.Length][];
+        var filters = new object[titles.Length][];        
         var id = _events.Last().Id;
 
 

@@ -32,22 +32,6 @@ public static class TestData
     }
 
     /// <summary>
-    /// Сгенерировать коллекцию пар ключ значение 
-    /// </summary>
-    /// <returns>Коллекция пар ключ значнеие</returns>
-    public static List<KeyValuePair<Guid, Event>> GetTestData()
-    {
-        var events = GetTestEvents();
-        var result = new List<KeyValuePair<Guid, Event>>();
-        foreach (var e in events)
-        {                
-            result.Add(new KeyValuePair<Guid, Event>(e.Id, e));
-        }
-
-        return result;
-    }
-
-    /// <summary>
     /// Сгенерировать одиночное событие
     /// </summary>
     /// <returns>Событие</returns>
@@ -79,6 +63,23 @@ public static class TestData
             endAt,
             seats
         );
+    }
+
+    /// <summary>
+    /// Сконвертироваться в DTO сущность
+    /// </summary>
+    /// <param name="ev">Событие</param>
+    /// <returns>DTO сущность</returns>
+    public static EventCreationDTO ToCreationDTO(this Event ev)
+    {
+        return new EventCreationDTO()
+        {
+            Title = ev.Title,
+            Description = ev.Description,
+            StartAt = ev.StartAt,
+            EndAt = ev.EndAt,
+            TotalSeats = ev.TotalSeats,
+        };
     }
 
 
