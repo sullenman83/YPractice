@@ -13,7 +13,8 @@ internal static class EventFilterExtension
     {        
         if (!string.IsNullOrEmpty(filter.Title))
         {
-            source = source.Where(e => EF.Functions.ILike(e.Title, $"%{filter.Title}%"));
+            var t = filter.Title.ToLower();
+            source = source.Where(e => EF.Functions.Like(e.Title.ToLower(), $"%{t}%"));
         }
 
         if (filter.From != null)

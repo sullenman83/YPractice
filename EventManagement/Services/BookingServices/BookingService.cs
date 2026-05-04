@@ -13,6 +13,7 @@ namespace EventManagement.Services.BookingServices;
 public class BookingService(AppDbContext dbContext) : IBookingService
 {
     private readonly AppDbContext _dbContext = dbContext;
+    private static readonly SemaphoreSlim _bookingLock = new SemaphoreSlim(1, 1);
 
     /// <summary>
     /// Создать заявку на бронирование события
@@ -30,31 +31,26 @@ public class BookingService(AppDbContext dbContext) : IBookingService
     {
         token.ThrowIfCancellationRequested();
 
+        token.ThrowIfCancellationRequested();
+
         var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, DateTimeOffset.UtcNow);
 
-        var transaction = await _dbContext.Database.BeginTransactionAsync();        
+        await _bookingLock.WaitAsync(token);
         try
         {
-            var ev = await _dbContext.Events
-                .FromSql(
-@$"SELECT * FROM events
-WHERE id = {eventId}
-FOR UPDATE ")
-                .FirstOrDefaultAsync();
+            var ev = _dbContext.Events.FirstOrDefault(o => o.Id == eventId);
             if (ev == null)
                 throw new NotFoundException($"Событие с id {eventId} не найдено в базе данных.");
-            
+
             if (!ev.TryReserveSeats(seatsCount))
                 throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
-                        
+
             await _dbContext.Bookings.AddAsync(booking);
             await _dbContext.SaveChangesAsync();
-            await transaction.CommitAsync();
         }
-        catch
+        finally
         {
-            await transaction.RollbackAsync();
-            throw;
+            _bookingLock.Release();
         }
 
         return booking.ToResponse();

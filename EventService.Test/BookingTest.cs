@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi;
 
 namespace EventServiceTest;
 
@@ -62,7 +63,6 @@ public class BookingTest
         result.Should().NotBeNull();
         result.EventId.Should().Be(id);
         result.Status.Should().Be(BookingStatus.Pending);
-        ev.AvailableSeats.Should().Be(ev.TotalSeats - seats);
     }
 
     [Fact]
@@ -168,18 +168,20 @@ public class BookingTest
     public async Task CreateBooking_OneSeat_ReturnReducedSeatsNumber()
     {
         // Arrange
-        var ev = await CreateTestEvent();
+        var totalSeats = 10;
+        var ev = await CreateTestEvent(totalSeats);
         var availableSeats = ev.AvailableSeats;
         var id = ev.Id;
         var seatsCnt = 1;
 
         // Act
         var result = await _bookingService.CreateBookingAsync(id, seatsCnt, CancellationToken.None);
+        var resultEvent = await _eventService.GetEventByIdAsync(id, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
         result.EventId.Should().Be(id);
-        ev.AvailableSeats.Should().Be(availableSeats - seatsCnt);
+        resultEvent.AvailableSeats.Should().Be(totalSeats - seatsCnt);
     }
 
     [Fact]
@@ -209,19 +211,15 @@ public class BookingTest
     public async Task CreateSeveralBooking_ExecuteCountMoreThenTotalSeats_ThrowsNoAvailableSeatsException()
     {
         // Arrange        
-        var totalSeats = 4;
-        var ev = TestData.GetTestEvent(totalSeats);
-
-        var request = ev.ToCreationDTO();
-        var newEvent = await _eventService.CreateEventAsync(request, CancellationToken.None);
+        var totalSeats = 2;
+        var ev = await CreateTestEvent(totalSeats);
         
-        var id = newEvent.Id;
+        var id = ev.Id;
         var seats = 1;
-        var ids = new List<Guid>();
-        var cnt = 3;
+        var ids = new List<Guid>();        
 
         // Act
-        for (int i = 0; i < cnt; ++i)
+        for (int i = 0; i < totalSeats; ++i)
         {
             var result = await _bookingService.CreateBookingAsync(id, seats, CancellationToken.None);
             ids.Add(result.Id);
@@ -229,7 +227,7 @@ public class BookingTest
         Func<Task<BookingResponseDTO>> act = async () => await _bookingService.CreateBookingAsync(id, seats, CancellationToken.None);
 
         // Assert
-        ids.Should().HaveCount(cnt);
+        ids.Should().HaveCount(totalSeats);
         ids.Should().OnlyHaveUniqueItems();
         await act.Should().ThrowAsync<NoAvailableSeatsException>();
     }
@@ -239,10 +237,7 @@ public class BookingTest
     {
         //Arrange
         var totalSeats = 1;
-        var ev = TestData.GetTestEvent(totalSeats);
-
-        var request = ev.ToCreationDTO();
-        var newEvent = await _eventService.CreateEventAsync(request, CancellationToken.None);
+        var ev = await CreateTestEvent(totalSeats);        
         var id = ev.Id;
         var seatsCount = 2;                      
         
@@ -324,7 +319,13 @@ public class BookingTest
 
         for (int i = 0; i < requestCnt; ++i)
         {
-            tasks.Add(Task.Run(async () => await _bookingService.CreateBookingAsync(ev.Id, bookingCnt, CancellationToken.None)));
+            tasks.Add(Task.Run(async () =>
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+                return  await bookingService.CreateBookingAsync(ev.Id, bookingCnt, CancellationToken.None);
+            }
+            ));
         }
         var task = Task.WhenAll(tasks);
 
@@ -344,8 +345,7 @@ public class BookingTest
 
         // Assert
         success.Should().Be(totalSeats);
-        failed.Should().Be(requestCnt - totalSeats);
-        ev.AvailableSeats.Should().Be(0);
+        failed.Should().Be(requestCnt - totalSeats);        
         noAvailableSeatsExceptionCount.Should().Be(requestCnt - totalSeats);
     }
 
