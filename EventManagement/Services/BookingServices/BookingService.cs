@@ -1,18 +1,19 @@
 ﻿using EventManagement.Common.Exceptions;
+using EventManagement.Data;
 using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.BookingModels.Extensions;
+using Microsoft.EntityFrameworkCore;
 
-namespace EventManagement.Services;
+namespace EventManagement.Services.BookingServices;
 
 /// <summary>
 /// Сервис для работы с заявками бронирования событий
 /// </summary>
-public class BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository) : IBookingService
+public class BookingService(AppDbContext dbContext) : IBookingService
 {
-    private readonly IBookingRepository _bookingRepository = bookingRepository;
-    private readonly IEventRepository _eventRepository = eventRepository;
-    private static readonly SemaphoreSlim _bookingLock = new (1, 1);
+    private readonly AppDbContext _dbContext = dbContext;
+    private static readonly SemaphoreSlim _bookingLock = new SemaphoreSlim(1, 1);
 
     /// <summary>
     /// Создать заявку на бронирование события
@@ -30,22 +31,27 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
     {
         token.ThrowIfCancellationRequested();
 
+        token.ThrowIfCancellationRequested();
+
         var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, DateTimeOffset.UtcNow);
 
-        await _bookingLock.WaitAsync(token);        
+        await _bookingLock.WaitAsync(token);
         try
         {
-            var ev = _eventRepository.GetByID(eventId);
+            var ev = _dbContext.Events.FirstOrDefault(o => o.Id == eventId);
+            if (ev == null)
+                throw new NotFoundException($"Событие с id {eventId} не найдено в базе данных.");
+
             if (!ev.TryReserveSeats(seatsCount))
                 throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
-                        
-            booking = _bookingRepository.Add(booking);
-            _eventRepository.Update(ev);
+
+            await _dbContext.Bookings.AddAsync(booking);
+            await _dbContext.SaveChangesAsync();
         }
         finally
         {
             _bookingLock.Release();
-        }        
+        }
 
         return booking.ToResponse();
     }
@@ -62,8 +68,10 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
     {
         token.ThrowIfCancellationRequested();
 
-        var booking = _bookingRepository.GetById(bookingId);            
-
+        var booking = await _dbContext.Bookings.FirstOrDefaultAsync(o => o.Id == bookingId);
+        if (booking == null)
+            throw new NotFoundException($"Бронирование с id {bookingId} не найдено в базе данных.");
+                
         return booking.ToResponse();
     }
 }

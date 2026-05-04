@@ -20,31 +20,15 @@ public static class TestData
             new Event("тестовое событие 1",
                 "Описание 1",
                 DateTimeOffset.Parse("2026.03.22 18:30:00 +0:00"),
-                DateTimeOffset.Parse("2026.03.22 18:30:00 +0:00"),
+                DateTimeOffset.Parse("2026.03.23 18:30:00 +0:00"),
                 seats)
             ,
             new Event("Другое событие для теста 2",
-                "Описание 21",
-                DateTimeOffset.Parse("2026.03.24 18:30:00 +0:00"),
+                "Описание 2",
+                DateTimeOffset.Parse("2026.03.26 18:30:00 +0:00"),
                 DateTimeOffset.Parse("2026.03.27 18:30:00 +0:00"),
                 seats)           
         };
-    }
-
-    /// <summary>
-    /// Сгенерировать коллекцию пар ключ значение 
-    /// </summary>
-    /// <returns>Коллекция пар ключ значнеие</returns>
-    public static List<KeyValuePair<Guid, Event>> GetTestData()
-    {
-        var events = GetTestEvents();
-        var result = new List<KeyValuePair<Guid, Event>>();
-        foreach (var e in events)
-        {                
-            result.Add(new KeyValuePair<Guid, Event>(e.Id, e));
-        }
-
-        return result;
     }
 
     /// <summary>
@@ -79,6 +63,23 @@ public static class TestData
             endAt,
             seats
         );
+    }
+
+    /// <summary>
+    /// Сконвертироваться в DTO сущность
+    /// </summary>
+    /// <param name="ev">Событие</param>
+    /// <returns>DTO сущность</returns>
+    public static EventCreationDTO ToCreationDTO(this Event ev)
+    {
+        return new EventCreationDTO()
+        {
+            Title = ev.Title,
+            Description = ev.Description,
+            StartAt = ev.StartAt,
+            EndAt = ev.EndAt,
+            TotalSeats = ev.TotalSeats,
+        };
     }
 
 
