@@ -1,5 +1,7 @@
 ﻿using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Data;
 
 namespace EventManagement.Interfaces;
 
@@ -51,4 +53,7 @@ public interface IEventRepository
     /// </summary>
     /// <param name="token">токун отмены</param>
     Task SaveChangesAsync(CancellationToken token);
+
+
+    Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken token);
 }

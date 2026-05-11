@@ -1,28 +1,21 @@
 ﻿using EventManagement.Data;
+using EventManagement.Extensions.EventExt;
 using EventManagement.Interfaces;
 using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
 using Microsoft.EntityFrameworkCore;
-using EventManagement.Extensions.EventExt;
-using static System.Net.WebRequestMethods;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Transactions;
 
 namespace EventManagement.Services;
 
 /// <summary>
 /// Хранилище данных
 /// </summary>
-public class EventRepository : IEventRepository
+public class EventRepository(AppDbContext context) : IEventRepository
 {
-    private readonly AppDbContext _context;
-
-    /// <summary>
-    /// Конструктор
-    /// </summary>
-    /// <param name="context"></param>
-    public EventRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    private readonly AppDbContext _context = context;
+    
     ///<inheritdoc/>
     ///<exception cref="DbUpdateException">Ошибка при сохранении</exception>
     public async Task<Event> AddEventAsync(Event ev, CancellationToken token = default)
@@ -72,5 +65,32 @@ public class EventRepository : IEventRepository
     public async Task SaveChangesAsync(CancellationToken token)
     {
         await _context.SaveChangesAsync(token);
-    }    
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken token)
+    {
+        return await _context.Database.BeginTransactionAsync(token);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public async Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token)
+    {
+        if (_context.Database.CurrentTransaction == null)
+            throw new InvalidOperationException("Транзакция не открыта.");
+
+        return await _context.Events.FromSql(
+$@"SELECT * FROM events WHERE id = {id} FOR UPDATE")
+            .FirstOrDefaultAsync();
+    }
 }

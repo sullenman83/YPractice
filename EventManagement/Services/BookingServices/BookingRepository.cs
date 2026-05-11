@@ -1,31 +1,37 @@
-﻿using EventManagement.Common.Exceptions;
+﻿using EventManagement.Data;
 using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
-using System.Collections.Concurrent;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Services;
 
 /// <summary>
 /// Класс хранения заявок на бронь
 /// </summary>
-public class BookingRepository : IBookingRepository
+public class BookingRepository(AppDbContext context) : IBookingRepository
 {
+    private readonly AppDbContext _context = context;
+    
     ///<inheritdoc/>
-    ///<exception cref="NotImplementedException">Не реализован</exception>
-    public Task<Booking> AddBookingAsync(Booking booking)
+    public async Task<Booking> AddBookingAsync(Booking booking, CancellationToken token)
     {
-        throw new NotImplementedException();
+        await _context.Bookings.AddAsync(booking, token);
+        await _context.SaveChangesAsync(token);
+
+        return booking;
     }
 
     ///<inheritdoc/>
-    public Task<Booking> GetBookingByIdAsync(Guid id)
+    public async Task<Booking?> GetBookingByIdAsync(Guid id, CancellationToken token)
     {
-        throw new NotImplementedException();
+        return await _context.Bookings.FirstOrDefaultAsync(o => o.Id == id, token);
     }
 
     ///<inheritdoc/>
-    public Task<IReadOnlyList<Booking>> GetPendingBookingsAsync()
+    public async Task<IReadOnlyList<Booking>> GetPendingBookingsAsync(CancellationToken token)
     {
-        throw new NotImplementedException();
+        return await _context.Bookings
+            .Where(o => o.Status == BookingStatus.Pending)
+            .ToListAsync(token);
     }
 }
