@@ -33,15 +33,7 @@ if (builder.Environment.IsDevelopment())
         .LogTo(Console.WriteLine)
         .EnableDetailedErrors()
         .EnableSensitiveDataLogging();
-    });
-
-    //builder.Services.AddDbContextFactory<AppDbContext>(options =>
-    //{
-    //    options.UseNpgsql(connectionString)
-    //    .LogTo(Console.WriteLine)
-    //    .EnableDetailedErrors()
-    //    .EnableSensitiveDataLogging();
-    //});
+    });    
 }
 else
 {
@@ -49,16 +41,13 @@ else
     {
         options.UseNpgsql(connectionString);
     });
-
-    //builder.Services.AddDbContextFactory<AppDbContext>(options =>
-    //{
-    //    options.UseNpgsql(connectionString);
-    //});
 }
 
 builder.Services.AddScoped<IEventValidator, EventValidator>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddHostedService<BookingHandlerService>();
 builder.Services.AddControllers(options =>
 {
@@ -70,7 +59,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 }
 
 app.UseGlobalExceptionHandling();

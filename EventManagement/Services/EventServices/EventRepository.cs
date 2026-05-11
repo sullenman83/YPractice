@@ -1,9 +1,10 @@
-﻿using EventManagement.Common;
-using EventManagement.Common.Exceptions;
-using EventManagement.Data;
+﻿using EventManagement.Data;
 using EventManagement.Interfaces;
 using EventManagement.Models.Events;
-using System.Collections.Concurrent;
+using EventManagement.Models.FilterModels;
+using Microsoft.EntityFrameworkCore;
+using EventManagement.Extensions.EventExt;
+using static System.Net.WebRequestMethods;
 
 namespace EventManagement.Services;
 
@@ -12,39 +13,64 @@ namespace EventManagement.Services;
 /// </summary>
 public class EventRepository : IEventRepository
 {
-    ///<inheritdoc/>
-    public Task<Event> AddEventAsync(Event ev)
+    private readonly AppDbContext _context;
+
+    /// <summary>
+    /// Конструктор
+    /// </summary>
+    /// <param name="context"></param>
+    public EventRepository(AppDbContext context)
     {
-        throw new NotImplementedException();
+        _context = context;
+    }
+    ///<inheritdoc/>
+    ///<exception cref="DbUpdateException">Ошибка при сохранении</exception>
+    public async Task<Event> AddEventAsync(Event ev, CancellationToken token = default)
+    {
+        
+        await _context.AddAsync(ev, token);
+        await _context.SaveChangesAsync(token);
+
+        return ev;
     }
 
     ///<inheritdoc/>
-    public Task<Event> DeleteEventAsync(Guid id)
+    public async Task<bool> DeleteEventAsync(Guid id, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        var ev = await _context.Events.FirstOrDefaultAsync(o => o.Id == id);
+        if (ev == null)
+            return false;
+        _context.Remove(ev);
+        await _context.SaveChangesAsync(token);
+
+        return true;
     }
 
     ///<inheritdoc/>
-    public Task<Event> GetEventByIDAsync(Guid id)
+    public async Task<Event?> GetEventByIDAsync(Guid id, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+         return await _context.Events.FirstOrDefaultAsync(o => o.Id == id, token);
     }
 
     ///<inheritdoc/>
-    public Task<IReadOnlyList<Event>> GetEventsAsync()
+    public async Task<IReadOnlyList<Event>> GetEventsAsync(EventFilterRequestDTO filter, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        return await _context.Events
+           .OrderBy(o => o.StartAt)
+           .Filter(filter)
+           .Paginate(filter)
+           .ToArrayAsync();
     }
 
     ///<inheritdoc/>
-    public Task<int> GetEventsCountAsync()
+    public async Task<int> GetEventsCountAsync(CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        return await _context.Events.CountAsync(token);
     }
 
     ///<inheritdoc/>
-    public Task<Event> UpdateEventAsync(Event ev)
+    public async Task SaveChangesAsync(CancellationToken token)
     {
-        throw new NotImplementedException();
-    }
+        await _context.SaveChangesAsync(token);
+    }    
 }
