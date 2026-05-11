@@ -31,8 +31,6 @@ public class BookingService(AppDbContext dbContext) : IBookingService
     {
         token.ThrowIfCancellationRequested();
 
-        token.ThrowIfCancellationRequested();
-
         var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, DateTimeOffset.UtcNow);
 
         await _bookingLock.WaitAsync(token);
