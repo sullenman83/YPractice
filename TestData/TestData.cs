@@ -37,15 +37,7 @@ public static class TestData
     /// <returns>Событие</returns>
     public static EventCreationDTO GetTestEventCreationDTO()
     {
-        var ev = GetTestEvent();
-        return new EventCreationDTO()
-        {
-            Title = ev.Title,
-            Description = ev.Description,
-            StartAt = ev.StartAt,
-            EndAt = ev.EndAt,
-            TotalSeats = ev.TotalSeats,            
-        };
+        return  GetTestEvent().ToCreationDTO();
     }
 
     /// <summary>
@@ -121,4 +113,17 @@ public static class TestData
         return result;
     }
 
+    /// <summary>
+    /// Сгенерировать бронирование
+    /// </summary>
+    /// <param name="ev">Событие</param>
+    /// <param name="dateTime">Время создания брони</param>
+    /// <param name="seatsCount">Сколько мест бронируется</param>
+    /// <param name="status">Статус брони</param>
+    /// <returns>Бронирование</returns>
+    public static Booking GetTestBooking(Event ev, DateTimeOffset? dateTime = null, int seatsCount = 1, BookingStatus status = BookingStatus.Pending)
+    {
+        var date = dateTime ?? DateTimeOffset.UtcNow;
+        return new Booking(status, ev.Id, seatsCount, date);
+    }
 }

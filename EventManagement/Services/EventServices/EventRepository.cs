@@ -5,7 +5,6 @@ using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using System.Transactions;
 
 namespace EventManagement.Services;
 
@@ -18,7 +17,7 @@ public class EventRepository(AppDbContext context) : IEventRepository
     
     ///<inheritdoc/>
     ///<exception cref="DbUpdateException">Ошибка при сохранении</exception>
-    public async Task<Event> AddEventAsync(Event ev, CancellationToken token = default)
+    public async Task<Event> AddEventAsync(Event ev, CancellationToken token)
     {
         
         await _context.AddAsync(ev, token);
@@ -28,7 +27,7 @@ public class EventRepository(AppDbContext context) : IEventRepository
     }
 
     ///<inheritdoc/>
-    public async Task<bool> DeleteEventAsync(Guid id, CancellationToken token = default)
+    public async Task<bool> DeleteEventAsync(Guid id, CancellationToken token)
     {
         var ev = await _context.Events.FirstOrDefaultAsync(o => o.Id == id);
         if (ev == null)
@@ -40,13 +39,13 @@ public class EventRepository(AppDbContext context) : IEventRepository
     }
 
     ///<inheritdoc/>
-    public async Task<Event?> GetEventByIDAsync(Guid id, CancellationToken token = default)
+    public async Task<Event?> GetEventByIdAsync(Guid id, CancellationToken token)
     {
          return await _context.Events.FirstOrDefaultAsync(o => o.Id == id, token);
     }
 
     ///<inheritdoc/>
-    public async Task<IReadOnlyList<Event>> GetEventsAsync(EventFilterRequestDTO filter, CancellationToken token = default)
+    public async Task<IReadOnlyList<Event>> GetEventsAsync(EventFilterRequestDTO filter, CancellationToken token)
     {
         return await _context.Events
            .OrderBy(o => o.StartAt)
@@ -56,7 +55,7 @@ public class EventRepository(AppDbContext context) : IEventRepository
     }
 
     ///<inheritdoc/>
-    public async Task<int> GetEventsCountAsync(CancellationToken token = default)
+    public async Task<int> GetEventsCountAsync(CancellationToken token)
     {
         return await _context.Events.CountAsync(token);
     }
@@ -67,23 +66,13 @@ public class EventRepository(AppDbContext context) : IEventRepository
         await _context.SaveChangesAsync(token);
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="token"></param>
-    /// <returns></returns>
+    ///<inheritdoc/>
     public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken token)
     {
         return await _context.Database.BeginTransactionAsync(token);
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="id"></param>
-    /// <param name="token"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
+    ///<inheritdoc/>
     public async Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token)
     {
         if (_context.Database.CurrentTransaction == null)
@@ -91,6 +80,6 @@ public class EventRepository(AppDbContext context) : IEventRepository
 
         return await _context.Events.FromSql(
 $@"SELECT * FROM events WHERE id = {id} FOR UPDATE")
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(token);
     }
 }

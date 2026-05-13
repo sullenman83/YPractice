@@ -2,6 +2,7 @@
 using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.BookingModels.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Services.BookingServices;
 
@@ -32,19 +33,24 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
         
         try
         {
-
-            var ev = _dbContext.Events.FirstOrDefault(o => o.Id == eventId);
+            using var tr = await _eventRepository.BeginTransactionAsync(token);
+            var ev = await _eventRepository.GetEventWithBlockingAsync(eventId, token);
             if (ev == null)
                 throw new NotFoundException($"Событие с id {eventId} не найдено в базе данных.");
 
             if (!ev.TryReserveSeats(seatsCount))
                 throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
 
-            await _dbContext.Bookings.AddAsync(booking);
-            await _dbContext.SaveChangesAsync();
-        }       
+            await _bookingRepository.AddBookingAsync(booking, token);
+            await _eventRepository.SaveChangesAsync(token);
+            await tr.CommitAsync();
 
-        return booking.ToResponse();
+            return booking.ToResponse();
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new InvalidOperationException("Ошибка при создании бронирования.", ex);
+        }
     }
 
     /// <summary>

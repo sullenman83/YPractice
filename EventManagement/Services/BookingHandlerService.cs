@@ -1,4 +1,5 @@
-﻿using EventManagement.Data;
+﻿using EventManagement.Common.Exceptions;
+using EventManagement.Data;
 using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.Events;
@@ -30,15 +31,12 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
         {
             try
             {
-                await using var scope = _serviceFactory.CreateAsyncScope();
-                List<Guid> ids;
-                using (var context = scope.ServiceProvider.GetRequiredService<AppDbContext>())
-                {
-                    ids = await context.Bookings
-                        .Where(b => b.Status == BookingStatus.Pending)
-                        .Select(o => o.Id)
-                        .ToListAsync();
-                }                    
+                await using var scope = _serviceFactory.CreateAsyncScope();                
+                var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+                var ids = (await bookingRepository.GetPendingBookingsAsync(stoppingToken))
+                    .Select(o => o.Id)
+                    .ToList();
+
                var tasks = ids.Select(o => ProcessBookingAsync(o, stoppingToken));
 
                 await Task.WhenAll(tasks);
@@ -63,41 +61,34 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
         await Task.Delay(TimeSpan.FromSeconds(ProcessingDelay), stoppingToken);
 
         await using var scope = _serviceFactory.CreateAsyncScope();
-        using var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        using var transaction = await context.Database.BeginTransactionAsync();
+        var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+        using var transaction = await bookingRepository.BeginTransactionAsync(stoppingToken);
 
         Booking? booking = null;
         try
         {
-            booking = await context.Bookings.FromSql(
-@$"SELECT b.*    
-FROM bookings b 
-JOIN events e ON e.id = b.event_id
-WHERE b.id = {id}
-FOR UPDATE")
-                .Include(o => o.Event)
-                .FirstOrDefaultAsync();
+            booking = await bookingRepository.GetBookingWithBlockingAsync(id, stoppingToken);
 
             if (booking == null)
-                throw new DirectoryNotFoundException($"Не найдено бронирование с id {id}");
+                throw new NotFoundException($"Не найдено бронирование с id {id}");
 
             booking.Confirm();
-            await context.SaveChangesAsync();
+            await bookingRepository.SaveChangesAsync(stoppingToken);
             transaction.Commit();
             _logger.LogInformation($"Бронирование с id {booking.Id} обработано в {DateTimeOffset.UtcNow}.");
         }
-        catch(Exception ex)
+        catch
         {
             if (booking != null)
             {
                 booking.Reject();
                 if (!booking.Event?.ReleaseSeats(booking.SeatsCount) ?? false)
                     throw new InvalidOperationException("Количество доступных мест не может быть больше общего количества мест");
-                await context.SaveChangesAsync();
+                await bookingRepository.SaveChangesAsync(stoppingToken);
                 transaction.Commit();
             }
-            
-            _logger.LogError(ex, $"Непредвиденная ошибка при обработке бронирования id {booking?.Id}");
+
+            throw;
         }        
     }
 }

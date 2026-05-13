@@ -148,7 +148,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository event
 
     private async Task<Event> GetById(Guid id, CancellationToken token)
     {
-        var ev = await _eventRepository.GetEventByIDAsync(id, token);
+        var ev = await _eventRepository.GetEventByIdAsync(id, token);
         if (ev == null)
             throw new NotFoundException($"Не найдено событие с id = {id}");
 
