@@ -64,13 +64,12 @@ public class BookingRepositoryTest: BaseTest
     public async Task AddBooking_SavesBookingToDataBase()
     {
         // Arrange
-        // Arrange
         await ResetDatabaseAsync();
         await using var context = await CreateContextAsync();
-        var ev = TestData.GetTestEvent();
-        var booking = TestData.GetTestBooking(ev);
+        var ev = TestData.GetTestEvent();        
         await context.Events.AddAsync(ev);
-        await context.SaveChangesAsync();        
+        await context.SaveChangesAsync();
+        var booking = TestData.GetTestBooking(ev);
         var id = booking.Id;
 
         // Act
@@ -80,9 +79,11 @@ public class BookingRepositoryTest: BaseTest
 
         // Assert
         await using var ctx = await CreateContextAsync();
-        var savedBooking = ctx.Bookings.SingleOrDefault(e => e.Id == id);
+        var savedBooking = await ctx.Bookings
+            .Include(o => o.Event)
+            .FirstOrDefaultAsync(e => e.Id == id);
         savedBooking.Should().NotBeNull();
-        savedBooking.Should().BeEquivalentTo(booking);
+        savedBooking.Should().BeEquivalentTo(res);
     }
 
     [Fact]

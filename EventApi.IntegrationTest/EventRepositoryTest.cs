@@ -66,7 +66,7 @@ namespace EventApi.IntegrationTest
 
             // Assert
             await using var ctx = await CreateContextAsync();
-            var savedEvent = ctx.Events.SingleOrDefault(e => e.Id == id);
+            var savedEvent = await ctx.Events.FirstOrDefaultAsync(e => e.Id == id);
             savedEvent.Should().NotBeNull();
             savedEvent.Should().BeEquivalentTo(ev);
         }

@@ -23,21 +23,21 @@ public class BaseRepository<T>(AppDbContext context) : IBaseRepository<T> where 
     protected readonly DbSet<T> _entities = context.Set<T>();
 
     /// <inheritdoc/>    
-    public async Task<T> AddAsync(T ev, CancellationToken token = default)
+    public async Task<T> AddAsync(T entity, CancellationToken token = default)
     {
-        await _entities.AddAsync(ev, token);
+        await _entities.AddAsync(entity, token);
         await _context.SaveChangesAsync(token);
 
-        return ev;
+        return entity;
     }
 
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(Guid id, CancellationToken token = default)
     {
-        var ev = await _entities.FindAsync(id, token);
-        if (ev == null)
+        var entity = await _entities.FindAsync(id, token);
+        if (entity == null)
             return false;
-        _context.Remove(ev);
+        _context.Remove(entity);
         await _context.SaveChangesAsync(token);
 
         return true;
