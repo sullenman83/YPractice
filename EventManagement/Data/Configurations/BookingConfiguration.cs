@@ -38,10 +38,12 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
 
         builder.Property(p => p.CreatedAt)
             .HasColumnName("created_at")
+            .HasColumnType("timestamptz")
             .IsRequired();
 
         builder.Property(p => p.ProcessedAt)
-            .HasColumnName("processed_at");
+            .HasColumnName("processed_at")
+            .HasColumnType("timestamptz");
 
         builder.Property(p => p.EventId)
             .HasColumnName("event_id")
