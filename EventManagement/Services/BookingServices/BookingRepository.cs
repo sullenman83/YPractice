@@ -9,25 +9,8 @@ namespace EventManagement.Services;
 /// <summary>
 /// Класс хранения заявок на бронь
 /// </summary>
-public class BookingRepository(AppDbContext context) : IBookingRepository
-{
-    private readonly AppDbContext _context = context;
-    
-    ///<inheritdoc/>
-    public async Task<Booking> AddBookingAsync(Booking booking, CancellationToken token)
-    {
-        await _context.Bookings.AddAsync(booking, token);
-        await _context.SaveChangesAsync(token);
-
-        return booking;
-    }
-
-    ///<inheritdoc/>
-    public async Task<Booking?> GetBookingByIdAsync(Guid id, CancellationToken token)
-    {
-        return await _context.Bookings.FirstOrDefaultAsync(o => o.Id == id, token);
-    }
-
+public class BookingRepository(AppDbContext context) : BaseRepository<Booking>(context), IBookingRepository<Booking>
+{    
     ///<inheritdoc/>
     public async Task<IReadOnlyList<Booking>> GetPendingBookingsAsync(CancellationToken token)
     {
@@ -37,36 +20,27 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
     }
 
     ///<inheritdoc/>
-    public async Task<int> GetEventsCountAsync(CancellationToken token)
-    {
-        return await _context.Events.CountAsync(token);
-    }
-
-    ///<inheritdoc/>
-    public async Task SaveChangesAsync(CancellationToken token)
-    {
-        await _context.SaveChangesAsync(token);
-    }
-
-    ///<inheritdoc/>
-    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken token)
-    {
-        return await _context.Database.BeginTransactionAsync(token);
-    }
-
-    ///<inheritdoc/>
     public async Task<Booking?> GetBookingWithBlockingAsync(Guid id, CancellationToken token)
     {
-        if (_context.Database.CurrentTransaction == null)
-            throw new InvalidOperationException("Транзакция не открыта.");
+        try
+        {
+            if (_context.Database.CurrentTransaction == null)
+                throw new InvalidOperationException("Транзакция не открыта.");
 
-        return await _context.Bookings.FromSql(
-@$"SELECT b.*    
+            // ToDo: Потенциальное место для рефакторинга. Сделано по большей частью для тестов. Но может быть в каком-то виде применимо и для продакшен кода, чтобы запросы долго не висели в блокировке
+            _context.Database.SetCommandTimeout(TimeSpan.FromMilliseconds(200));
+            return await _context.Bookings.FromSql(
+    @$"SELECT b.*    
 FROM bookings b 
 JOIN events e ON e.id = b.event_id
 WHERE b.id = {id}
 FOR UPDATE")
-            .Include(o => o.Event)
-            .FirstOrDefaultAsync(token);
+                .Include(o => o.Event)
+                .FirstOrDefaultAsync(token);
+        }
+        finally
+        {
+            _context.Database.SetCommandTimeout(null);
+        }
     }
 }

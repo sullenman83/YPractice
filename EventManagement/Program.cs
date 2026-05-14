@@ -1,6 +1,8 @@
 using EventManagement.Data;
 using EventManagement.Extensions.Middleware;
 using EventManagement.Interfaces;
+using EventManagement.Models.BookingModels;
+using EventManagement.Models.Events;
 using EventManagement.Services;
 using EventManagement.Services.BookingServices;
 using EventManagement.Services.EventServices;
@@ -46,8 +48,8 @@ else
 builder.Services.AddScoped<IEventValidator, EventValidator>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
-builder.Services.AddScoped<IEventRepository, EventRepository>();
-builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IEventRepository<Event>, EventRepository>();
+builder.Services.AddScoped<IBookingRepository<Booking>, BookingRepository>();
 builder.Services.AddHostedService<BookingHandlerService>();
 builder.Services.AddControllers(options =>
 {

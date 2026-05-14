@@ -11,10 +11,10 @@ namespace EventManagement.Services.EventServices;
 /// <summary>
 /// Сервис для работы с событиями
 /// </summary>
-public class EventService(IEventValidator eventValidator, IEventRepository eventRepository) : IEventService
+public class EventService(IEventValidator eventValidator, IEventRepository<Event> eventRepository) : IEventService
 {
     private readonly IEventValidator _eventValidator = eventValidator;
-    private readonly IEventRepository _eventRepository = eventRepository;
+    private readonly IEventRepository<Event> _eventRepository = eventRepository;
 
     /// <summary>
     /// Создать событие
@@ -34,7 +34,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository event
 
         try
         {
-            ev = await _eventRepository.AddEventAsync(ev, token);
+            ev = await _eventRepository.AddAsync(ev, token);
         }                                
         catch(DbUpdateException ex)
         {
@@ -58,7 +58,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository event
 
         try
         {
-            if (!await _eventRepository.DeleteEventAsync(id, token))
+            if (!await _eventRepository.DeleteAsync(id, token))
             {
                 throw new NotFoundException($"Не найдено событие с id = {id}");
             }
@@ -80,10 +80,10 @@ public class EventService(IEventValidator eventValidator, IEventRepository event
     {
         token.ThrowIfCancellationRequested();
 
-        var events = (await _eventRepository.GetEventsAsync(filter, token))
+        var events = (await _eventRepository.GetEventsByFilterAsync(filter, token))
             .Select(o => o.ToResponse())
             .ToList();
-        var cnt = await  _eventRepository.GetEventsCountAsync(token);
+        var cnt = await  _eventRepository.GetCountAsync(token);
 
         return new PaginatedResultDTO()
         {
@@ -148,7 +148,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository event
 
     private async Task<Event> GetById(Guid id, CancellationToken token)
     {
-        var ev = await _eventRepository.GetEventByIdAsync(id, token);
+        var ev = await _eventRepository.GetByIdAsync(id, token);
         if (ev == null)
             throw new NotFoundException($"Не найдено событие с id = {id}");
 

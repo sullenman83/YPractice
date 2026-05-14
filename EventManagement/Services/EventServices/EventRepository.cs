@@ -11,75 +11,37 @@ namespace EventManagement.Services;
 /// <summary>
 /// Хранилище данных
 /// </summary>
-public class EventRepository(AppDbContext context) : IEventRepository
+public class EventRepository(AppDbContext context) : BaseRepository<Event>(context), IEventRepository<Event>
 {
-    private readonly AppDbContext _context = context;
     
     ///<inheritdoc/>
-    ///<exception cref="DbUpdateException">Ошибка при сохранении</exception>
-    public async Task<Event> AddEventAsync(Event ev, CancellationToken token)
-    {
-        
-        await _context.AddAsync(ev, token);
-        await _context.SaveChangesAsync(token);
-
-        return ev;
-    }
-
-    ///<inheritdoc/>
-    public async Task<bool> DeleteEventAsync(Guid id, CancellationToken token)
-    {
-        var ev = await _context.Events.FirstOrDefaultAsync(o => o.Id == id);
-        if (ev == null)
-            return false;
-        _context.Remove(ev);
-        await _context.SaveChangesAsync(token);
-
-        return true;
-    }
-
-    ///<inheritdoc/>
-    public async Task<Event?> GetEventByIdAsync(Guid id, CancellationToken token)
-    {
-         return await _context.Events.FirstOrDefaultAsync(o => o.Id == id, token);
-    }
-
-    ///<inheritdoc/>
-    public async Task<IReadOnlyList<Event>> GetEventsAsync(EventFilterRequestDTO filter, CancellationToken token)
+    public async Task<IReadOnlyList<Event>> GetEventsByFilterAsync(EventFilterRequestDTO filter, CancellationToken token)
     {
         return await _context.Events
            .OrderBy(o => o.StartAt)
            .Filter(filter)
            .Paginate(filter)
-           .ToArrayAsync();
-    }
-
-    ///<inheritdoc/>
-    public async Task<int> GetEventsCountAsync(CancellationToken token)
-    {
-        return await _context.Events.CountAsync(token);
-    }
-
-    ///<inheritdoc/>
-    public async Task SaveChangesAsync(CancellationToken token)
-    {
-        await _context.SaveChangesAsync(token);
-    }
-
-    ///<inheritdoc/>
-    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken token)
-    {
-        return await _context.Database.BeginTransactionAsync(token);
+           .ToListAsync();
     }
 
     ///<inheritdoc/>
     public async Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token)
     {
-        if (_context.Database.CurrentTransaction == null)
-            throw new InvalidOperationException("Транзакция не открыта.");
+        try
+        {
+            if (_context.Database.CurrentTransaction == null)
+                throw new InvalidOperationException("Транзакция не открыта.");
 
-        return await _context.Events.FromSql(
-$@"SELECT * FROM events WHERE id = {id} FOR UPDATE")
-            .FirstOrDefaultAsync(token);
+            // ToDo: Потенциальное место для рефакторинга. Сделано по большей частью для тестов. Но может быть в каком-то виде применимо и для продакшен кода, чтобы запросы долго не висели в блокировке
+            _context.Database.SetCommandTimeout(TimeSpan.FromMilliseconds(200));
+
+            return await _context.Events.FromSql(
+    $@"SELECT * FROM events WHERE id = {id} FOR UPDATE")
+                .FirstOrDefaultAsync(token);
+        }
+        finally
+        {
+            _context.Database.SetCommandTimeout(null);
+        }
     }
 }

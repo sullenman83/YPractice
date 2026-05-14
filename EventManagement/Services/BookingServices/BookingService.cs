@@ -2,6 +2,7 @@
 using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.BookingModels.Extensions;
+using EventManagement.Models.Events;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Services.BookingServices;
@@ -9,10 +10,10 @@ namespace EventManagement.Services.BookingServices;
 /// <summary>
 /// Сервис для работы с заявками бронирования событий
 /// </summary>
-public class BookingService(IBookingRepository bookingRepository, IEventRepository eventRepoository) : IBookingService
+public class BookingService(IBookingRepository<Booking> bookingRepository, IEventRepository<Event> eventRepoository) : IBookingService
 {
-    private readonly IBookingRepository _bookingRepository = bookingRepository;
-    private readonly IEventRepository _eventRepository = eventRepoository;
+    private readonly IBookingRepository<Booking> _bookingRepository = bookingRepository;
+    private readonly IEventRepository<Event> _eventRepository = eventRepoository;
 
     /// <summary>
     /// Создать заявку на бронирование события
@@ -41,7 +42,7 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
             if (!ev.TryReserveSeats(seatsCount))
                 throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
 
-            await _bookingRepository.AddBookingAsync(booking, token);
+            await _bookingRepository.AddAsync(booking, token);
             await _eventRepository.SaveChangesAsync(token);
             await tr.CommitAsync();
 
@@ -65,7 +66,7 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
     {
         token.ThrowIfCancellationRequested();
 
-        var booking = await _bookingRepository.GetBookingByIdAsync(bookingId, token);
+        var booking = await _bookingRepository.GetByIdAsync(bookingId, token);
         if (booking == null)
             throw new NotFoundException($"Бронирование с id {bookingId} не найдено в базе данных.");
                 

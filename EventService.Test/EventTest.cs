@@ -14,12 +14,12 @@ namespace EventServiceTest;
 public class EventTest
 {
     private readonly Mock<IEventValidator> _validator;
-    private readonly Mock<IEventRepository> _repository;
+    private readonly Mock<IEventRepository<Event>> _repository;
 
     public EventTest()
     {
         _validator = new Mock<IEventValidator>();
-        _repository = new Mock<IEventRepository>();
+        _repository = new Mock<IEventRepository<Event>>();
         _validator.Setup(v => v.ValidateAsync(It.IsAny<EventCreationDTO>(), CancellationToken.None));
     }
 
@@ -32,7 +32,7 @@ public class EventTest
         var expectedResponse = ev.ToResponse();
 
 
-        _repository.Setup(o => o.AddEventAsync(It.IsAny<Event>())).ReturnsAsync((Event e, CancellationToken t) => e);
+        _repository.Setup(o => o.AddAsync(It.IsAny<Event>())).ReturnsAsync((Event e, CancellationToken t) => e);
         _validator.Setup(o => o.ValidateAsync(It.IsAny<EventUpdateDTO>()));
         var service = new EventService(_validator.Object, _repository.Object);
 
@@ -41,7 +41,7 @@ public class EventTest
 
         // Assert
         _validator.Verify(s => s.ValidateAsync(It.IsAny<EventCreationDTO>()), Times.Once);
-        _repository.Verify(v => v.AddEventAsync(It.IsAny<Event>()), Times.Once);
+        _repository.Verify(v => v.AddAsync(It.IsAny<Event>()), Times.Once);
         result.Title.Should().BeEquivalentTo(expectedResponse.Title);
         result.Description.Should().BeEquivalentTo(expectedResponse.Description);
         result.EndAt.Should().BeSameDateAs(expectedResponse.EndAt);
@@ -71,7 +71,7 @@ public class EventTest
         expectedResponse.EndAt = eventUpdateDTO.EndAt ?? throw new ArgumentNullException("поле не должно быть null");
         expectedResponse.StartAt = eventUpdateDTO.StartAt ?? throw new ArgumentNullException("поле не должно быть null");
 
-        _repository.Setup(o => o.GetEventByIdAsync(ev.Id)).ReturnsAsync(ev);
+        _repository.Setup(o => o.GetByIdAsync(ev.Id)).ReturnsAsync(ev);
         _repository.Setup(o => o.SaveChangesAsync());
 
         var service = new EventService(_validator.Object, _repository.Object);
@@ -81,7 +81,7 @@ public class EventTest
 
         // Assert
         _validator.Verify(s => s.ValidateAsync(It.IsAny<EventUpdateDTO>()), Times.Once);
-        _repository.Verify(r => r.GetEventByIdAsync(ev.Id), Times.Once);
+        _repository.Verify(r => r.GetByIdAsync(ev.Id), Times.Once);
         result.Id.Should().Be(expectedResponse.Id);
         result.Title.Should().BeEquivalentTo(expectedResponse.Title);
         result.Description.Should().BeEquivalentTo(expectedResponse.Description);
@@ -96,14 +96,14 @@ public class EventTest
     {
         // Arrange
         var id = Guid.NewGuid();        
-        _repository.Setup(r => r.DeleteEventAsync(id)).ReturnsAsync(true);
+        _repository.Setup(r => r.DeleteAsync(id)).ReturnsAsync(true);
         var service = new EventService(_validator.Object, _repository.Object);        
 
         // Act
         await service.DeleteEventAsync(id, CancellationToken.None);
 
         // Assert
-        _repository.Verify(r => r.DeleteEventAsync(id), Times.Once);
+        _repository.Verify(r => r.DeleteAsync(id), Times.Once);
     }
 
     [Fact]
@@ -113,14 +113,14 @@ public class EventTest
         var ev = TestData.GetTestEvent();
         var id = ev.Id;
         var expectedResponse = ev.ToResponse();
-        _repository.Setup(o => o.GetEventByIdAsync(id)).ReturnsAsync(ev);
+        _repository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(ev);
         var service = new EventService(_validator.Object, _repository.Object);
 
         // Act
         var result = await service.GetEventByIdAsync(id, CancellationToken.None);
 
         // Assert
-        _repository.Verify(o => o.GetEventByIdAsync(id), Times.Once);
+        _repository.Verify(o => o.GetByIdAsync(id), Times.Once);
         result.Should().BeEquivalentTo(expectedResponse);
     }
 
@@ -133,14 +133,14 @@ public class EventTest
         var filter = new EventFilterRequestDTO();
         var response = data.Select(o => o.ToResponse());
 
-        _repository.Setup(o => o.GetEventsAsync(filter)).ReturnsAsync(data);
+        _repository.Setup(o => o.GetEventsByFilterAsync(filter)).ReturnsAsync(data);
         var service = new EventService(_validator.Object, _repository.Object);
 
         // Act
         var result = await service.GetEventsAsync(filter, CancellationToken.None);
 
         // Assert
-        _repository.Verify(r => r.GetEventsAsync(filter), Times.Once);
+        _repository.Verify(r => r.GetEventsByFilterAsync(filter), Times.Once);
         result.Events.Should().BeEquivalentTo(response);
     }
 
@@ -150,7 +150,7 @@ public class EventTest
         // Arrange
         var id = new Guid("BBA0E5B9-B2D4-4B54-A9D0-7442969CBBF2");
 
-        _repository.Setup(o => o.GetEventByIdAsync(id)).Throws<NotFoundException>();
+        _repository.Setup(o => o.GetByIdAsync(id)).Throws<NotFoundException>();
         var service = new EventService(_validator.Object, _repository.Object);
 
         // Act
@@ -158,7 +158,7 @@ public class EventTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _repository.Verify(o => o.GetEventByIdAsync(id), Times.Once);
+        _repository.Verify(o => o.GetByIdAsync(id), Times.Once);
     }
 
     [Fact]
@@ -174,7 +174,7 @@ public class EventTest
             EndAt = testEvent.EndAt,
             StartAt = testEvent.StartAt,
         };
-        _repository.Setup(o => o.GetEventByIdAsync(id)).Throws<NotFoundException>();
+        _repository.Setup(o => o.GetByIdAsync(id)).Throws<NotFoundException>();
         var service = new EventService(_validator.Object, _repository.Object);
 
         // Act
@@ -182,7 +182,7 @@ public class EventTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _repository.Verify(o => o.GetEventByIdAsync(id), Times.Once);
+        _repository.Verify(o => o.GetByIdAsync(id), Times.Once);
     }
 
     [Fact]
@@ -192,7 +192,7 @@ public class EventTest
         // Arrange
         var id = new Guid("BBA0E5B9-B2D4-4B54-A9D0-7442969CBBF2");
 
-        _repository.Setup(o => o.DeleteEventAsync(id)).Throws<NotFoundException>();
+        _repository.Setup(o => o.DeleteAsync(id)).Throws<NotFoundException>();
         var service = new EventService(_validator.Object, _repository.Object);
 
         // Act
@@ -200,7 +200,7 @@ public class EventTest
 
         // Assert        
         await act.Should().ThrowAsync<NotFoundException>();
-        _repository.Verify(o => o.DeleteEventAsync(id), Times.Once);
+        _repository.Verify(o => o.DeleteAsync(id), Times.Once);
     }
 
     [Fact]
