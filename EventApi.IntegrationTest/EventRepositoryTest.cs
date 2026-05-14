@@ -93,7 +93,7 @@ namespace EventApi.IntegrationTest
             await using var ctx = await CreateContextAsync();
             var b = await ctx.Bookings.Where(o => o.EventId == id).ToListAsync();
             b.Should().BeEmpty();
-            var e = ctx.Events.SingleOrDefaultAsync(e => e.Id == id);
+            var e = await ctx.Events.FirstOrDefaultAsync(e => e.Id == id);
             e.Should().BeNull();
         }
 
@@ -189,7 +189,7 @@ namespace EventApi.IntegrationTest
 
             // Assert
             tr.Should().NotBeNull();
-            tr.Should().BeOfType<IDbContextTransaction>();
+            tr.Should().BeAssignableTo<IDbContextTransaction>();
             ctx.Database.CurrentTransaction.Should().Be(tr);
         }
 
@@ -206,22 +206,28 @@ namespace EventApi.IntegrationTest
             await ctx.SaveChangesAsync();
 
             var rep1 = new EventRepository(await CreateContextAsync());
-            using var tr1 = await rep1.BeginTransactionAsync(CancellationToken.None);
-            var rep2 = new EventRepository(await CreateContextAsync());            
-            using var tr2 = await rep1.BeginTransactionAsync(CancellationToken.None);
+            await using var tr1 = await rep1.BeginTransactionAsync(CancellationToken.None);
+            var rep2 = new EventRepository(await CreateContextAsync());
+            await using var tr2 = await rep2.BeginTransactionAsync(CancellationToken.None);
+            var rep3 = new EventRepository(await CreateContextAsync());
+            await using var tr3 = await rep3.BeginTransactionAsync(CancellationToken.None);
 
             // Act
             var res1 = await rep1.GetEventWithBlockingAsync(id1, CancellationToken.None);
-            var res2 = rep2.GetByIdAsync(id1);
-            Func<Task<Event?>> act = async () => await rep2.GetEventWithBlockingAsync(id2, CancellationToken.None);
+            var res2 = await rep2.GetByIdAsync(id1);
+            Func<Task<Event?>> act = async () => await rep2.GetEventWithBlockingAsync(id1, CancellationToken.None);
+            var res3 = await rep1.GetEventWithBlockingAsync(id2, CancellationToken.None);
 
             // Assert
             res1.Should().BeEquivalentTo(events[0]);
             res2.Should().BeEquivalentTo(events[0]);
-            await act.Should().ThrowAsync<TimeoutException>();
-            tr1.Rollback();
-            var res3 = await rep2.GetEventWithBlockingAsync(id1, CancellationToken.None);
-            res3.Should().BeEquivalentTo(events[0]);
+            res3.Should().BeEquivalentTo(events[1]);
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            await tr1.RollbackAsync();
+            await tr2.RollbackAsync();
+            await using var tr4 = await rep2.BeginTransactionAsync();
+            var res4 = await rep2.GetEventWithBlockingAsync(id1, CancellationToken.None);
+            res4.Should().BeEquivalentTo(events[0]);
         }
     }
 }
