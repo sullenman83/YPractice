@@ -123,7 +123,7 @@ public static class TestData
     /// <returns>Бронирование</returns>
     public static Booking GetTestBooking(Event ev, DateTimeOffset? dateTime = null, int seatsCount = 1, BookingStatus status = BookingStatus.Pending)
     {
-        var date = dateTime ?? DateTimeOffset.UtcNow;
+        var date = dateTime ?? DateTimeProvider.UtcNow;
         return new Booking(status, ev.Id, seatsCount, date);
     }
 }

@@ -2,9 +2,9 @@
 using EventManagement.Extensions.EventExt;
 using EventManagement.Interfaces;
 using EventManagement.Models.Events;
+using EventManagement.Models.Events.Extensions;
 using EventManagement.Models.FilterModels;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EventManagement.Services;
 
@@ -15,13 +15,24 @@ public class EventRepository(AppDbContext context) : BaseRepository<Event>(conte
 {
     
     ///<inheritdoc/>
-    public async Task<IReadOnlyList<Event>> GetEventsByFilterAsync(EventFilterRequestDTO filter, CancellationToken token)
+    public async Task<PaginatedResultDTO> GetEventsByFilterAsync(EventFilterRequestDTO filter, CancellationToken token)
     {
-        return await _context.Events
+        var events = (await _context.Events
            .OrderBy(o => o.StartAt)
            .Filter(filter)
            .Paginate(filter)
-           .ToListAsync();
+           .ToListAsync())
+           .Select(o => o.ToResponse())
+           .ToList();
+        var cnt = _context.Events.Count();
+
+        return new PaginatedResultDTO()
+        {
+            Events = events,
+            EventsCount = cnt,
+            Page = filter.Page,
+            EventsCountOnCurrentPage = events.Count
+        };
     }
 
     ///<inheritdoc/>
@@ -29,6 +40,7 @@ public class EventRepository(AppDbContext context) : BaseRepository<Event>(conte
     {
         try
         {
+            Console.WriteLine($"Старт {DateTime.Now}");
             if (_context.Database.CurrentTransaction == null)
                 throw new InvalidOperationException("Транзакция не открыта.");
 
@@ -41,6 +53,7 @@ public class EventRepository(AppDbContext context) : BaseRepository<Event>(conte
         }
         finally
         {
+            Console.WriteLine($"Финиш {DateTime.Now}");
             _context.Database.SetCommandTimeout(null);
         }
     }

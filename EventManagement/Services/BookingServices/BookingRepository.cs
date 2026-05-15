@@ -28,7 +28,7 @@ public class BookingRepository(AppDbContext context) : BaseRepository<Booking>(c
                 throw new InvalidOperationException("Транзакция не открыта.");
 
             // ToDo: Потенциальное место для рефакторинга. Сделано по большей частью для тестов. Но может быть в каком-то виде применимо и для продакшен кода, чтобы запросы долго не висели в блокировке
-            _context.Database.SetCommandTimeout(TimeSpan.FromMilliseconds(200));
+            _context.Database.SetCommandTimeout(1);
             return await _context.Bookings.FromSql(
     @$"SELECT b.*    
 FROM bookings b 

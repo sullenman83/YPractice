@@ -74,24 +74,13 @@ public class EventService(IEventValidator eventValidator, IEventRepository<Event
     /// </summary>
     /// <param name="filter">Фильтр событий</param>
     /// <param name="token">Токен отмены операции</param>
-    /// <returns>Ттфильтрованный список событий по страницам</returns>
+    /// <returns>Отфильтрованный список событий по страницам</returns>
     /// <exception cref="OperationCanceledException">Операция отменена.</exception>    
     public async Task<PaginatedResultDTO> GetEventsAsync(EventFilterRequestDTO filter, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
 
-        var events = (await _eventRepository.GetEventsByFilterAsync(filter, token))
-            .Select(o => o.ToResponse())
-            .ToList();
-        var cnt = await  _eventRepository.GetCountAsync(token);
-
-        return new PaginatedResultDTO()
-        {
-            Events = events,
-            EventsCount = cnt,
-            Page = filter.Page,
-            EventsCountOnCurrentPage = events.Count
-        };
+        return await _eventRepository.GetEventsByFilterAsync(filter, token);
     }
 
     /// <summary>

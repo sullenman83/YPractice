@@ -14,7 +14,7 @@ public interface IEventRepository<T> : IBaseRepository<T>
     /// Получить все события
     /// </summary>
     /// <returns>Список событий</returns>
-    Task<IReadOnlyList<Event>> GetEventsByFilterAsync(EventFilterRequestDTO filter, CancellationToken token = default);
+    Task<PaginatedResultDTO> GetEventsByFilterAsync(EventFilterRequestDTO filter, CancellationToken token = default);
 
     /// <summary>
     /// Вернуть событие с мягкой блокировкой

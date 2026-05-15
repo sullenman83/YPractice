@@ -1,4 +1,5 @@
-﻿using EventManagement.Common.Exceptions;
+﻿using EventManagement.Common;
+using EventManagement.Common.Exceptions;
 using EventManagement.Data;
 using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
@@ -75,7 +76,7 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
             booking.Confirm();
             await bookingRepository.SaveChangesAsync(stoppingToken);
             transaction.Commit();
-            _logger.LogInformation($"Бронирование с id {booking.Id} обработано в {DateTimeOffset.UtcNow}.");
+            _logger.LogInformation($"Бронирование с id {booking.Id} обработано в {DateTimeProvider.UtcNow}.");
         }
         catch
         {

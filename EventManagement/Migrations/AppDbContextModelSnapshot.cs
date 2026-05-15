@@ -17,7 +17,7 @@ namespace EventManagement.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.7")
+                .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -29,7 +29,7 @@ namespace EventManagement.Migrations
                         .HasColumnName("id");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamptz")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
                     b.Property<Guid>("EventId")
@@ -37,7 +37,7 @@ namespace EventManagement.Migrations
                         .HasColumnName("event_id");
 
                     b.Property<DateTimeOffset?>("ProcessedAt")
-                        .HasColumnType("timestamptz")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("processed_at");
 
                     b.Property<int>("SeatsCount")
@@ -55,8 +55,6 @@ namespace EventManagement.Migrations
 
                     b.ToTable("bookings", null, t =>
                         {
-                            t.HasCheckConstraint("chk_bookings_processed_at", "processed_at > created_at");
-
                             t.HasCheckConstraint("chk_bookings_seats_count", "seats_count > 0");
 
                             t.HasCheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected')");
@@ -79,11 +77,11 @@ namespace EventManagement.Migrations
                         .HasColumnName("description");
 
                     b.Property<DateTimeOffset>("EndAt")
-                        .HasColumnType("timestamptz")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_at");
 
                     b.Property<DateTimeOffset>("StartAt")
-                        .HasColumnType("timestamptz")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("start_at");
 
                     b.Property<string>("Title")

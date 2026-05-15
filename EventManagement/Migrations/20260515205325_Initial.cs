@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EventManagement.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -46,7 +46,6 @@ namespace EventManagement.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_bookings", x => x.id);
-                    table.CheckConstraint("chk_bookings_processed_at", "processed_at > created_at");
                     table.CheckConstraint("chk_bookings_seats_count", "seats_count > 0");
                     table.CheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected')");
                     table.ForeignKey(

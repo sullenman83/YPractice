@@ -1,4 +1,5 @@
-﻿using EventManagement.Models.Events;
+﻿using EventManagement.Common;
+using EventManagement.Models.Events;
 using System.Diagnostics.CodeAnalysis;
 
 namespace EventManagement.Models.BookingModels;
@@ -43,12 +44,12 @@ public class Booking
     public required int SeatsCount { get; init; }
 
     /// <summary>
-    /// Дата и время создания брони
+    /// Дата и время создания брони. Формат времени dd.MM.yyyy hh:mm:ssZ
     /// </summary>
     public required DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
-    /// Дата и время обработки брони
+    /// Дата и время обработки брони. Формат времени dd.MM.yyyy hh:mm:ssZ
     /// </summary>
     public DateTimeOffset? ProcessedAt { get; set; }
 
@@ -86,7 +87,7 @@ public class Booking
     public void Confirm()
     {
         Status = BookingStatus.Confirmed;
-        ProcessedAt = DateTimeOffset.UtcNow;
+        ProcessedAt = DateTimeProvider.UtcNow;
     }
 
     /// <summary>
@@ -95,6 +96,6 @@ public class Booking
     public void Reject()
     {
         Status = BookingStatus.Rejected;
-        ProcessedAt = DateTimeOffset.UtcNow;
+        ProcessedAt = DateTimeProvider.UtcNow;
     }
 }

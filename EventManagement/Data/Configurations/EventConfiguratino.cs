@@ -39,12 +39,10 @@ public class EventConfiguratino : IEntityTypeConfiguration<Event>
 
         builder.Property(p => p.StartAt)
             .HasColumnName("start_at")
-            .HasColumnType("timestamptz")
             .IsRequired();            
 
         builder.Property(p => p.EndAt)
             .HasColumnName("end_at")
-            .HasColumnType("timestamptz")
             .IsRequired();
 
         builder.Property(p => p.TotalSeats)

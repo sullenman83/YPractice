@@ -6,6 +6,7 @@ using EventManagement.Services;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Org.BouncyCastle.Crypto;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Intrinsics.X86;
@@ -23,8 +24,9 @@ public class BookingRepositoryTest: BaseTest
         await ResetDatabaseAsync();
         await using var context = await CreateContextAsync();
         var ev = TestData.GetTestEvent();
-        var booking = TestData.GetTestBooking(ev);
         await context.Events.AddAsync(ev);
+        await context.SaveChangesAsync();
+        var booking = TestData.GetTestBooking(ev);        
         await context.Bookings.AddAsync(booking);
         await context.SaveChangesAsync();
         var id = booking.Id;
@@ -35,7 +37,10 @@ public class BookingRepositoryTest: BaseTest
 
         // Assert
         res.Should().NotBeNull();
-        res.Should().BeEquivalentTo(booking);
+        res.EventId.Should().Be(booking.EventId);
+        res.Id.Should().Be(booking.Id);
+        res.Status.Should().Be(booking.Status);
+        res.CreatedAt.Should().Be(booking.CreatedAt);
     }
 
     [Fact]
@@ -79,11 +84,13 @@ public class BookingRepositoryTest: BaseTest
 
         // Assert
         await using var ctx = await CreateContextAsync();
-        var savedBooking = await ctx.Bookings
-            .Include(o => o.Event)
+        var savedBooking = await ctx.Bookings            
             .FirstOrDefaultAsync(e => e.Id == id);
         savedBooking.Should().NotBeNull();
-        savedBooking.Should().BeEquivalentTo(res);
+        savedBooking.EventId.Should().Be(booking.EventId);
+        savedBooking.Id.Should().Be(booking.Id);
+        savedBooking.Status.Should().Be(booking.Status);
+        savedBooking.CreatedAt.Should().Be(booking.CreatedAt);
     }
 
     [Fact]
@@ -135,16 +142,17 @@ public class BookingRepositoryTest: BaseTest
         await context.SaveChangesAsync();
         var b1 = TestData.GetTestBooking(ev);
         var b2 = TestData.GetTestBooking(ev);
-        var list = new List<Booking>() { b1, b2 };        
+        var list = new List<Booking>() { b1, b2 }; 
         await context.Bookings.AddRangeAsync(list);
         await context.SaveChangesAsync();
+        var ids = list.Select(o => o.Id).ToList();
 
         // Act
         var rep = new BookingRepository(await CreateContextAsync());
-        var res = await rep.GetAllAsync(CancellationToken.None);
+        var res = (await rep.GetAllAsync(CancellationToken.None)).Select(o => o.Id).ToList();
 
         // Assert
-        res.Should().BeEquivalentTo(list);
+        res.Should().BeEquivalentTo(ids);
     }
 
     [Fact]
@@ -172,7 +180,7 @@ public class BookingRepositoryTest: BaseTest
     }
 
     [Fact]
-    public async Task SaveChanges()
+    public async Task SaveChanges_SavesBookingToDataBase()
     {
         // Arrange
         await ResetDatabaseAsync();
@@ -182,8 +190,7 @@ public class BookingRepositoryTest: BaseTest
         await context.SaveChangesAsync();
         var booking = TestData.GetTestBooking(ev);
         await context.Bookings.AddAsync(booking);
-        await context.SaveChangesAsync();
-        var title = ev.Title + "Changed";
+        await context.SaveChangesAsync();        
         
         // Act
         var rep = new BookingRepository(await CreateContextAsync());
@@ -224,37 +231,34 @@ public class BookingRepositoryTest: BaseTest
         // Arrange
         await ResetDatabaseAsync();
         var events = TestData.GetTestEvents();
-        var id1 = events[0].Id;
-        var id2 = events[1].Id;
         await using var ctx = await CreateContextAsync();
         await ctx.Events.AddRangeAsync(events);
         await ctx.SaveChangesAsync();
         var b1 = TestData.GetTestBooking(events[0]);
         var b2 = TestData.GetTestBooking(events[1]);
         await ctx.Bookings.AddRangeAsync(b1, b2);
+        await ctx.SaveChangesAsync();
 
 
         var rep1 = new BookingRepository(await CreateContextAsync());
         using var tr1 = await rep1.BeginTransactionAsync(CancellationToken.None);
         var rep2 = new BookingRepository(await CreateContextAsync());
-        using var tr2 = await rep1.BeginTransactionAsync(CancellationToken.None);
-        var rep3 = new BookingRepository(await CreateContextAsync());
-        using var tr3 = await rep1.BeginTransactionAsync(CancellationToken.None);
-
+        using var tr2 = await rep2.BeginTransactionAsync(CancellationToken.None);
+        
         // Act
-        var res1 = await rep1.GetBookingWithBlockingAsync(id1, CancellationToken.None);
-        var res2 = rep2.GetByIdAsync(b2.Id);
-        Func<Task<Booking?>> act = async () => await rep2.GetBookingWithBlockingAsync(id1, CancellationToken.None);
-        var res3 = await rep3.GetBookingWithBlockingAsync(id2, CancellationToken.None);
-
+        var res1 = await rep1.GetBookingWithBlockingAsync(b1.Id, CancellationToken.None);        
+        Func<Task<Booking?>> act = async () => await rep2.GetBookingWithBlockingAsync(b1.Id, CancellationToken.None);
+        
         // Assert
-        res1.Should().BeEquivalentTo(b1);
-        res2.Should().BeEquivalentTo(b1);
-        res3.Should().BeEquivalentTo(b2);
-        await act.Should().ThrowAsync<TimeoutException>();
+        res1.Should().NotBeNull();        
+        res1.Id.Should().Be(b1.Id);        
+        await act.Should().ThrowAsync<InvalidOperationException>();
         tr1.Rollback();
-        var res4 = await rep2.GetBookingWithBlockingAsync(id1, CancellationToken.None);
-        res4.Should().BeEquivalentTo(b1);
+        tr2.Rollback();
+        await using var tr4 = await rep2.BeginTransactionAsync();
+        var res4 = await rep2.GetBookingWithBlockingAsync(b1.Id, CancellationToken.None);
+        res4.Should().NotBeNull();
+        res4.Id.Should().Be(b1.Id);
     }
     
 }

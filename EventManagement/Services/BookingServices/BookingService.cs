@@ -1,4 +1,5 @@
-﻿using EventManagement.Common.Exceptions;
+﻿using EventManagement.Common;
+using EventManagement.Common.Exceptions;
 using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.BookingModels.Extensions;
@@ -30,7 +31,7 @@ public class BookingService(IBookingRepository<Booking> bookingRepository, IEven
     {
         token.ThrowIfCancellationRequested();
 
-        var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, DateTimeOffset.UtcNow);
+        var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, DateTimeProvider.UtcNow);
         
         try
         {

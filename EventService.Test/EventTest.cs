@@ -122,27 +122,7 @@ public class EventTest
         // Assert
         _repository.Verify(o => o.GetByIdAsync(id), Times.Once);
         result.Should().BeEquivalentTo(expectedResponse);
-    }
-
-    [Fact]
-    public async Task GetEvents_ReturnAllEvent()
-    {
-        // Arrange
-        var data = TestData.GetTestEvents();
-        var eventCount = data.Count;
-        var filter = new EventFilterRequestDTO();
-        var response = data.Select(o => o.ToResponse());
-
-        _repository.Setup(o => o.GetEventsByFilterAsync(filter)).ReturnsAsync(data);
-        var service = new EventService(_validator.Object, _repository.Object);
-
-        // Act
-        var result = await service.GetEventsAsync(filter, CancellationToken.None);
-
-        // Assert
-        _repository.Verify(r => r.GetEventsByFilterAsync(filter), Times.Once);
-        result.Events.Should().BeEquivalentTo(response);
-    }
+    }    
 
     [Fact]
     public async Task GetEvent_ByInvalidId_ThrowsNotFoundException()

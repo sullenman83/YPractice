@@ -16,8 +16,7 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
     /// <exception cref="NotImplementedException"></exception>
     public void Configure(EntityTypeBuilder<Booking> builder)
     {
-        builder.ToTable("bookings")
-            .ToTable(t => t.HasCheckConstraint("chk_bookings_processed_at", "processed_at > created_at"))
+        builder.ToTable("bookings")            
             .ToTable(t => t.HasCheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected')"))
             .ToTable(t => t.HasCheckConstraint("chk_bookings_seats_count", "seats_count > 0"))
             .HasKey(b => b.Id);
@@ -37,13 +36,11 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
             .IsRequired();
 
         builder.Property(p => p.CreatedAt)
-            .HasColumnName("created_at")
-            .HasColumnType("timestamptz")
+            .HasColumnName("created_at")            
             .IsRequired();
 
         builder.Property(p => p.ProcessedAt)
-            .HasColumnName("processed_at")
-            .HasColumnType("timestamptz");
+            .HasColumnName("processed_at");
 
         builder.Property(p => p.EventId)
             .HasColumnName("event_id")
