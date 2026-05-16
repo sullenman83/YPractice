@@ -63,7 +63,7 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
 
         await using var scope = _serviceFactory.CreateAsyncScope();
         var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
-        using var transaction = await bookingRepository.BeginTransactionAsync(stoppingToken);
+        await using var transaction = await bookingRepository.BeginTransactionAsync(stoppingToken);
 
         Booking? booking = null;
         try
@@ -75,18 +75,23 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
 
             booking.Confirm();
             await bookingRepository.SaveChangesAsync(stoppingToken);
-            transaction.Commit();
+            await transaction.CommitAsync(stoppingToken);
             _logger.LogInformation($"Бронирование с id {booking.Id} обработано в {DateTimeProvider.UtcNow}.");
         }
         catch
         {
+            await using var rejectingtSope = _serviceFactory.CreateAsyncScope();
+            var rejectingBookingRepository = rejectingtSope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
+            await using var rejectingTransaction = await rejectingBookingRepository.BeginTransactionAsync(stoppingToken);
+            booking = await bookingRepository.GetBookingWithBlockingAsync(id, stoppingToken);
+
             if (booking != null)
             {
                 booking.Reject();
                 if (!booking.Event?.ReleaseSeats(booking.SeatsCount) ?? false)
                     throw new InvalidOperationException("Количество доступных мест не может быть больше общего количества мест");
-                await bookingRepository.SaveChangesAsync(stoppingToken);
-                transaction.Commit();
+                await rejectingBookingRepository.SaveChangesAsync(stoppingToken);
+                await rejectingTransaction.CommitAsync(stoppingToken);
             }
 
             throw;
