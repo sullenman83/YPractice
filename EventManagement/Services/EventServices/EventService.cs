@@ -27,7 +27,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository<Event
     /// <exception cref="EventValidationException">Ошибка валидации</exception>    
     public async Task<EventResponseDto> CreateEventAsync(EventCreationDTO @event, CancellationToken token)
     {
-        await _eventValidator.ValidateAsync(@event, token);
+        _eventValidator.ValidateAsync(@event);
 
         token.ThrowIfCancellationRequested();
         Event ev = @event.ToEvent();
@@ -114,7 +114,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository<Event
     /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
     public async Task<EventResponseDto> UpdateEventAsync(Guid id, EventUpdateDTO ev, CancellationToken token)
     {        
-        await _eventValidator.ValidateAsync(ev, token);
+        _eventValidator.ValidateAsync(ev);
 
         token.ThrowIfCancellationRequested();
 

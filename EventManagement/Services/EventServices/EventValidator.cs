@@ -11,13 +11,10 @@ public class EventValidator : IEventValidator
     /// <summary>
     /// Проверить событие
     /// </summary>
-    /// <param name="ev">Данные события</param>
-    /// <param name="token">Токен отмены операции</param>
+    /// <param name="ev">Данные события</param>    
     /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
-    public async Task ValidateAsync(EventCreationDTO ev, CancellationToken token)
+    public void ValidateAsync(EventCreationDTO ev)
     {
-        token.ThrowIfCancellationRequested();
-
         ValidateDate(ev.StartAt, ev.EndAt);
     }
 
@@ -25,12 +22,9 @@ public class EventValidator : IEventValidator
     /// Проверить событие
     /// </summary>
     /// <param name="ev">Данные события</param>
-    /// <param name="token">Токен отмены операции</param>
     /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
-    public async Task ValidateAsync(EventUpdateDTO ev, CancellationToken token)
+    public void ValidateAsync(EventUpdateDTO ev)
     {
-        token.ThrowIfCancellationRequested();
-
         ValidateDate(ev.StartAt, ev.EndAt);
     }
 

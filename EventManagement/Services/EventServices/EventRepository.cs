@@ -5,15 +5,16 @@ using EventManagement.Models.Events;
 using EventManagement.Models.Events.Extensions;
 using EventManagement.Models.FilterModels;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace EventManagement.Services;
 
 /// <summary>
 /// Хранилище данных
 /// </summary>
-public class EventRepository(AppDbContext context) : BaseRepository<Event>(context), IEventRepository<Event>
+public class EventRepository(AppDbContext context, ILogger<EventRepository> logger) : BaseRepository<Event>(context), IEventRepository<Event>
 {
-    
+    private readonly ILogger<EventRepository> _logger = logger;
     ///<inheritdoc/>
     public async Task<PaginatedResultDTO> GetEventsByFilterAsync(EventFilterRequestDTO filter, CancellationToken token)
     {
@@ -21,7 +22,7 @@ public class EventRepository(AppDbContext context) : BaseRepository<Event>(conte
            .OrderBy(o => o.StartAt)
            .Filter(filter)
            .Paginate(filter)
-           .ToListAsync())
+           .ToListAsync(token))
            .Select(o => o.ToResponse())
            .ToList();
         var cnt = _context.Events.Count();
@@ -38,9 +39,11 @@ public class EventRepository(AppDbContext context) : BaseRepository<Event>(conte
     ///<inheritdoc/>
     public async Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token)
     {
+        var duration = Stopwatch.StartNew();
         try
         {
-            Console.WriteLine($"Старт {DateTime.Now}");
+            Console.WriteLine($"Старт {DateTime.Now}");            
+            duration.Start();
             if (_context.Database.CurrentTransaction == null)
                 throw new InvalidOperationException("Транзакция не открыта.");
 
@@ -53,7 +56,8 @@ public class EventRepository(AppDbContext context) : BaseRepository<Event>(conte
         }
         finally
         {
-            Console.WriteLine($"Финиш {DateTime.Now}");
+            duration.Stop();
+            _logger.LogTrace(duration.Elapsed.ToString());            
             _context.Database.SetCommandTimeout(null);
         }
     }

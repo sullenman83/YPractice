@@ -11,16 +11,14 @@ public interface IEventValidator
     /// <summary>
     /// Проверить событие
     /// </summary>
-    /// <param name="event">Данные события</param>
-    /// <param name="token">Токен отмены операции</param>
+    /// <param name="event">Данные события</param>    
     /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
-    Task ValidateAsync(EventCreationDTO @event, CancellationToken token = default);
+    void ValidateAsync(EventCreationDTO @event);
 
     /// <summary>
     /// Проверить событие
     /// </summary>
-    /// <param name="event">Данные события</param>
-    /// <param name="token">Токен отмены операции</param>
+    /// <param name="event">Данные события</param>    
     /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
-    Task ValidateAsync(EventUpdateDTO @event, CancellationToken token = default);
+    void ValidateAsync(EventUpdateDTO @event);
 }
