@@ -2,7 +2,7 @@
 using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
 
-namespace EventManagement.Interfaces;
+namespace EventManagement.Interfaces.Services;
 
 /// <summary>
 /// Интерфейс сервиса для работы с событиями

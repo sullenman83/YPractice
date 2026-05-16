@@ -3,7 +3,7 @@ using EventManagement.Models.FilterModels;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
 
-namespace EventManagement.Interfaces;
+namespace EventManagement.Interfaces.Reposirories;
 
 /// <summary>
 /// Хранилище данных

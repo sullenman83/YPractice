@@ -1,6 +1,7 @@
 ﻿using EventManagement.Common;
 using EventManagement.Common.Exceptions;
 using EventManagement.Interfaces;
+using EventManagement.Interfaces.Reposirories;
 using EventManagement.Models.Events;
 using EventManagement.Models.Events.Extensions;
 using EventManagement.Models.FilterModels;

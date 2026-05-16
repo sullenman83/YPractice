@@ -2,7 +2,7 @@
 using EventManagement.Models.Events;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace EventManagement.Interfaces;
+namespace EventManagement.Interfaces.Reposirories;
 
 /// <summary>
 /// Интерфейс хранилища бронирований событий

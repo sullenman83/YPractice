@@ -2,7 +2,7 @@
 using EventManagement.Models.FilterModels;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace EventManagement.Interfaces;
+namespace EventManagement.Interfaces.Reposirories;
 
 /// <summary>
 /// Интерфейс базового репозитория 

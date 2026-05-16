@@ -1,6 +1,6 @@
 ﻿using EventManagement.Data;
 using EventManagement.Extensions.EventExt;
-using EventManagement.Interfaces;
+using EventManagement.Interfaces.Reposirories;
 using EventManagement.Models.Events;
 using EventManagement.Models.Events.Extensions;
 using EventManagement.Models.FilterModels;
@@ -25,12 +25,11 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
            .ToListAsync(token))
            .Select(o => o.ToResponse())
            .ToList();
-        var cnt = _context.Events.Count();
 
         return new PaginatedResultDTO()
         {
             Events = events,
-            EventsCount = cnt,
+            EventsCount = events.Count,
             Page = filter.Page,
             EventsCountOnCurrentPage = events.Count
         };
@@ -46,19 +45,16 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
             duration.Start();
             if (_context.Database.CurrentTransaction == null)
                 throw new InvalidOperationException("Транзакция не открыта.");
-
-            // ToDo: Потенциальное место для рефакторинга. Сделано по большей частью для тестов. Но может быть в каком-то виде применимо и для продакшен кода, чтобы запросы долго не висели в блокировке
-            _context.Database.SetCommandTimeout(1);
-
+            
             return await _context.Events.FromSql(
-    $@"SELECT * FROM events WHERE id = {id} FOR UPDATE")
+$@"SET LOCAL lock_timeout = '1s';
+SELECT * FROM events WHERE id = {id} FOR UPDATE")
                 .FirstOrDefaultAsync(token);
         }
         finally
         {
             duration.Stop();
-            _logger.LogTrace(duration.Elapsed.ToString());            
-            _context.Database.SetCommandTimeout(null);
+            _logger.LogTrace(duration.Elapsed.ToString());
         }
     }
 }

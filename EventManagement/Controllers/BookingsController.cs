@@ -1,4 +1,4 @@
-﻿using EventManagement.Interfaces;
+﻿using EventManagement.Interfaces.Services;
 using EventManagement.Models.BookingModels;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;

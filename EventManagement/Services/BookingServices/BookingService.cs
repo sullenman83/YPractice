@@ -1,6 +1,8 @@
 ﻿using EventManagement.Common;
 using EventManagement.Common.Exceptions;
 using EventManagement.Interfaces;
+using EventManagement.Interfaces.Reposirories;
+using EventManagement.Interfaces.Services;
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.BookingModels.Extensions;
 using EventManagement.Models.Events;
@@ -11,10 +13,11 @@ namespace EventManagement.Services.BookingServices;
 /// <summary>
 /// Сервис для работы с заявками бронирования событий
 /// </summary>
-public class BookingService(IBookingRepository<Booking> bookingRepository, IEventRepository<Event> eventRepoository) : IBookingService
+public class BookingService(IBookingRepository<Booking> bookingRepository, IEventRepository<Event> eventRepoository, IDateTimeProvider dateTimeProvider) : IBookingService
 {
     private readonly IBookingRepository<Booking> _bookingRepository = bookingRepository;
     private readonly IEventRepository<Event> _eventRepository = eventRepoository;
+    private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
 
     /// <summary>
     /// Создать заявку на бронирование события
@@ -31,7 +34,7 @@ public class BookingService(IBookingRepository<Booking> bookingRepository, IEven
     {
         token.ThrowIfCancellationRequested();
 
-        var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, DateTimeProvider.UtcNow);
+        var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, _dateTimeProvider.UtcNow);
         
         try
         {

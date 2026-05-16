@@ -1,5 +1,8 @@
 ﻿using EventManagement.Common;
+using EventManagement.Interfaces;
 using EventManagement.Models.Events;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
 
 namespace EventManagement.Models.BookingModels;
@@ -84,18 +87,18 @@ public class Booking
     /// <summary>
     /// Подтвердить бронирование
     /// </summary>
-    public void Confirm()
+    public void Confirm(IDateTimeProvider dateTimeProvider)
     {
         Status = BookingStatus.Confirmed;
-        ProcessedAt = DateTimeProvider.UtcNow;
+        ProcessedAt = dateTimeProvider.UtcNow;
     }
 
     /// <summary>
     /// Отклонить бронирование
     /// </summary>
-    public void Reject()
+    public void Reject(IDateTimeProvider dateTimeProvider)
     {
         Status = BookingStatus.Rejected;
-        ProcessedAt = DateTimeProvider.UtcNow;
+        ProcessedAt = dateTimeProvider.UtcNow;
     }
 }

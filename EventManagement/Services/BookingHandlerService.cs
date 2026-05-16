@@ -2,6 +2,7 @@
 using EventManagement.Common.Exceptions;
 using EventManagement.Data;
 using EventManagement.Interfaces;
+using EventManagement.Interfaces.Reposirories;
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.Events;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +12,11 @@ namespace EventManagement.Services;
 /// <summary>
 /// Фоновый сервис обработки бронирований
 /// </summary>
-public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceScopeFactory serviceFactory) : BackgroundService
+public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceScopeFactory serviceFactory, IDateTimeProvider dateTimeProvider) : BackgroundService
 {
     private readonly ILogger<BackgroundService> _logger= logger;
     private readonly IServiceScopeFactory _serviceFactory = serviceFactory;
+    private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
 
     private const int ProcessingDelay = 2;
     private const int PollingInterval = 5;
@@ -73,10 +75,10 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
             if (booking == null)
                 throw new NotFoundException($"Не найдено бронирование с id {id}");
 
-            booking.Confirm();
+            booking.Confirm(_dateTimeProvider);
             await bookingRepository.SaveChangesAsync(stoppingToken);
             await transaction.CommitAsync(stoppingToken);
-            _logger.LogInformation($"Бронирование с id {booking.Id} обработано в {DateTimeProvider.UtcNow}.");
+            _logger.LogInformation($"Бронирование с id {booking.Id} обработано в {_dateTimeProvider.UtcNow}.");
         }
         catch
         {
@@ -87,7 +89,7 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
 
             if (booking != null)
             {
-                booking.Reject();
+                booking.Reject(_dateTimeProvider);
                 if (!booking.Event?.ReleaseSeats(booking.SeatsCount) ?? false)
                     throw new InvalidOperationException("Количество доступных мест не может быть больше общего количества мест");
                 await rejectingBookingRepository.SaveChangesAsync(stoppingToken);

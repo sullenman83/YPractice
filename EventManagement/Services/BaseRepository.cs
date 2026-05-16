@@ -1,5 +1,5 @@
 ﻿using EventManagement.Data;
-using EventManagement.Interfaces;
+using EventManagement.Interfaces.Reposirories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
