@@ -1,22 +1,17 @@
 ﻿using EventManagement.Common;
+using EventManagement.Interfaces;
 using EventManagement.Models.BookingModels;
-using EventManagement.Models.Events;
-using EventManagement.Models.FilterModels;
 using EventManagement.Services;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Org.BouncyCastle.Crypto;
-using System;
-using System.Collections.Generic;
-using System.Runtime.Intrinsics.X86;
-using System.Text;
 
 namespace EventApi.IntegrationTest;
 
 public class BookingRepositoryTest: BaseTest
 {
-    
+    private readonly IDateTimeProvider _dateTimeProvider = new DateTimeProvider();
+
     [Fact]
     public async Task GetBookingById_ReturnsBooking()
     {
@@ -26,7 +21,7 @@ public class BookingRepositoryTest: BaseTest
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
-        var booking = TestData.GetTestBooking(ev);        
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);        
         await context.Bookings.AddAsync(booking);
         await context.SaveChangesAsync();
         var id = booking.Id;
@@ -50,7 +45,7 @@ public class BookingRepositoryTest: BaseTest
         await ResetDatabaseAsync();
         await using var context = await CreateContextAsync();
         var ev = TestData.GetTestEvent();
-        var booking = TestData.GetTestBooking(ev);
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
         await context.Bookings.AddAsync(booking);
@@ -74,7 +69,7 @@ public class BookingRepositoryTest: BaseTest
         var ev = TestData.GetTestEvent();        
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
-        var booking = TestData.GetTestBooking(ev);
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
         var id = booking.Id;
 
         // Act
@@ -100,7 +95,7 @@ public class BookingRepositoryTest: BaseTest
         await ResetDatabaseAsync();
         await using var context = await CreateContextAsync();
         var ev = TestData.GetTestEvent();        
-        var booking = TestData.GetTestBooking(ev);
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
         await context.Bookings.AddAsync(booking);
@@ -140,8 +135,8 @@ public class BookingRepositoryTest: BaseTest
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
-        var b1 = TestData.GetTestBooking(ev);
-        var b2 = TestData.GetTestBooking(ev);
+        var b1 = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
+        var b2 = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
         var list = new List<Booking>() { b1, b2 }; 
         await context.Bookings.AddRangeAsync(list);
         await context.SaveChangesAsync();
@@ -165,8 +160,8 @@ public class BookingRepositoryTest: BaseTest
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
-        var b1 = TestData.GetTestBooking(ev);
-        var b2 = TestData.GetTestBooking(ev);
+        var b1 = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
+        var b2 = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
         var list = new List<Booking>() { b1, b2 };
         await context.Bookings.AddRangeAsync(list);
         await context.SaveChangesAsync();
@@ -188,7 +183,7 @@ public class BookingRepositoryTest: BaseTest
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
-        var booking = TestData.GetTestBooking(ev);
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
         await context.Bookings.AddAsync(booking);
         await context.SaveChangesAsync();        
         
@@ -197,7 +192,7 @@ public class BookingRepositoryTest: BaseTest
         var b = await rep.GetByIdAsync(booking.Id, CancellationToken.None);
         if (b == null)
             throw new InvalidOperationException("Что-то работает не так");
-        b.Confirm();
+        b.Confirm(_dateTimeProvider);
         await rep.SaveChangesAsync(CancellationToken.None);
 
 
@@ -234,8 +229,8 @@ public class BookingRepositoryTest: BaseTest
         await using var ctx = await CreateContextAsync();
         await ctx.Events.AddRangeAsync(events);
         await ctx.SaveChangesAsync();
-        var b1 = TestData.GetTestBooking(events[0]);
-        var b2 = TestData.GetTestBooking(events[1]);
+        var b1 = TestData.GetTestBooking(events[0], _dateTimeProvider.UtcNow);
+        var b2 = TestData.GetTestBooking(events[1], _dateTimeProvider.UtcNow);
         await ctx.Bookings.AddRangeAsync(b1, b2);
         await ctx.SaveChangesAsync();
 

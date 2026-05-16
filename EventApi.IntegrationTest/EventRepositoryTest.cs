@@ -1,4 +1,5 @@
 ﻿using EventManagement.Common;
+using EventManagement.Interfaces;
 using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
 using EventManagement.Services;
@@ -11,6 +12,8 @@ namespace EventApi.IntegrationTest
 {
     public class EventRepositoryTest : BaseTest
     {
+        private readonly IDateTimeProvider _dateTimeProvider = new DateTimeProvider();
+
         [Fact]
         public async Task GetEventById_ReturnsEvent()
         {
@@ -79,7 +82,7 @@ namespace EventApi.IntegrationTest
             await using var context = await CreateContextAsync();
             var ev = TestData.GetTestEvent();
             var id = ev.Id;
-            var booking = TestData.GetTestBooking(ev);
+            var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
             await context.Events.AddAsync(ev);
             await context.SaveChangesAsync();
             await context.Bookings.AddAsync(booking);

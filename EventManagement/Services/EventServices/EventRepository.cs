@@ -12,9 +12,8 @@ namespace EventManagement.Services;
 /// <summary>
 /// Хранилище данных
 /// </summary>
-public class EventRepository(AppDbContext context, ILogger<EventRepository> logger) : BaseRepository<Event>(context), IEventRepository<Event>
+public class EventRepository(AppDbContext context) : BaseRepository<Event>(context), IEventRepository<Event>
 {
-    private readonly ILogger<EventRepository> _logger = logger;
     ///<inheritdoc/>
     public async Task<PaginatedResultDTO> GetEventsByFilterAsync(EventFilterRequestDTO filter, CancellationToken token)
     {
@@ -38,23 +37,13 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
     ///<inheritdoc/>
     public async Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token)
     {
-        var duration = Stopwatch.StartNew();
-        try
-        {
-            Console.WriteLine($"Старт {DateTime.Now}");            
-            duration.Start();
-            if (_context.Database.CurrentTransaction == null)
-                throw new InvalidOperationException("Транзакция не открыта.");
+        if (_context.Database.CurrentTransaction == null)
+            throw new InvalidOperationException("Транзакция не открыта.");
             
-            return await _context.Events.FromSql(
+        return await _context.Events.FromSql(
 $@"SET LOCAL lock_timeout = '1s';
 SELECT * FROM events WHERE id = {id} FOR UPDATE")
-                .FirstOrDefaultAsync(token);
-        }
-        finally
-        {
-            duration.Stop();
-            _logger.LogTrace(duration.Elapsed.ToString());
-        }
+            .FirstOrDefaultAsync(token);
+        
     }
 }
