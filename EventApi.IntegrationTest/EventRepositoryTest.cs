@@ -10,23 +10,28 @@ using Org.BouncyCastle.Crypto.Signers;
 
 namespace EventApi.IntegrationTest
 {
-    public class EventRepositoryTest : BaseTest
+    public class EventRepositoryTest : IClassFixture<DatabaseFixture>, IAsyncLifetime
     {
+        private readonly DatabaseFixture _fixture ;
         private readonly IDateTimeProvider _dateTimeProvider = new DateTimeProvider();
+
+        public EventRepositoryTest(DatabaseFixture fixture)
+        {
+            _fixture = fixture;
+        }
 
         [Fact]
         public async Task GetEventById_ReturnsEvent()
         {
             // Arrange
-            await ResetDatabaseAsync();
-            await using var context = await CreateContextAsync();
+            await using var context = _fixture.Context;
             var ev = TestData.GetTestEvent();
             var id = ev.Id;
             await context.Events.AddAsync(ev);
             await context.SaveChangesAsync();
 
             // Act
-            var rep = new EventRepository(await CreateContextAsync());
+            var rep = new EventRepository(_fixture.Context);
             var res = await rep.GetByIdAsync(id, CancellationToken.None);
             
             // Assert
@@ -38,15 +43,14 @@ namespace EventApi.IntegrationTest
         public async Task GetEventById_IncorrectId_ReturnsNull()
         {
             // Arrange
-            await ResetDatabaseAsync();
-            await using var context = await CreateContextAsync();
+            await using var context = _fixture.Context;
             var ev = TestData.GetTestEvent();
             var id = ev.Id;
             await context.Events.AddAsync(ev);
             await context.SaveChangesAsync();
 
             // Act
-            var rep = new EventRepository(await CreateContextAsync());
+            var rep = new EventRepository(_fixture.Context);
             var res = await rep.GetByIdAsync(Guid.NewGuid(), CancellationToken.None);
 
             // Assert
@@ -57,8 +61,7 @@ namespace EventApi.IntegrationTest
         public async Task AddEvent_SavesEventToDataBase()
         {
             // Arrange
-            await ResetDatabaseAsync();
-            await using var context = await CreateContextAsync();
+            await using var context = _fixture.Context;
             var ev = TestData.GetTestEvent();
             var id = ev.Id;
             
@@ -68,7 +71,7 @@ namespace EventApi.IntegrationTest
 
 
             // Assert
-            await using var ctx = await CreateContextAsync();
+            await using var ctx = _fixture.Context;
             var savedEvent = await ctx.Events.FirstOrDefaultAsync(e => e.Id == id);
             savedEvent.Should().NotBeNull();
             savedEvent.Should().BeEquivalentTo(ev);
@@ -78,8 +81,7 @@ namespace EventApi.IntegrationTest
         public async Task DeleteEvent_CascadeDeletesBooking()
         {
             // Arrange
-            await ResetDatabaseAsync();
-            await using var context = await CreateContextAsync();
+            await using var context = _fixture.Context;
             var ev = TestData.GetTestEvent();
             var id = ev.Id;
             var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
@@ -89,11 +91,11 @@ namespace EventApi.IntegrationTest
             await context.SaveChangesAsync();
 
             // Act
-            var rep = new EventRepository(await CreateContextAsync());
+            var rep = new EventRepository(_fixture.Context);
             await rep.DeleteAsync(id, CancellationToken.None);
 
             // Assert
-            await using var ctx = await CreateContextAsync();
+            await using var ctx = _fixture.Context;
             var b = await ctx.Bookings.Where(o => o.EventId == id).ToListAsync();
             b.Should().BeEmpty();
             var e = await ctx.Events.FirstOrDefaultAsync(e => e.Id == id);
@@ -103,11 +105,10 @@ namespace EventApi.IntegrationTest
         [Fact]
         public async Task DeleteEvent_IncorrectId_ReturnsFalse()
         {
-            // Arrange
-            await ResetDatabaseAsync();
+            // Arrange            
             
             // Act
-            var rep = new EventRepository(await CreateContextAsync());
+            var rep = new EventRepository(_fixture.Context);
             var res = await rep.DeleteAsync(Guid.NewGuid(), CancellationToken.None);
 
             // Assert
@@ -118,15 +119,14 @@ namespace EventApi.IntegrationTest
         public async Task GetAllEvents_ReturnsAllEvents()
         {
             // Arrange
-            await ResetDatabaseAsync();
-            await using var context = await CreateContextAsync();
+            await using var context = _fixture.Context;
             var events = TestData.GetTestEvents();
             await context.Events.AddRangeAsync(events);
             await context.SaveChangesAsync();
             var filter = new EventFilterRequestDTO();
 
             // Act
-            var rep = new EventRepository(await CreateContextAsync());
+            var rep = new EventRepository(_fixture.Context);
             var res = await rep.GetAllAsync(CancellationToken.None);
 
             // Assert
@@ -137,14 +137,13 @@ namespace EventApi.IntegrationTest
         public async Task GetEventsCount_ReturnsCount()
         {
             // Arrange
-            await ResetDatabaseAsync();
-            await using var context = await CreateContextAsync();
+            await using var context = _fixture.Context;
             var events = TestData.GetTestEvents();
             await context.Events.AddRangeAsync(events);
             await context.SaveChangesAsync();
 
             // Act
-            var rep = new EventRepository(await CreateContextAsync());
+            var rep = new EventRepository(_fixture.Context);
             var res = await rep.GetCountAsync(CancellationToken.None);
 
             // Assert
@@ -156,15 +155,14 @@ namespace EventApi.IntegrationTest
         public async Task SaveChanges()
         {
             // Arrange
-            await ResetDatabaseAsync();
-            await using var context = await CreateContextAsync();
+            await using var context = _fixture.Context;
             var ev = TestData.GetTestEvent();
             await context.Events.AddAsync(ev);
             await context.SaveChangesAsync();
             var title = ev.Title + "Changed";
 
             // Act
-            var rep = new EventRepository(await CreateContextAsync());
+            var rep = new EventRepository(_fixture.Context);
             var e = await rep.GetByIdAsync(ev.Id, CancellationToken.None);
             if (e == null)
                 throw new InvalidOperationException("Что-то работает не так");            
@@ -173,7 +171,7 @@ namespace EventApi.IntegrationTest
 
 
             // Assert
-            await using var ctx = await CreateContextAsync();
+            await using var ctx = _fixture.Context;
             var changedEvent = await ctx.Events.FirstOrDefaultAsync(o => o.Id == ev.Id);
             changedEvent.Should().NotBeNull();
             changedEvent.Title.Should().Be(title);            
@@ -182,11 +180,10 @@ namespace EventApi.IntegrationTest
         [Fact]
         public async Task BeginTransaction_ReturnsTransaction()
         {
-            // Arrange
-            await ResetDatabaseAsync();
+            // Arrange            
 
             // Act
-            var ctx = await CreateContextAsync();
+            var ctx = _fixture.Context;
             var rep = new EventRepository(ctx);
             await using var tr = await rep.BeginTransactionAsync(CancellationToken.None);            
 
@@ -200,19 +197,18 @@ namespace EventApi.IntegrationTest
         public async Task GetEventWithBlocking_ReturnsBlockedEvent()
         {
             // Arrange
-            await ResetDatabaseAsync();
             var events = TestData.GetTestEvents();
             var id1 = events[0].Id;
             var id2 = events[1].Id;
-            await using var ctx = await CreateContextAsync();
+            await using var ctx = _fixture.Context;
             await ctx.Events.AddRangeAsync(events);
             await ctx.SaveChangesAsync();
 
-            var rep1 = new EventRepository(await CreateContextAsync());
+            var rep1 = new EventRepository(_fixture.Context);
             await using var tr1 = await rep1.BeginTransactionAsync(CancellationToken.None);
-            var rep2 = new EventRepository(await CreateContextAsync());
+            var rep2 = new EventRepository(_fixture.Context);
             await using var tr2 = await rep2.BeginTransactionAsync(CancellationToken.None);
-            var rep3 = new EventRepository(await CreateContextAsync());
+            var rep3 = new EventRepository(_fixture.Context);
             await using var tr3 = await rep3.BeginTransactionAsync(CancellationToken.None);
 
             // Act
@@ -231,6 +227,16 @@ namespace EventApi.IntegrationTest
             await using var tr4 = await rep2.BeginTransactionAsync();
             var res4 = await rep2.GetEventWithBlockingAsync(id1, CancellationToken.None);
             res4.Should().BeEquivalentTo(events[0]);
+        }
+
+        public async Task InitializeAsync()
+        {
+            await _fixture.ResetDatabaseAsync();
+        }
+
+        public Task DisposeAsync()
+        {
+            return Task.CompletedTask;
         }
     }
 }

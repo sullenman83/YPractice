@@ -4,40 +4,31 @@ using Testcontainers.PostgreSql;
 
 namespace EventApi.IntegrationTest;
 
-public class BaseTest : IAsyncLifetime
+public class BaseTest : IClassFixture<DatabaseFixture>
 {
-    protected readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:16-alpine")
-        .WithDatabase("EventManagementTest")
-        .WithUsername("postgres")
-        .WithPassword("postgres")
-        .Build();
+//    private readonly DatabaseFixture _fixture;
 
-    public async Task DisposeAsync()
-    {
-        await _container.DisposeAsync();
-    }
+//    public BaseTest(DatabaseFixture fixture)
+//    {
+//        _fixture = fixture;
+//    }
 
-    public async Task InitializeAsync()
-    {
-        await _container.StartAsync();
-    }
+//    protected async Task<AppDbContext> CreateContextAsync()
+//    {
+//        var options = new DbContextOptionsBuilder<AppDbContext>()
+//            .UseNpgsql(_fixture.ConnectionString)
+//            .Options;
+//        var context = new AppDbContext(options);
+//        await context.Database.MigrateAsync();
 
-    protected async Task<AppDbContext> CreateContextAsync()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(_container.GetConnectionString())
-            .Options;
-        var context = new AppDbContext(options);
-        await context.Database.MigrateAsync();
+//        return context;
+//    }
 
-        return context;
-    }
-
-    protected async Task ResetDatabaseAsync()
-    {
-        await using var context = await CreateContextAsync();
-        await context.Database.ExecuteSqlRawAsync(
-"TRUNCATE TABLE bookings, events CASCADE"
-        );
-    }
+//    protected async Task ResetDatabaseAsync()
+//    {
+//        await using var context = await CreateContextAsync();
+//        await context.Database.ExecuteSqlRawAsync(
+//"TRUNCATE TABLE bookings, events CASCADE"
+//        );
+//    }
 }

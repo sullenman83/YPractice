@@ -5,19 +5,21 @@ using EventManagement.Services;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using System.Runtime.CompilerServices;
 
 namespace EventApi.IntegrationTest;
 
-public class BookingRepositoryTest: BaseTest
+public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<DatabaseFixture>, IAsyncLifetime
 {
     private readonly IDateTimeProvider _dateTimeProvider = new DateTimeProvider();
-
+    private readonly DatabaseFixture _fixture = fixture;
+        
     [Fact]
     public async Task GetBookingById_ReturnsBooking()
     {
         // Arrange
-        await ResetDatabaseAsync();
-        await using var context = await CreateContextAsync();
+        //await ResetDatabaseAsync();
+        await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
@@ -27,7 +29,7 @@ public class BookingRepositoryTest: BaseTest
         var id = booking.Id;
 
         // Act
-        var rep = new BookingRepository(await CreateContextAsync());
+        var rep = new BookingRepository(_fixture.Context);
         var res = await rep.GetByIdAsync(id, CancellationToken.None);
 
         // Assert
@@ -42,8 +44,8 @@ public class BookingRepositoryTest: BaseTest
     public async Task GetBookingById_IncorrectId_ReturnsNull()
     {
         // Arrange
-        await ResetDatabaseAsync();
-        await using var context = await CreateContextAsync();
+        //await ResetDatabaseAsync();
+        await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();
         var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
         await context.Events.AddAsync(ev);
@@ -53,7 +55,7 @@ public class BookingRepositoryTest: BaseTest
         var id = booking.Id;
 
         // Act
-        var rep = new BookingRepository(await CreateContextAsync());
+        var rep = new BookingRepository(_fixture.Context);
         var res = await rep.GetByIdAsync(Guid.NewGuid(), CancellationToken.None);
 
         // Assert
@@ -64,8 +66,8 @@ public class BookingRepositoryTest: BaseTest
     public async Task AddBooking_SavesBookingToDataBase()
     {
         // Arrange
-        await ResetDatabaseAsync();
-        await using var context = await CreateContextAsync();
+        //await ResetDatabaseAsync();
+        await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();        
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
@@ -78,7 +80,7 @@ public class BookingRepositoryTest: BaseTest
 
 
         // Assert
-        await using var ctx = await CreateContextAsync();
+        await using var ctx = _fixture.Context;
         var savedBooking = await ctx.Bookings            
             .FirstOrDefaultAsync(e => e.Id == id);
         savedBooking.Should().NotBeNull();
@@ -92,8 +94,8 @@ public class BookingRepositoryTest: BaseTest
     public async Task DeleteEvent_DeletesBooking()
     {
         // Arrange
-        await ResetDatabaseAsync();
-        await using var context = await CreateContextAsync();
+        //await ResetDatabaseAsync();
+        await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();        
         var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
         await context.Events.AddAsync(ev);
@@ -103,11 +105,11 @@ public class BookingRepositoryTest: BaseTest
         var id = booking.Id;
 
         // Act
-        var rep = new BookingRepository(await CreateContextAsync());
+        var rep = new BookingRepository(_fixture.Context);
         await rep.DeleteAsync(id, CancellationToken.None);
 
         // Assert
-        await using var ctx = await CreateContextAsync();
+        await using var ctx = _fixture.Context;
         var b = await ctx.Bookings.FirstOrDefaultAsync(o => o.Id == id);
         b.Should().BeNull();
     }
@@ -116,10 +118,10 @@ public class BookingRepositoryTest: BaseTest
     public async Task DeleteBooking_IncorrectId_ReturnsFalse()
     {
         // Arrange
-        await ResetDatabaseAsync();
+        //await ResetDatabaseAsync();
 
         // Act
-        var rep = new BookingRepository(await CreateContextAsync());
+        var rep = new BookingRepository(_fixture.Context);
         var res = await rep.DeleteAsync(Guid.NewGuid(), CancellationToken.None);
 
         // Assert
@@ -130,8 +132,8 @@ public class BookingRepositoryTest: BaseTest
     public async Task GetAllBooking_ReturnsAllBooking()
     {
         // Arrange
-        await ResetDatabaseAsync();
-        await using var context = await CreateContextAsync();
+        //await ResetDatabaseAsync();
+        await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
@@ -143,7 +145,7 @@ public class BookingRepositoryTest: BaseTest
         var ids = list.Select(o => o.Id).ToList();
 
         // Act
-        var rep = new BookingRepository(await CreateContextAsync());
+        var rep = new BookingRepository(_fixture.Context);
         var res = (await rep.GetAllAsync(CancellationToken.None)).Select(o => o.Id).ToList();
 
         // Assert
@@ -153,10 +155,9 @@ public class BookingRepositoryTest: BaseTest
     [Fact]
     public async Task GetBookingsCount_ReturnsCount()
     {
-        // Arrange
-        // Arrange
-        await ResetDatabaseAsync();
-        await using var context = await CreateContextAsync();
+        // Arrange        
+        //await ResetDatabaseAsync();
+        await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
@@ -167,7 +168,7 @@ public class BookingRepositoryTest: BaseTest
         await context.SaveChangesAsync();
 
         // Act
-        var rep = new BookingRepository(await CreateContextAsync());
+        var rep = new BookingRepository(_fixture.Context);
         var res = await rep.GetCountAsync(CancellationToken.None);
 
         // Assert
@@ -178,8 +179,8 @@ public class BookingRepositoryTest: BaseTest
     public async Task SaveChanges_SavesBookingToDataBase()
     {
         // Arrange
-        await ResetDatabaseAsync();
-        await using var context = await CreateContextAsync();
+        //await ResetDatabaseAsync();
+        await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
@@ -188,7 +189,7 @@ public class BookingRepositoryTest: BaseTest
         await context.SaveChangesAsync();        
         
         // Act
-        var rep = new BookingRepository(await CreateContextAsync());
+        var rep = new BookingRepository(_fixture.Context);
         var b = await rep.GetByIdAsync(booking.Id, CancellationToken.None);
         if (b == null)
             throw new InvalidOperationException("Что-то работает не так");
@@ -197,7 +198,7 @@ public class BookingRepositoryTest: BaseTest
 
 
         // Assert
-        await using var ctx = await CreateContextAsync();
+        await using var ctx = _fixture.Context;
         var changedBooking = await ctx.Bookings.FirstOrDefaultAsync(o => o.Id == b.Id);
         changedBooking.Should().NotBeNull();
         changedBooking.Status.Should().Be(BookingStatus.Confirmed);
@@ -207,10 +208,10 @@ public class BookingRepositoryTest: BaseTest
     public async Task BeginTransaction_ReturnsTransaction()
     {
         // Arrange
-        await ResetDatabaseAsync();
+        //await ResetDatabaseAsync();
 
         // Act
-        var ctx = await CreateContextAsync();
+        var ctx = _fixture.Context;
         var rep = new BookingRepository(ctx);
         await using var tr = await rep.BeginTransactionAsync(CancellationToken.None);
 
@@ -224,9 +225,9 @@ public class BookingRepositoryTest: BaseTest
     public async Task GetBookingWithBlocking_ReturnsBlockedBooking()
     {
         // Arrange
-        await ResetDatabaseAsync();
+        //await ResetDatabaseAsync();
         var events = TestData.GetTestEvents();
-        await using var ctx = await CreateContextAsync();
+        await using var ctx = _fixture.Context;
         await ctx.Events.AddRangeAsync(events);
         await ctx.SaveChangesAsync();
         var b1 = TestData.GetTestBooking(events[0], _dateTimeProvider.UtcNow);
@@ -235,9 +236,9 @@ public class BookingRepositoryTest: BaseTest
         await ctx.SaveChangesAsync();
 
 
-        var rep1 = new BookingRepository(await CreateContextAsync());
+        var rep1 = new BookingRepository(_fixture.Context);
         using var tr1 = await rep1.BeginTransactionAsync(CancellationToken.None);
-        var rep2 = new BookingRepository(await CreateContextAsync());
+        var rep2 = new BookingRepository(_fixture.Context);
         using var tr2 = await rep2.BeginTransactionAsync(CancellationToken.None);
         
         // Act
@@ -255,5 +256,14 @@ public class BookingRepositoryTest: BaseTest
         res4.Should().NotBeNull();
         res4.Id.Should().Be(b1.Id);
     }
-    
+
+    public async Task InitializeAsync()
+    {
+        await _fixture.ResetDatabaseAsync();
+    }
+
+    public Task DisposeAsync()
+    {
+        return Task.CompletedTask;
+    }
 }

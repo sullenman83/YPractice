@@ -16,12 +16,12 @@ public class EventTest
 {
     private readonly Mock<IEventValidator> _validator;
     private readonly Mock<IEventRepository<Event>> _repository;
-
+    private readonly DateTimeProvider _dateTimeProvider;
     public EventTest()
     {
         _validator = new Mock<IEventValidator>();
         _repository = new Mock<IEventRepository<Event>>();
-        _validator.Setup(v => v.ValidateAsync(It.IsAny<EventCreationDTO>(), CancellationToken.None));
+        _validator.Setup(v => v.ValidateAsync(It.IsAny<EventCreationDTO>()));
     }
 
     [Fact]
@@ -214,7 +214,7 @@ public class EventTest
         var newEvent = TestData.GetTestEventCreationDTO();
         var message = "Ошибка сервиса валидации";
 
-        _validator.Setup(v => v.ValidateAsync(It.IsAny<EventCreationDTO>(), CancellationToken.None))
+        _validator.Setup(v => v.ValidateAsync(It.IsAny<EventCreationDTO>()))
             .Throws(new EventValidationException(message));
         var service = new EventService(_validator.Object, _repository.Object);
 
@@ -223,6 +223,6 @@ public class EventTest
 
         // Assert
         await act.Should().ThrowAsync<EventValidationException>();
-        _validator.Verify(o => o.ValidateAsync(newEvent, CancellationToken.None), Times.Once);
+        _validator.Verify(o => o.ValidateAsync(newEvent), Times.Once);
     }
 }

@@ -26,15 +26,22 @@ public class BookingRepository(AppDbContext context) : BaseRepository<Booking>(c
         if (_context.Database.CurrentTransaction == null)
             throw new InvalidOperationException("Транзакция не открыта.");
 
-        // ToDo: Потенциальное место для рефакторинга. Сделано по большей частью для тестов. Но может быть в каком-то виде применимо и для продакшен кода, чтобы запросы долго не висели в блокировке            
-        return await _context.Bookings.FromSql(
-@$"SET LOCAL lock_timeout = '1s';
-SELECT b.*    
+        await _context.Database.ExecuteSqlRawAsync(
+$@"SET LOCAL lock_timeout = '1s'");
+
+        var result = await _context.Bookings.FromSql(
+$@"SELECT b.*    
 FROM bookings b 
 JOIN events e ON e.id = b.event_id
 WHERE b.id = {id}
 FOR UPDATE")
             .Include(o => o.Event)
             .FirstOrDefaultAsync(token);
+
+
+        await _context.Database.ExecuteSqlRawAsync(
+$@"SET LOCAL lock_timeout = '0'");
+
+        return result;
     }        
 }

@@ -7,23 +7,24 @@ using FluentAssertions;
 
 namespace EventApi.IntegrationTest;
 
-public class EventFilterTest : BaseTest
+public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFixture>, IAsyncLifetime
 {
+    private readonly DatabaseFixture _fixture = fixture;
 
     [Fact]
     public async Task Test_EmptyFilter_ReturnAllEvents()
     {
         // Arrange
-        await ResetDatabaseAsync();
+        //await ResetDatabaseAsync();
         var events = TestData.GetTestEvents();
-        await using var context = await CreateContextAsync();
+        await using var context = _fixture.Context;
         await context.Events.AddRangeAsync(events);
         await context.SaveChangesAsync();
         var filter = new EventFilterRequestDTO();
         var response = events.Select(o => o.ToResponse());
 
         // Act
-        var rep = new EventRepository(await CreateContextAsync());
+        var rep = new EventRepository(_fixture.Context);
         var res = await rep.GetEventsByFilterAsync(filter, CancellationToken.None);        
 
         // Assert
@@ -33,16 +34,17 @@ public class EventFilterTest : BaseTest
     [Fact]
     public async Task TestFilter_ByTitle_ReturnRelevantEvents()
     {
-        await ResetDatabaseAsync();
+        // Arrange
+        //await ResetDatabaseAsync();
         var events = TestData.GetTestEvents();
-        await using var context = await CreateContextAsync();
+        await using var context = _fixture.Context;
         await context.Events.AddRangeAsync(events);
         await context.SaveChangesAsync();
         var title = "событие для";
         var filter = new EventFilterRequestDTO() { Title = title };
 
         // Act
-        var rep = new EventRepository(await CreateContextAsync());
+        var rep = new EventRepository(_fixture.Context);
         var result = await rep.GetEventsByFilterAsync(filter, CancellationToken.None);
 
         // Assert
@@ -54,9 +56,9 @@ public class EventFilterTest : BaseTest
     public async Task TestFilter_ByDate_ReturnRelevantEvents()
     {
         // Arrange
-        await ResetDatabaseAsync();
+        //await ResetDatabaseAsync();
         var events = TestData.GetTestEvents();
-        await using var context = await CreateContextAsync();
+        await using var context = _fixture.Context;
         await context.Events.AddRangeAsync(events);
         var ev = TestData.GetTestEvent();
         ev.StartAt = events.First().StartAt.AddDays(-1);
@@ -69,7 +71,7 @@ public class EventFilterTest : BaseTest
         var response = events.Select(o => o.ToResponse()).ToList();
         
         // Act
-        var rep = new EventRepository(await CreateContextAsync());
+        var rep = new EventRepository(_fixture.Context);
         var result = await rep.GetEventsByFilterAsync(filter, CancellationToken.None);
 
         // Assert
@@ -81,8 +83,8 @@ public class EventFilterTest : BaseTest
     public async Task PaginationTest_ReturnsRightEvents()
     {
         // Arrange
-        await ResetDatabaseAsync();
-        await using var context = await CreateContextAsync();
+        //await ResetDatabaseAsync();
+        await using var context = _fixture.Context;
         for (var i = 0; i < 3; i++)
         {
             await context.Events.AddRangeAsync(TestData.GetTestEvents());
@@ -94,12 +96,22 @@ public class EventFilterTest : BaseTest
         var filter = new EventFilterRequestDTO() { PageSize = pageSize, Page = currentPage};
 
         // Act
-        var rep = new EventRepository(await CreateContextAsync());
+        var rep = new EventRepository(_fixture.Context);
         var result = await rep.GetEventsByFilterAsync(filter, CancellationToken.None);
 
         // Assert
         result.Events.Should().HaveCount(2);
         result.EventsCountOnCurrentPage.Should().Be(2);
         result.EventsCount.Should().Be(eventsCount);
+    }
+
+    public async Task InitializeAsync()
+    {
+        await _fixture.ResetDatabaseAsync();
+    }
+
+    public Task DisposeAsync()
+    {
+        return Task.CompletedTask;
     }
 }
