@@ -1,4 +1,8 @@
-﻿using EventManagement.Models.Events;
+﻿using EventManagement.Common;
+using EventManagement.Interfaces;
+using EventManagement.Models.Events;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
 
 namespace EventManagement.Models.BookingModels;
@@ -43,12 +47,12 @@ public class Booking
     public required int SeatsCount { get; init; }
 
     /// <summary>
-    /// Дата и время создания брони
+    /// Дата и время создания брони. Формат времени dd.MM.yyyy hh:mm:ssZ
     /// </summary>
     public required DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
-    /// Дата и время обработки брони
+    /// Дата и время обработки брони. Формат времени dd.MM.yyyy hh:mm:ssZ
     /// </summary>
     public DateTimeOffset? ProcessedAt { get; set; }
 
@@ -83,18 +87,18 @@ public class Booking
     /// <summary>
     /// Подтвердить бронирование
     /// </summary>
-    public void Confirm()
+    public void Confirm(IDateTimeProvider dateTimeProvider)
     {
         Status = BookingStatus.Confirmed;
-        ProcessedAt = DateTimeOffset.UtcNow;
+        ProcessedAt = dateTimeProvider.UtcNow;
     }
 
     /// <summary>
     /// Отклонить бронирование
     /// </summary>
-    public void Reject()
+    public void Reject(IDateTimeProvider dateTimeProvider)
     {
         Status = BookingStatus.Rejected;
-        ProcessedAt = DateTimeOffset.UtcNow;
+        ProcessedAt = dateTimeProvider.UtcNow;
     }
 }

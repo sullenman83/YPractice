@@ -1,4 +1,4 @@
-﻿using EventManagement.Interfaces;
+﻿using EventManagement.Interfaces.Services;
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
@@ -31,7 +31,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
     /// <response code="200">Возвращает HTTP статус-код 200 в случае успешного ответа</response>    
     [HttpGet]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType<PaginatedResultDTO>(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAllEventsAsync([FromQuery] EventFilterRequestDTO filter,CancellationToken token)
     {       
@@ -48,7 +48,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
     /// <response code="200">Возвращает HTTP статус-код 200 в случае успешного ответа</response>
     [HttpGet("{id}")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType<EventResponseDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
@@ -104,7 +104,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
     /// <param name="token">Токен отмены операции</param>
     /// <response code="200">Возвращает HTTP статус-код 200 в случае успешного ответа</response>    
     [HttpDelete("{id}")]
-    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
@@ -112,7 +112,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
     {
         await _eventService.DeleteEventAsync(id, token);        
         
-        return Ok();
+        return NoContent();
     }
 
     /// <summary>

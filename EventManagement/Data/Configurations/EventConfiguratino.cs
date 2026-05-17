@@ -42,7 +42,7 @@ public class EventConfiguratino : IEntityTypeConfiguration<Event>
             .IsRequired();            
 
         builder.Property(p => p.EndAt)
-            .HasColumnName("end_at")            
+            .HasColumnName("end_at")
             .IsRequired();
 
         builder.Property(p => p.TotalSeats)
