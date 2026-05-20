@@ -11,6 +11,11 @@ public enum BookingStatus
     Pending,
 
     /// <summary>
+    /// В обработке
+    /// </summary>
+    Processing,
+
+    /// <summary>
     /// Бронь подтверждена
     /// </summary>
     Confirmed,

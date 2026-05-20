@@ -6,6 +6,7 @@ using EventManagement.Services;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Npgsql;
 using Org.BouncyCastle.Crypto.Signers;
 
 namespace EventApi.IntegrationTest
@@ -227,6 +228,72 @@ namespace EventApi.IntegrationTest
             await using var tr4 = await rep2.BeginTransactionAsync();
             var res4 = await rep2.GetEventWithBlockingAsync(id1, CancellationToken.None);
             res4.Should().BeEquivalentTo(events[0]);
+        }
+
+        [Fact]
+        public async Task SaveEvent_EndAtLessStartAt_ThrowsDbUpdateException()
+        {
+            // Arrange
+            var ev = TestData.GetTestEvent();
+            ev.EndAt = ev.StartAt.AddDays(-1);
+            var ctx = _fixture.Context;
+
+            // Act
+            await ctx.Events.AddAsync(ev);
+            Func<Task> act = async () => await ctx.SaveChangesAsync();
+
+            // Assert
+            await act.Should().ThrowAsync<DbUpdateException>();
+        }
+
+        [Fact]
+        public async Task SaveEvent_NegativeTotalSeats_ThrowsDbUpdateException()
+        {
+            // Arrange
+            var ev = TestData.GetTestEvent();            
+            var ctx = _fixture.Context;
+            var seats = -1;
+
+            // Act
+            Func<Task> act = async () => await ctx.Database.ExecuteSqlInterpolatedAsync(
+$@"INSERT INTO events(id, title, description, start_at, end_at, total_seats, available_seats)
+ VALUES({ev.Id}, {ev.Title}, {ev.Description}, {ev.StartAt}, {ev.EndAt}, {seats}, {ev.AvailableSeats})");
+
+            // Assert
+            await act.Should().ThrowAsync<PostgresException>();
+        }
+
+        [Fact]
+        public async Task SaveEvent_TotalSeatsLessAvailableSeats_ThrowsDbUpdateException()
+        {
+            // Arrange
+            var ev = TestData.GetTestEvent();
+            var ctx = _fixture.Context;
+            var availableSeats = ev.TotalSeats + 1;
+
+            // Act
+            Func<Task> act = async () => await ctx.Database.ExecuteSqlInterpolatedAsync(
+$@"INSERT INTO events(id, title, description, start_at, end_at, total_seats, available_seats)
+ VALUES({ev.Id}, {ev.Title}, {ev.Description}, {ev.StartAt}, {ev.EndAt}, {ev.TotalSeats}, {availableSeats})");
+
+            // Assert
+            await act.Should().ThrowAsync<PostgresException>();
+        }
+
+        [Fact]
+        public async Task SaveEvent_EmptyTitle_ThrowsDbUpdateException()
+        {
+            // Arrange
+            var ev = TestData.GetTestEvent();
+            ev.Title = "";
+            var ctx = _fixture.Context;
+
+            // Act
+            await ctx.Events.AddAsync(ev);
+            Func<Task> act = async () => await ctx.SaveChangesAsync();
+
+            // Assert
+            await act.Should().ThrowAsync<DbUpdateException>();
         }
 
         public async Task InitializeAsync()

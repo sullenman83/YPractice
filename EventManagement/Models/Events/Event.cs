@@ -80,24 +80,7 @@ public class Event
     public List<Booking>? Bookings { get; set; }
     #endregion
 
-    #region Методы
-    /// <summary>
-    /// Создать корпию события
-    /// </summary>
-    /// <returns>Копия события</returns>
-    public Event Clone()
-    {
-        return new Event()
-        {
-            Id = Id,
-            Title = Title,
-            Description = Description,
-            StartAt = StartAt,
-            EndAt = EndAt,
-            TotalSeats = TotalSeats,
-            AvailableSeats = AvailableSeats
-        };
-    }
+    #region Методы    
 
     /// <summary>
     /// Зарезервировать количество мест

@@ -16,6 +16,13 @@ public interface IBookingRepository<T> :IBaseRepository<T>
     /// <param name="token">токен отмены</param>
     /// <returns>Список броней со статусом Pending</returns>
     Task<IReadOnlyList<Booking>> GetPendingBookingsAsync(CancellationToken token = default);
+
+    /// <summary>
+    /// Вернуть бронирования в обработке
+    /// </summary>
+    /// <param name="token">токен отмены</param>
+    /// <returns>Список броней со статусом Processing</returns>
+    Task<IReadOnlyList<Booking>> GetProcessingBookingAsync(CancellationToken token = default);
         
     /// <summary>
     /// Вернуть бронирование с мягкой блокировкой брони и события

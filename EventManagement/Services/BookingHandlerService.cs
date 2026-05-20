@@ -1,25 +1,25 @@
 ﻿using EventManagement.Common;
+using EventManagement.Common.AppSettings;
 using EventManagement.Common.Exceptions;
 using EventManagement.Data;
 using EventManagement.Interfaces;
 using EventManagement.Interfaces.Reposirories;
+using EventManagement.Interfaces.Services;
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.Events;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace EventManagement.Services;
 
 /// <summary>
 /// Фоновый сервис обработки бронирований
 /// </summary>
-public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceScopeFactory serviceFactory, IDateTimeProvider dateTimeProvider) : BackgroundService
+public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceScopeFactory serviceFactory, IOptions<BookingHandlerSettings> bookingHandlerSettings) : BackgroundService
 {
     private readonly ILogger<BackgroundService> _logger= logger;
     private readonly IServiceScopeFactory _serviceFactory = serviceFactory;
-    private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
-
-    private const int ProcessingDelay = 2;
-    private const int PollingInterval = 5;
+    private readonly BookingHandlerSettings _bookingHandlerSettings = bookingHandlerSettings.Value;
 
     /// <summary>
     /// Метод сервиса фоновой обработки броней
@@ -36,15 +36,19 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
             {
                 await using var scope = _serviceFactory.CreateAsyncScope();                
                 var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
-                var ids = (await bookingRepository.GetPendingBookingsAsync(stoppingToken))
-                    .Select(o => o.Id)
+                var pendingList = (await bookingRepository.GetPendingBookingsAsync(stoppingToken))
+                    .Select(o => o.Id);
+                var processingList = (await bookingRepository.GetProcessingBookingAsync(stoppingToken))
+                    .Select(o => o.Id);
+
+                var ids = pendingList.Concat(processingList)
                     .ToList();
 
-               var tasks = ids.Select(o => ProcessBookingAsync(o, stoppingToken));
+                var tasks = ids.Select(o => ProcessBookingAsync(o, stoppingToken));
 
                 await Task.WhenAll(tasks);
                 
-                await Task.Delay(TimeSpan.FromSeconds(PollingInterval), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(_bookingHandlerSettings.PollingInterval), stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -61,41 +65,22 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
 
     private async Task ProcessBookingAsync(Guid id, CancellationToken stoppingToken)
     {
-        await Task.Delay(TimeSpan.FromSeconds(ProcessingDelay), stoppingToken);
-
-        await using var scope = _serviceFactory.CreateAsyncScope();
-        var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
-        await using var transaction = await bookingRepository.BeginTransactionAsync(stoppingToken);
-
-        Booking? booking = null;
+        await Task.Delay(TimeSpan.FromSeconds(_bookingHandlerSettings.ProcessingDelay), stoppingToken);
         try
         {
-            booking = await bookingRepository.GetBookingWithBlockingAsync(id, stoppingToken);
+            await using var scope =  _serviceFactory.CreateAsyncScope();
+            var service = scope.ServiceProvider.GetRequiredService<IBackgroundBookingService>();
+            var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
+            await service.ConfirmBookingAsync(id, stoppingToken);
 
-            if (booking == null)
-                throw new NotFoundException($"Не найдено бронирование с id {id}");
-
-            booking.Confirm(_dateTimeProvider);
-            await bookingRepository.SaveChangesAsync(stoppingToken);
-            await transaction.CommitAsync(stoppingToken);
-            _logger.LogInformation($"Бронирование с id {booking.Id} обработано в {_dateTimeProvider.UtcNow}.");
+            _logger.LogInformation($"Бронирование с id {id} обработано в {dateTimeProvider.UtcNow}.");
         }
         catch
         {
-            await using var rejectingtSope = _serviceFactory.CreateAsyncScope();
-            var rejectingBookingRepository = rejectingtSope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
-            await using var rejectingTransaction = await rejectingBookingRepository.BeginTransactionAsync(stoppingToken);
-            booking = await bookingRepository.GetBookingWithBlockingAsync(id, stoppingToken);
-
-            if (booking != null)
-            {
-                booking.Reject(_dateTimeProvider);
-                if (!booking.Event?.ReleaseSeats(booking.SeatsCount) ?? false)
-                    throw new InvalidOperationException("Количество доступных мест не может быть больше общего количества мест");
-                await rejectingBookingRepository.SaveChangesAsync(stoppingToken);
-                await rejectingTransaction.CommitAsync(stoppingToken);
-            }
-
+            await using var scope = _serviceFactory.CreateAsyncScope();
+            var service = scope.ServiceProvider.GetRequiredService<IBackgroundBookingService>();
+            await service.RejectBookingAsync(id, stoppingToken);
+                
             throw;
         }        
     }

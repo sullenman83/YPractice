@@ -1,3 +1,6 @@
+using EventManagement.Common;
+using EventManagement.Common.AppSettings;
+using EventManagement.Common.Exceptions;
 using EventManagement.Data;
 using EventManagement.Extensions.Middleware;
 using EventManagement.Interfaces;
@@ -9,12 +12,20 @@ using EventManagement.Services;
 using EventManagement.Services.BookingServices;
 using EventManagement.Services.EventServices;
 using Microsoft.EntityFrameworkCore;
+using Polly;
+using Polly.Retry;
 using System.Reflection;
 
+var retrySettings = new RetrySettings();
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Не задана строка подключения к базе даных");
+
+builder.Configuration.GetSection("RetrySettings").Bind(retrySettings);
+
+builder.Services.Configure<BookingHandlerSettings>(builder.Configuration.GetSection("BookingHandlerSettings"));
+
 
 if (builder.Environment.IsDevelopment())
 {
@@ -46,6 +57,17 @@ else
         options.UseNpgsql(connectionString);
     });
 }
+
+builder.Services.AddResiliencePipeline(Consts.CreateBookingRetry, builder =>
+{
+    builder.AddRetry(new RetryStrategyOptions()
+    {
+        ShouldHandle = new PredicateBuilder().Handle<DbOperationWithBlockinRowException>(),
+        MaxRetryAttempts = retrySettings.MaxRetryAttempts,
+        Delay = TimeSpan.FromMilliseconds(retrySettings.Delay),
+        BackoffType = DelayBackoffType.Constant
+    });
+});
 
 builder.Services.AddScoped<IEventValidator, EventValidator>();
 builder.Services.AddScoped<IEventService, EventService>();

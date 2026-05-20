@@ -5,6 +5,7 @@ using EventManagement.Services;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Npgsql;
 using System.Runtime.CompilerServices;
 
 namespace EventApi.IntegrationTest;
@@ -17,8 +18,7 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
     [Fact]
     public async Task GetBookingById_ReturnsBooking()
     {
-        // Arrange
-        //await ResetDatabaseAsync();
+        // Arrange        
         await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
@@ -44,7 +44,6 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
     public async Task GetBookingById_IncorrectId_ReturnsNull()
     {
         // Arrange
-        //await ResetDatabaseAsync();
         await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();
         var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
@@ -65,8 +64,7 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
     [Fact]
     public async Task AddBooking_SavesBookingToDataBase()
     {
-        // Arrange
-        //await ResetDatabaseAsync();
+        // Arrange        
         await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();        
         await context.Events.AddAsync(ev);
@@ -94,7 +92,6 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
     public async Task DeleteEvent_DeletesBooking()
     {
         // Arrange
-        //await ResetDatabaseAsync();
         await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();        
         var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
@@ -118,7 +115,6 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
     public async Task DeleteBooking_IncorrectId_ReturnsFalse()
     {
         // Arrange
-        //await ResetDatabaseAsync();
 
         // Act
         var rep = new BookingRepository(_fixture.Context);
@@ -132,7 +128,6 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
     public async Task GetAllBooking_ReturnsAllBooking()
     {
         // Arrange
-        //await ResetDatabaseAsync();
         await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
@@ -155,8 +150,7 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
     [Fact]
     public async Task GetBookingsCount_ReturnsCount()
     {
-        // Arrange        
-        //await ResetDatabaseAsync();
+        // Arrange
         await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
@@ -179,7 +173,6 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
     public async Task SaveChanges_SavesBookingToDataBase()
     {
         // Arrange
-        //await ResetDatabaseAsync();
         await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
@@ -208,7 +201,6 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
     public async Task BeginTransaction_ReturnsTransaction()
     {
         // Arrange
-        //await ResetDatabaseAsync();
 
         // Act
         var ctx = _fixture.Context;
@@ -225,7 +217,6 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
     public async Task GetBookingWithBlocking_ReturnsBlockedBooking()
     {
         // Arrange
-        //await ResetDatabaseAsync();
         var events = TestData.GetTestEvents();
         await using var ctx = _fixture.Context;
         await ctx.Events.AddRangeAsync(events);
@@ -255,6 +246,46 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         var res4 = await rep2.GetBookingWithBlockingAsync(b1.Id, CancellationToken.None);
         res4.Should().NotBeNull();
         res4.Id.Should().Be(b1.Id);
+    }
+
+    [Fact]
+    public async Task SaveBooking_IncorrectEnum_ThrowsDbUpdateException()
+    {
+        // Arrange
+        var ev = TestData.GetTestEvent();
+        var ctx = _fixture.Context;
+        await ctx.SaveChangesAsync();
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow, status: (BookingStatus)10);
+
+        // Act
+        ctx.Bookings.Add(booking);
+        Func<Task> act = async () => await ctx.SaveChangesAsync();
+
+        //        Func<Task> act = async () => await ctx.Database.ExecuteSqlInterpolatedAsync(
+        //$@"INSERT INTO bookings(id, status, seats_count, created_at, processed_at,event_id)
+        // VALUES({booking.Id}, 'status', {booking.SeatsCount}, {booking.CreatedAt}, {booking.ProcessedAt}, {ev.Id})");
+
+        // Assert
+        await act.Should().ThrowAsync<DbUpdateException>();
+    }
+
+    [Fact]
+    public async Task SaveBooking_NegativeSeatsCount_ThrowsDbUpdateException()
+    {
+        // Arrange
+        var ev = TestData.GetTestEvent();
+        var ctx = _fixture.Context;
+        await ctx.SaveChangesAsync();
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
+        var seatsCount = -1;
+
+        // Act        
+        Func<Task> act = () => ctx.Database.ExecuteSqlInterpolatedAsync(
+$@"INSERT INTO bookings(id, status, seats_count, created_at, processed_at,event_id)
+ VALUES({booking.Id}, {booking.Status}, {seatsCount} , {booking.CreatedAt}, {booking.ProcessedAt}, {ev.Id})");
+
+        // Assert
+        await act.Should().ThrowAsync<PostgresException>();
     }
 
     public async Task InitializeAsync()

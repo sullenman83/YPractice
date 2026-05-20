@@ -15,7 +15,6 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
     public async Task Test_EmptyFilter_ReturnAllEvents()
     {
         // Arrange
-        //await ResetDatabaseAsync();
         var events = TestData.GetTestEvents();
         await using var context = _fixture.Context;
         await context.Events.AddRangeAsync(events);
@@ -35,7 +34,6 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
     public async Task TestFilter_ByTitle_ReturnRelevantEvents()
     {
         // Arrange
-        //await ResetDatabaseAsync();
         var events = TestData.GetTestEvents();
         await using var context = _fixture.Context;
         await context.Events.AddRangeAsync(events);
@@ -56,7 +54,6 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
     public async Task TestFilter_ByDate_ReturnRelevantEvents()
     {
         // Arrange
-        //await ResetDatabaseAsync();
         var events = TestData.GetTestEvents();
         await using var context = _fixture.Context;
         await context.Events.AddRangeAsync(events);
@@ -82,8 +79,7 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
     [Fact]
     public async Task PaginationTest_ReturnsRightEvents()
     {
-        // Arrange
-        //await ResetDatabaseAsync();
+        // Arrange        
         await using var context = _fixture.Context;
         for (var i = 0; i < 3; i++)
         {
@@ -103,6 +99,30 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
         result.Events.Should().HaveCount(2);
         result.EventsCountOnCurrentPage.Should().Be(2);
         result.EventsCount.Should().Be(eventsCount);
+    }
+
+    [Fact]
+    public async Task PaginationTest_FilterEvent_ReturnsRigthEventCount()
+    {
+        await using var context = _fixture.Context;
+        for (var i = 0; i < 3; i++)
+        {
+            await context.Events.AddRangeAsync(TestData.GetTestEvents());
+        }
+        await context.SaveChangesAsync();
+        var eventsCount = context.Events.Count();
+        var pageSize = 1;
+        var currentPage = 1;
+        var title = "событие для";
+        var filter = new EventFilterRequestDTO() { Title = title, PageSize = pageSize, Page = currentPage };
+
+        // Act
+        var rep = new EventRepository(_fixture.Context);
+        var result = await rep.GetEventsByFilterAsync(filter, CancellationToken.None);
+
+        // Assert
+        result.Events.Should().HaveCount(1);
+        result.EventsCount.Should().Be(3);
     }
 
     public async Task InitializeAsync()

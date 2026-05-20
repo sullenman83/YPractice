@@ -57,6 +57,11 @@ public class Booking
     public DateTimeOffset? ProcessedAt { get; set; }
 
     /// <summary>
+    /// Дата и время начала обработки брони. Формат времени dd.MM.yyyy hh:mm:ssZ
+    /// </summary>
+    public DateTimeOffset? ProcessingAt { get; set; }
+
+    /// <summary>
     /// Идентификатор события, к которому привязана бронь
     /// </summary>
     public required Guid EventId { get; init; }
@@ -65,25 +70,7 @@ public class Booking
     /// Событие
     /// </summary>
     public Event? Event { get; init; }
-
-    /// <summary>
-    /// Создать клон объекта
-    /// </summary>
-    /// <returns></returns>
-    public Booking Clone()
-    {
-        return new Booking()
-        {
-            CreatedAt = CreatedAt,
-            Id = Id,
-            Status = Status,
-            EventId = EventId,
-            SeatsCount = SeatsCount,
-            ProcessedAt = ProcessedAt,
-            Event = Event,
-        };
-    }
-
+    
     /// <summary>
     /// Подтвердить бронирование
     /// </summary>
@@ -100,5 +87,15 @@ public class Booking
     {
         Status = BookingStatus.Rejected;
         ProcessedAt = dateTimeProvider.UtcNow;
+    }
+
+    /// <summary>
+    /// Начать обработку
+    /// </summary>
+    /// <param name="dateTimeProvider"></param>
+    public void Process(IDateTimeProvider dateTimeProvider)
+    {
+        Status = BookingStatus.Processing;
+        ProcessingAt = dateTimeProvider.UtcNow;
     }
 }

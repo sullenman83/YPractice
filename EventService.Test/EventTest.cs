@@ -16,7 +16,6 @@ public class EventTest
 {
     private readonly Mock<IEventValidator> _validator;
     private readonly Mock<IEventRepository<Event>> _repository;
-    private readonly DateTimeProvider _dateTimeProvider;
     public EventTest()
     {
         _validator = new Mock<IEventValidator>();
