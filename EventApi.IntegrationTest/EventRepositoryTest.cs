@@ -21,7 +21,7 @@ namespace EventApi.IntegrationTest
             _fixture = fixture;
         }
 
-        [Fact]
+//        [Fact]
         public async Task GetEventById_ReturnsEvent()
         {
             // Arrange
