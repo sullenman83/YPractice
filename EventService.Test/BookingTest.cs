@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Moq;
 using Polly;
 using Polly.Registry;
+using Polly.Retry;
 
 namespace EventServiceTest;
 
@@ -539,5 +540,64 @@ public class BookingTest
         // Assert
         result1.Should().BeTrue();
         result2.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ProcessBooking_ChangeStatusToProcessing_ReturnsChangedStatus()
+    {
+        // Arrange        
+        var eventID = Guid.NewGuid();
+        var booking = new Booking(BookingStatus.Pending, eventID, 1, _dateTimeProvider.UtcNow);
+        var id = booking.Id;
+        _bookingRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(booking);
+        var service = new BookingService(_bookingRepository.Object, _eventRepository.Object, _dateTimeProvider, _pipelineProvider.Object);
+
+
+        // Act
+        var result = await service.GetBookingByIdAsync(id, CancellationToken.None);
+        booking.Process(_dateTimeProvider);
+        var result1 = await service.GetBookingByIdAsync(id, CancellationToken.None);
+
+        // Assert
+        result1.Status.Should().NotBe(BookingStatus.Processing);
+    }
+
+    [Fact]
+    public async Task CreateBookingAsync_RepeatsSpecifiedNumberOf()
+    {
+        // Arrange
+        var repeatCount = 3;
+        var mockProvider = new Mock<ResiliencePipelineProvider<string>>();
+        var retryPipeline = new ResiliencePipelineBuilder()
+            .AddRetry(new RetryStrategyOptions()
+            {
+                Delay = TimeSpan.Zero,
+                MaxRetryAttempts = repeatCount,
+                BackoffType = DelayBackoffType.Constant,
+                ShouldHandle = new PredicateBuilder().Handle<DbOperationWithBlockingRowException>()
+            })
+            .Build();
+        mockProvider.Setup(o => o.GetPipeline(Consts.CreateBookingRetry))
+            .Returns(retryPipeline);
+
+        var totalSeats = 10;
+        var ev = TestData.GetTestEvent(totalSeats);
+        var id = ev.Id;
+        var seats = 5;
+
+        var tr = new Mock<IDbContextTransaction>();
+        _eventRepository.Setup(o => o.BeginTransactionAsync()).ReturnsAsync(tr.Object);
+        _eventRepository.Setup(o => o.GetEventWithBlockingAsync(id)).Throws<DbOperationWithBlockingRowException>();
+        _eventRepository.Setup(o => o.SaveChangesAsync());
+        _bookingRepository.Setup(o => o.AddAsync(It.IsAny<Booking>())).ReturnsAsync((Booking b, CancellationToken t) => b);
+        tr.Setup(o => o.CommitAsync());
+        tr.Setup(o => o.RollbackAsync());
+        var service = new BookingService(_bookingRepository.Object, _eventRepository.Object, _dateTimeProvider, mockProvider.Object);
+
+        // Act
+        var result = await service.CreateBookingAsync(id, seats, CancellationToken.None);
+
+        // Assert
+        _eventRepository.Verify(o => o.GetEventWithBlockingAsync(id), Times.Exactly(3));
     }
 }

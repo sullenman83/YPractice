@@ -4,23 +4,23 @@
 /// <summary>
 /// Класс исключение для генерации при возникновении ошибок операций БД с блокировкой строк
 /// </summary>
-public class DbOperationWithBlockinRowException : Exception
+public class DbOperationWithBlockingRowException : Exception
 {
     /// <summary>
     /// Конструктор
     /// </summary>
-    public DbOperationWithBlockinRowException() : base() { }
+    public DbOperationWithBlockingRowException() : base() { }
 
     /// <summary>
     /// Конструктор
     /// </summary>
     /// <param name="message">Сообщение об ошибке</param>
-    public DbOperationWithBlockinRowException(string message) : base(message) { }
+    public DbOperationWithBlockingRowException(string message) : base(message) { }
 
     /// <summary>
     /// Конструктор
     /// </summary>
     /// <param name="message">Сообщение об ошибке</param>
     /// <param name="inner">Обеъкт исключения</param>
-    public DbOperationWithBlockinRowException(string message, Exception inner) : base(message, inner) { }
+    public DbOperationWithBlockingRowException(string message, Exception inner) : base(message, inner) { }
 }

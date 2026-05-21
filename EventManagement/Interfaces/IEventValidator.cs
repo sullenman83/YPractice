@@ -13,12 +13,12 @@ public interface IEventValidator
     /// </summary>
     /// <param name="event">Данные события</param>    
     /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
-    void ValidateAsync(EventCreationDTO @event);
+    void Validate(EventCreationDTO @event);
 
     /// <summary>
     /// Проверить событие
     /// </summary>
     /// <param name="event">Данные события</param>    
     /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
-    void ValidateAsync(EventUpdateDTO @event);
+    void Validate(EventUpdateDTO @event);
 }

@@ -20,7 +20,7 @@ public class EventTest
     {
         _validator = new Mock<IEventValidator>();
         _repository = new Mock<IEventRepository<Event>>();
-        _validator.Setup(v => v.ValidateAsync(It.IsAny<EventCreationDTO>()));
+        _validator.Setup(v => v.Validate(It.IsAny<EventCreationDTO>()));
     }
 
     [Fact]
@@ -33,14 +33,14 @@ public class EventTest
 
 
         _repository.Setup(o => o.AddAsync(It.IsAny<Event>())).ReturnsAsync((Event e, CancellationToken t) => e);
-        _validator.Setup(o => o.ValidateAsync(It.IsAny<EventUpdateDTO>()));
+        _validator.Setup(o => o.Validate(It.IsAny<EventUpdateDTO>()));
         var service = new EventService(_validator.Object, _repository.Object);
 
         // Act
         var result = await service.CreateEventAsync(evCreationDTO, CancellationToken.None);
 
         // Assert
-        _validator.Verify(s => s.ValidateAsync(It.IsAny<EventCreationDTO>()), Times.Once);
+        _validator.Verify(s => s.Validate(It.IsAny<EventCreationDTO>()), Times.Once);
         _repository.Verify(v => v.AddAsync(It.IsAny<Event>()), Times.Once);
         result.Title.Should().BeEquivalentTo(expectedResponse.Title);
         result.Description.Should().BeEquivalentTo(expectedResponse.Description);
@@ -80,7 +80,7 @@ public class EventTest
         var result = await service.UpdateEventAsync(id, eventUpdateDTO, CancellationToken.None);
 
         // Assert
-        _validator.Verify(s => s.ValidateAsync(It.IsAny<EventUpdateDTO>()), Times.Once);
+        _validator.Verify(s => s.Validate(It.IsAny<EventUpdateDTO>()), Times.Once);
         _repository.Verify(r => r.GetByIdAsync(ev.Id), Times.Once);
         result.Id.Should().Be(expectedResponse.Id);
         result.Title.Should().BeEquivalentTo(expectedResponse.Title);
@@ -213,7 +213,7 @@ public class EventTest
         var newEvent = TestData.GetTestEventCreationDTO();
         var message = "Ошибка сервиса валидации";
 
-        _validator.Setup(v => v.ValidateAsync(It.IsAny<EventCreationDTO>()))
+        _validator.Setup(v => v.Validate(It.IsAny<EventCreationDTO>()))
             .Throws(new EventValidationException(message));
         var service = new EventService(_validator.Object, _repository.Object);
 
@@ -222,6 +222,6 @@ public class EventTest
 
         // Assert
         await act.Should().ThrowAsync<EventValidationException>();
-        _validator.Verify(o => o.ValidateAsync(newEvent), Times.Once);
+        _validator.Verify(o => o.Validate(newEvent), Times.Once);
     }
 }

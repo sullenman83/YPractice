@@ -56,7 +56,7 @@ public class EventRepository(AppDbContext context) : BaseRepository<Event>(conte
         }
         catch (NpgsqlException ex)
         {
-            throw new DbOperationWithBlockinRowException("Ошибка плучения собыия с блокировкой", ex);
+            throw new DbOperationWithBlockingRowException("Ошибка плучения собыия с блокировкой", ex);
         }        
     }
 }

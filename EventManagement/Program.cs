@@ -62,7 +62,7 @@ builder.Services.AddResiliencePipeline(Consts.CreateBookingRetry, builder =>
 {
     builder.AddRetry(new RetryStrategyOptions()
     {
-        ShouldHandle = new PredicateBuilder().Handle<DbOperationWithBlockinRowException>(),
+        ShouldHandle = new PredicateBuilder().Handle<DbOperationWithBlockingRowException>(),
         MaxRetryAttempts = retrySettings.MaxRetryAttempts,
         Delay = TimeSpan.FromMilliseconds(retrySettings.Delay),
         BackoffType = DelayBackoffType.Constant

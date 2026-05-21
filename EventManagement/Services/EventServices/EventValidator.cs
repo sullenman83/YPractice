@@ -13,7 +13,7 @@ public class EventValidator : IEventValidator
     /// </summary>
     /// <param name="ev">Данные события</param>    
     /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
-    public void ValidateAsync(EventCreationDTO ev)
+    public void Validate(EventCreationDTO ev)
     {
         ValidateDate(ev.StartAt, ev.EndAt);
     }
@@ -23,7 +23,7 @@ public class EventValidator : IEventValidator
     /// </summary>
     /// <param name="ev">Данные события</param>
     /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
-    public void ValidateAsync(EventUpdateDTO ev)
+    public void Validate(EventUpdateDTO ev)
     {
         ValidateDate(ev.StartAt, ev.EndAt);
     }

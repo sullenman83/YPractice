@@ -123,6 +123,7 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
         // Assert
         result.Events.Should().HaveCount(1);
         result.EventsCount.Should().Be(3);
+        result.EventsCount.Should().BeLessThan(eventsCount);
     }
 
     public async Task InitializeAsync()
