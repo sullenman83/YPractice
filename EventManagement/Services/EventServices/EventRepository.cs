@@ -19,7 +19,18 @@ public class EventRepository(AppDbContext context) : BaseRepository<Event>(conte
     ///<inheritdoc/>
     public async Task<PaginatedResultDTO> GetEventsByFilterAsync(EventFilterRequestDTO filter, CancellationToken token)
     {
-        var events = (await _context.Events
+        return await getEventsByFilterAsync(_context, filter, token);
+    }
+
+    ///<inheritdoc/>
+    public async Task<PaginatedResultDTO> GetEventsByFilterAsync(AppDbContext context, EventFilterRequestDTO filter, CancellationToken token)
+    {
+        return await getEventsByFilterAsync(context, filter, token);
+    }
+
+    private async Task<PaginatedResultDTO> getEventsByFilterAsync(AppDbContext context, EventFilterRequestDTO filter, CancellationToken token)
+    {
+        var events = (await context.Events
            .OrderBy(o => o.StartAt)
            .Filter(filter)
            .Paginate(filter)
@@ -27,7 +38,7 @@ public class EventRepository(AppDbContext context) : BaseRepository<Event>(conte
            .Select(o => o.ToResponse())
            .ToList();
 
-        var cnt = await _context.Events
+        var cnt = await context.Events
            .OrderBy(o => o.StartAt)
            .Filter(filter)
            .CountAsync(token);
@@ -41,10 +52,11 @@ public class EventRepository(AppDbContext context) : BaseRepository<Event>(conte
         };
     }
 
+
     ///<inheritdoc/>
-    public async Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token)
+    public async Task<Event?> GetEventWithBlockingAsync(Guid id, AppDbContext context, CancellationToken token)
     {
-        if (_context.Database.CurrentTransaction == null)
+        if (context.Database.CurrentTransaction == null)
             throw new InvalidOperationException("Транзакция не открыта.");
         try
         {   

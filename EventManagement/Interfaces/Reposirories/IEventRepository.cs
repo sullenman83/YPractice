@@ -1,4 +1,5 @@
-﻿using EventManagement.Models.Events;
+﻿using EventManagement.Data;
+using EventManagement.Models.Events;
 using EventManagement.Models.FilterModels;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
@@ -13,15 +14,27 @@ public interface IEventRepository<T> : IBaseRepository<T>
     /// <summary>
     /// Получить все события
     /// </summary>
+    /// <param name="filter">Фильтр</param>
+    /// <param name="token">Токен отмены</param>
     /// <returns>Список событий</returns>
     Task<PaginatedResultDTO> GetEventsByFilterAsync(EventFilterRequestDTO filter, CancellationToken token = default);
+
+    /// <summary>
+    /// Получить все события
+    /// </summary>
+    /// <param name="context">Контекст базы данных</param>
+    /// <param name="filter">Фильтр</param>
+    /// <param name="token">Токен отмены</param>
+    /// <returns>Список событий</returns>
+    Task<PaginatedResultDTO> GetEventsByFilterAsync(AppDbContext context, EventFilterRequestDTO filter, CancellationToken token = default);
 
     /// <summary>
     /// Вернуть событие с мягкой блокировкой
     /// </summary>
     /// <param name="id">Идентификатор события</param>
+    /// <param name="context">Контекст базы данных</param>
     /// <param name="token">Токен отмены</param>
     /// <returns>Событие</returns>
     /// <exception cref="InvalidOperationException"></exception>
-    Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token = default);
+    Task<Event?> GetEventWithBlockingAsync(Guid id, AppDbContext context, CancellationToken token = default);
 }

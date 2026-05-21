@@ -46,21 +46,26 @@ public class BookingService(IBookingRepository<Booking> bookingRepository
         {
             return await _retryPipeline.ExecuteAsync(async token =>
             {
-                using var tr = await _eventRepository.BeginTransactionAsync(token);
-                var ev = await _eventRepository.GetEventWithBlockingAsync(eventId, token);
+                var context = _eventRepository.Context;
+                using var tr = await context.Database.BeginTransactionAsync(token);
+                var ev = await _eventRepository.GetEventWithBlockingAsync(eventId, context, token);
                 if (ev == null)
                     throw new NotFoundException($"Событие с id {eventId} не найдено в базе данных.");
 
                 if (!ev.TryReserveSeats(seatsCount))
                     throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
 
-                await _bookingRepository.AddAsync(booking, token);
-                await _eventRepository.SaveChangesAsync(token);
+                await _bookingRepository.AddAsync(booking, context, token);
+                await _eventRepository.SaveChangesAsync(context, token);
                 await tr.CommitAsync();
 
                 return booking.ToResponse();
             });
             
+        }
+        catch(DbOperationWithBlockingRowException ex)
+        {
+            throw new InvalidOperationException("Ошибка при получении события с блокировкой.", ex);
         }
         catch (DbUpdateException ex)
         {

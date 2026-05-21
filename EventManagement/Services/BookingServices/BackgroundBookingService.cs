@@ -20,18 +20,20 @@ public class BackgroundBookingService(IServiceScopeFactory serviceFactory) : IBa
     {
         await using var scope = _serviceFactory.CreateAsyncScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
-        var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();        
+        var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
 
-        await using var transaction = await repository.BeginTransactionAsync(token);
+        var context = repository.Context;
+
+        await using var transaction = await context.Database.BeginTransactionAsync(token);
         
-        var booking = await repository.GetBookingWithBlockingAsync(id, token);
+        var booking = await repository.GetBookingWithBlockingAsync(id, context, token);
 
         if (booking == null)
             throw new NotFoundException($"Не найдено бронирование с id {id}");
 
         booking.Process(dateTimeProvider);
         booking.Confirm(dateTimeProvider);
-        await repository.SaveChangesAsync(token);
+        await repository.SaveChangesAsync(context, token);
         await transaction.CommitAsync(token);
     }
 
@@ -42,9 +44,10 @@ public class BackgroundBookingService(IServiceScopeFactory serviceFactory) : IBa
         var repository = scope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
         var settings = scope.ServiceProvider.GetRequiredService<IOptions<BookingHandlerSettings>>();
         var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
-        await using var tr = await repository.BeginTransactionAsync(token);
+        var context = repository.Context;
+        await using var tr = await context.Database.BeginTransactionAsync(token);
         
-        var booking = await repository.GetBookingWithBlockingAsync(id, token);
+        var booking = await repository.GetBookingWithBlockingAsync(id, context, token);
 
         if (booking != null)
         {
@@ -61,7 +64,7 @@ public class BackgroundBookingService(IServiceScopeFactory serviceFactory) : IBa
                 }
                 
             }
-            await repository.SaveChangesAsync(token);
+            await repository.SaveChangesAsync(context, token);
             await tr.CommitAsync(token);
         }
     }
