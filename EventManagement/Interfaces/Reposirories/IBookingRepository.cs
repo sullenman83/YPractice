@@ -45,15 +45,6 @@ public interface IBookingRepository<T> :IBaseRepository<T>
     /// Вернуть бронирование с мягкой блокировкой брони и события
     /// </summary>
     /// <param name="id">Идентификатор бронирования</param>
-    /// <param name="token">Токен отмены</param>
-    /// <returns>Бронирование</returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    Task<Booking?> GetBookingWithBlockingAsync(Guid id, CancellationToken token = default);
-
-    /// <summary>
-    /// Вернуть бронирование с мягкой блокировкой брони и события
-    /// </summary>
-    /// <param name="id">Идентификатор бронирования</param>
     /// <param name="context">Контекст базы данных</param>
     /// <param name="token">Токен отмены</param>
     /// <returns>Бронирование</returns>

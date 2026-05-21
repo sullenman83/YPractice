@@ -22,20 +22,31 @@ public class BookingRepository(AppDbContext context) : BaseRepository<Booking>(c
     public async Task<IReadOnlyList<Booking>> GetPendingBookingsAsync(AppDbContext context, CancellationToken token)
     {
         return await getPendingBookingsAsync(context, token);
-    }
-
-    
-
-    ///<inheritdoc/>
-    public async Task<Booking?> GetBookingWithBlockingAsync(Guid id, CancellationToken token)
-    {
-        return await getBookingWithBlockingAsync(id, _context, token);
-    }
+    }    
 
     ///<inheritdoc/>
     public async Task<Booking?> GetBookingWithBlockingAsync(Guid id, AppDbContext context, CancellationToken token)
     {
-        return await getBookingWithBlockingAsync(id, context, token);
+        if (context.Database.CurrentTransaction == null)
+            throw new InvalidOperationException("Транзакция не открыта.");
+
+        try
+        {
+            var result = await context.Bookings.FromSql(
+    $@"SELECT b.*    
+FROM bookings b 
+JOIN events e ON e.id = b.event_id
+WHERE b.id = {id}
+FOR UPDATE NOWAIT")
+                .Include(o => o.Event)
+                .FirstOrDefaultAsync(token);
+
+            return result;
+        }
+        catch (NpgsqlException ex)
+        {
+            throw new InvalidOperationException("Ошибка плучения собыия с блокировкой", ex);
+        }
     }
 
 
@@ -56,31 +67,6 @@ public class BookingRepository(AppDbContext context) : BaseRepository<Booking>(c
         return await context.Bookings
             .Where(o => o.Status == BookingStatus.Pending)
             .ToListAsync(token);
-    }
-
-    private async Task<Booking?> getBookingWithBlockingAsync(Guid id, AppDbContext context, CancellationToken token)
-    {
-
-        if (context.Database.CurrentTransaction == null)
-            throw new InvalidOperationException("Транзакция не открыта.");
-
-        try
-        {
-            var result = await context.Bookings.FromSql(
-    $@"SELECT b.*    
-FROM bookings b 
-JOIN events e ON e.id = b.event_id
-WHERE b.id = {id}
-FOR UPDATE")
-                .Include(o => o.Event)
-                .FirstOrDefaultAsync(token);
-
-            return result;
-        }
-        catch (NpgsqlException ex)
-        {
-            throw new InvalidOperationException("Ошибка плучения собыия с блокировкой", ex);
-        }
     }
 
     private async Task<IReadOnlyList<Booking>> getProcessingBookingAsync(AppDbContext context, CancellationToken token = default)
