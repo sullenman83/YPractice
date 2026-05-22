@@ -48,7 +48,7 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
 
                 await Task.WhenAll(tasks);
                 
-                await Task.Delay(TimeSpan.FromSeconds(_bookingHandlerSettings.PollingInterval), stoppingToken);
+                await Task.Delay(TimeSpan.FromMilliseconds(_bookingHandlerSettings.PollingInterval), stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -65,7 +65,7 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
 
     private async Task ProcessBookingAsync(Guid id, CancellationToken stoppingToken)
     {
-        await Task.Delay(TimeSpan.FromSeconds(_bookingHandlerSettings.ProcessingDelay), stoppingToken);
+        await Task.Delay(TimeSpan.FromMilliseconds(_bookingHandlerSettings.ProcessingDelay), stoppingToken);
         try
         {
             await using var scope =  _serviceFactory.CreateAsyncScope();

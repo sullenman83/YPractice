@@ -75,6 +75,7 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IEventRepository<Event>, EventRepository>();
 builder.Services.AddScoped<IBookingRepository<Booking>, BookingRepository>();
 builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+builder.Services.AddScoped<IBackgroundBookingService, BackgroundBookingService>();
 builder.Services.AddHostedService<BookingHandlerService>();
 builder.Services.AddControllers(options =>
 {
