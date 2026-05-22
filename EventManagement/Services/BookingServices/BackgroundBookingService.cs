@@ -49,23 +49,23 @@ public class BackgroundBookingService(IServiceScopeFactory serviceFactory) : IBa
         
         var booking = await repository.GetBookingWithBlockingAsync(id, context, token);
 
-        if (booking != null)
+        if (booking == null)
+            return;
+        
+        if (booking.Status == BookingStatus.Pending)
+            booking.Process(dateTimeProvider);
+        else
         {
-            if (booking.Status == BookingStatus.Pending)
-                booking.Process(dateTimeProvider);
-            else
+            if (booking.ProcessingAt.HasValue
+                && booking.ProcessingAt.Value.AddMilliseconds(settings.Value.MaxProccessingDuration) < dateTimeProvider.UtcNow)
             {
-                if (booking.ProcessingAt.HasValue
-                    && booking.ProcessingAt.Value.AddMilliseconds(settings.Value.MaxProccessingDuration) > dateTimeProvider.UtcNow)
-                {
-                    booking.Reject(dateTimeProvider);
-                    if (!booking.Event?.ReleaseSeats(booking.SeatsCount) ?? false)
-                        throw new InvalidOperationException("Количество доступных мест не может быть больше общего количества мест");
-                }
-                
+                booking.Reject(dateTimeProvider);
+                if (!booking.Event?.ReleaseSeats(booking.SeatsCount) ?? false)
+                    throw new InvalidOperationException("Количество доступных мест не может быть больше общего количества мест");
             }
-            await repository.SaveChangesAsync(context, token);
-            await tr.CommitAsync(token);
+                
         }
+        await repository.SaveChangesAsync(context, token);
+        await tr.CommitAsync(token);        
     }
 }
