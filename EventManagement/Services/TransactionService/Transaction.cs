@@ -16,7 +16,7 @@ public class Transaction(IDbContextTransaction transaction): ITransaction
     public async Task CommitAsync(CancellationToken token = default)
     {
         if (_transaction == null)
-            throw new InvalidOperationException("Транзакция уже закрыта");
+            throw new InvalidOperationException("Транзакция удалена");
         await _transaction.CommitAsync();
     }
 
@@ -24,7 +24,7 @@ public class Transaction(IDbContextTransaction transaction): ITransaction
     public async Task RollbackAsync(CancellationToken token = default)
     {
         if (_transaction == null)
-            throw new InvalidOperationException("Транзакция уже закрыта");
+            throw new InvalidOperationException("Транзакция удалена");
 
         await _transaction.RollbackAsync();
     }

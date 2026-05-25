@@ -38,24 +38,5 @@ public class EventRepository(AppDbContext context) : BaseRepository<Event>(conte
             Page = filter.Page,
             EventsCountOnCurrentPage = events.Count
         };
-    }
-
-    /////<inheritdoc/>
-    //public async Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token)
-    //{
-    //    if (_context.Database.CurrentTransaction == null)
-    //        throw new InvalidOperationException("Транзакция не открыта.");
-    //    try
-    //    {   
-    //        var result = await _context.Events.FromSql(
-    //$@"SELECT * FROM events WHERE id = {id} FOR UPDATE NOWAIT")
-    //            .FirstOrDefaultAsync(token);
-            
-    //        return result;
-    //    }
-    //    catch (NpgsqlException ex)
-    //    {
-    //        throw new DbOperationWithBlockingRowException("Ошибка плучения собыия с блокировкой", ex);
-    //    }        
-    //}
+    }    
 }
