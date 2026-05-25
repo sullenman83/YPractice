@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EventManagement.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260525185624_initial")]
-    partial class initial
+    [Migration("20260525190949_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,7 +41,7 @@ namespace EventManagement.Migrations
 
                     b.Property<DateTimeOffset?>("ProcessedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processing_at");
+                        .HasColumnName("processed_at");
 
                     b.Property<DateTimeOffset?>("ProcessingAt")
                         .HasColumnType("timestamp with time zone");

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EventManagement.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -40,7 +40,7 @@ namespace EventManagement.Migrations
                     status = table.Column<string>(type: "text", nullable: false),
                     seats_count = table.Column<int>(type: "integer", nullable: false),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    processing_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    processed_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     ProcessingAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     event_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
