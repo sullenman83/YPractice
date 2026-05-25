@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EventManagement.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260515205325_Initial")]
-    partial class Initial
+    [Migration("20260525185624_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,7 +41,10 @@ namespace EventManagement.Migrations
 
                     b.Property<DateTimeOffset?>("ProcessedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processed_at");
+                        .HasColumnName("processing_at");
+
+                    b.Property<DateTimeOffset?>("ProcessingAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("SeatsCount")
                         .HasColumnType("integer")
@@ -60,7 +63,7 @@ namespace EventManagement.Migrations
                         {
                             t.HasCheckConstraint("chk_bookings_seats_count", "seats_count > 0");
 
-                            t.HasCheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected')");
+                            t.HasCheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected', 'Processing')");
                         });
                 });
 

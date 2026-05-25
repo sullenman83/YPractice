@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EventManagement.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -40,14 +40,15 @@ namespace EventManagement.Migrations
                     status = table.Column<string>(type: "text", nullable: false),
                     seats_count = table.Column<int>(type: "integer", nullable: false),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    processed_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    processing_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    ProcessingAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     event_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_bookings", x => x.id);
                     table.CheckConstraint("chk_bookings_seats_count", "seats_count > 0");
-                    table.CheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected')");
+                    table.CheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected', 'Processing')");
                     table.ForeignKey(
                         name: "FK_bookings_events_event_id",
                         column: x => x.event_id,
