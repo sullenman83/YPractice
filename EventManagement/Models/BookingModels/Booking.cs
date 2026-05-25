@@ -87,15 +87,5 @@ public class Booking
     {
         Status = BookingStatus.Rejected;
         ProcessedAt = dateTimeProvider.UtcNow;
-    }
-
-    /// <summary>
-    /// Начать обработку
-    /// </summary>
-    /// <param name="dateTimeProvider"></param>
-    public void Process(IDateTimeProvider dateTimeProvider)
-    {
-        Status = BookingStatus.Processing;
-        ProcessingAt = dateTimeProvider.UtcNow;
-    }
+    }    
 }

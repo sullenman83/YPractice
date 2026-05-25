@@ -38,10 +38,7 @@ namespace EventManagement.Migrations
 
                     b.Property<DateTimeOffset?>("ProcessedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processing_at");
-
-                    b.Property<DateTimeOffset?>("ProcessingAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnName("processed_at");
 
                     b.Property<int>("SeatsCount")
                         .HasColumnType("integer")
@@ -60,7 +57,7 @@ namespace EventManagement.Migrations
                         {
                             t.HasCheckConstraint("chk_bookings_seats_count", "seats_count > 0");
 
-                            t.HasCheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected', 'Processing')");
+                            t.HasCheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected')");
                         });
                 });
 

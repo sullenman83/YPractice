@@ -7,7 +7,6 @@ using EventManagement.Models.Events.Extensions;
 using EventManagement.Models.FilterModels;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using System.Diagnostics;
 
 namespace EventManagement.Services;
 
@@ -19,18 +18,7 @@ public class EventRepository(AppDbContext context) : BaseRepository<Event>(conte
     ///<inheritdoc/>
     public async Task<PaginatedResultDTO> GetEventsByFilterAsync(EventFilterRequestDTO filter, CancellationToken token)
     {
-        return await getEventsByFilterAsync(_context, filter, token);
-    }
-
-    ///<inheritdoc/>
-    public async Task<PaginatedResultDTO> GetEventsByFilterAsync(AppDbContext context, EventFilterRequestDTO filter, CancellationToken token)
-    {
-        return await getEventsByFilterAsync(context, filter, token);
-    }
-
-    private async Task<PaginatedResultDTO> getEventsByFilterAsync(AppDbContext context, EventFilterRequestDTO filter, CancellationToken token)
-    {
-        var events = (await context.Events
+        var events = (await _context.Events
            .OrderBy(o => o.StartAt)
            .Filter(filter)
            .Paginate(filter)
@@ -38,7 +26,7 @@ public class EventRepository(AppDbContext context) : BaseRepository<Event>(conte
            .Select(o => o.ToResponse())
            .ToList();
 
-        var cnt = await context.Events
+        var cnt = await _context.Events
            .OrderBy(o => o.StartAt)
            .Filter(filter)
            .CountAsync(token);
@@ -52,23 +40,22 @@ public class EventRepository(AppDbContext context) : BaseRepository<Event>(conte
         };
     }
 
-
-    ///<inheritdoc/>
-    public async Task<Event?> GetEventWithBlockingAsync(Guid id, AppDbContext context, CancellationToken token)
-    {
-        if (context.Database.CurrentTransaction == null)
-            throw new InvalidOperationException("Транзакция не открыта.");
-        try
-        {   
-            var result = await _context.Events.FromSql(
-    $@"SELECT * FROM events WHERE id = {id} FOR UPDATE NOWAIT")
-                .FirstOrDefaultAsync(token);
+    /////<inheritdoc/>
+    //public async Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token)
+    //{
+    //    if (_context.Database.CurrentTransaction == null)
+    //        throw new InvalidOperationException("Транзакция не открыта.");
+    //    try
+    //    {   
+    //        var result = await _context.Events.FromSql(
+    //$@"SELECT * FROM events WHERE id = {id} FOR UPDATE NOWAIT")
+    //            .FirstOrDefaultAsync(token);
             
-            return result;
-        }
-        catch (NpgsqlException ex)
-        {
-            throw new DbOperationWithBlockingRowException("Ошибка плучения собыия с блокировкой", ex);
-        }        
-    }
+    //        return result;
+    //    }
+    //    catch (NpgsqlException ex)
+    //    {
+    //        throw new DbOperationWithBlockingRowException("Ошибка плучения собыия с блокировкой", ex);
+    //    }        
+    //}
 }

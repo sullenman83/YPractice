@@ -29,7 +29,6 @@ public class BookingHandlerServiceTest : IClassFixture<DatabaseFixture>, IAsyncL
         serviceCollection.Configure<BookingHandlerSettings>(options => 
         { 
             options.ProcessingDelay = 1000;
-            options.MaxProccessingDuration = 1000;
             options.PollingInterval = 1000;
         });        
         serviceCollection.AddScoped<IDateTimeProvider, DateTimeProvider>();

@@ -115,6 +115,6 @@ public class Event
         AvailableSeats += count;
 
         return true;
-    }    
+    }
     #endregion
 }

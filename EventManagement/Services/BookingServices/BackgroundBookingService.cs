@@ -11,29 +11,38 @@ namespace EventManagement.Services.BookingServices;
 /// <summary>
 /// Сервис обработки событий
 /// </summary>
-public class BackgroundBookingService(IServiceScopeFactory serviceFactory) : IBackgroundBookingService
+public class BackgroundBookingService(IServiceScopeFactory serviceFactory, ILogger<BackgroundBookingService> logger) : IBackgroundBookingService
 {
     private readonly IServiceScopeFactory _serviceFactory = serviceFactory;
+    private readonly ILogger<BackgroundBookingService> _logger = logger;
 
     /// <inheritdoc/>
     public async Task ConfirmBookingAsync(Guid id, CancellationToken token)
     {
         await using var scope = _serviceFactory.CreateAsyncScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
+        var transactionService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
         var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
 
-        var context = repository.Context;
-
-        await using var transaction = await context.Database.BeginTransactionAsync(token);
+        await using var transaction = await transactionService.BeginTransactionAsync(token);
         
-        var booking = await repository.GetBookingWithBlockingAsync(id, context, token);
+        var booking = await repository.GetBookingWithBlockingAsync(id, token);
 
         if (booking == null)
             throw new NotFoundException($"Не найдено бронирование с id {id}");
+        if (booking.Event == null)
+            throw new InvalidOperationException("Непредвиденная ошибка при получении бронирования. Не найдено событие.");
 
-        booking.Process(dateTimeProvider);
-        booking.Confirm(dateTimeProvider);
-        await repository.SaveChangesAsync(context, token);
+        if (!booking.Event.TryReserveSeats(booking.SeatsCount))
+        {
+            booking.Reject(dateTimeProvider);
+            _logger.LogWarning($"Недостаточно мест для бронирования событие {booking.Event.Id}, бронирование {booking.Id}");
+        }
+        else
+        {
+            booking.Confirm(dateTimeProvider);
+        }
+        await repository.SaveChangesAsync(token);
         await transaction.CommitAsync(token);
     }
 
@@ -42,30 +51,18 @@ public class BackgroundBookingService(IServiceScopeFactory serviceFactory) : IBa
     {
         await using var scope = _serviceFactory.CreateAsyncScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
-        var settings = scope.ServiceProvider.GetRequiredService<IOptions<BookingHandlerSettings>>();
-        var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
-        var context = repository.Context;
-        await using var tr = await context.Database.BeginTransactionAsync(token);
+        var transactionService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
+        var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();        
+        await using var tr = await transactionService.BeginTransactionAsync(token);
         
-        var booking = await repository.GetBookingWithBlockingAsync(id, context, token);
+        var booking = await repository.GetBookingWithBlockingAsync(id, token);
 
-        if (booking == null)
-            return;
-        
-        if (booking.Status == BookingStatus.Pending)
-            booking.Process(dateTimeProvider);
-        else
+        if (booking != null)
         {
-            if (booking.ProcessingAt.HasValue
-                && booking.ProcessingAt.Value.AddMilliseconds(settings.Value.MaxProccessingDuration) < dateTimeProvider.UtcNow)
-            {
-                booking.Reject(dateTimeProvider);
-                if (!booking.Event?.ReleaseSeats(booking.SeatsCount) ?? false)
-                    throw new InvalidOperationException("Количество доступных мест не может быть больше общего количества мест");
-            }
-                
+            booking.Reject(dateTimeProvider);
+           
+            await repository.SaveChangesAsync(token);
+            await tr.CommitAsync(token);
         }
-        await repository.SaveChangesAsync(context, token);
-        await tr.CommitAsync(token);        
     }
 }
