@@ -1,9 +1,11 @@
 ﻿using EventManagement.Common;
 using EventManagement.Interfaces;
 using EventManagement.Models.Events;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.NetworkInformation;
 
 namespace EventManagement.Models.BookingModels;
 
@@ -22,11 +24,26 @@ public class Booking
     [SetsRequiredMembers]
     public Booking(BookingStatus status, Guid eventId, int seatsCount, DateTimeOffset createdAt)
     {
+        if (seatsCount <= 0)
+            throw new ArgumentException("Количество бронируемых мест должно быть больше 0");
         Id = Guid.NewGuid();
         EventId = eventId;
         Status = status;
         CreatedAt = createdAt;
         SeatsCount = seatsCount;
+    }
+
+    /// <summary>
+    /// Конструктор
+    /// </summary>
+    /// <param name="status">Статус брони</param>    
+    /// <param name="ev">событие</param>
+    /// <param name="seatsCount">количество мест в брони</param>
+    /// <param name="createdAt">Дата создания брони</param>
+    [SetsRequiredMembers]
+    public Booking(BookingStatus status, Event ev, int seatsCount, DateTimeOffset createdAt) : this(status, ev.Id, seatsCount, createdAt)
+    {
+        Event = ev;        
     }
 
     private Booking() { }
@@ -87,15 +104,5 @@ public class Booking
     {
         Status = BookingStatus.Rejected;
         ProcessedAt = dateTimeProvider.UtcNow;
-    }
-
-    /// <summary>
-    /// Начать обработку
-    /// </summary>
-    /// <param name="dateTimeProvider"></param>
-    public void Process(IDateTimeProvider dateTimeProvider)
-    {
-        Status = BookingStatus.Processing;
-        ProcessingAt = dateTimeProvider.UtcNow;
-    }
+    }    
 }

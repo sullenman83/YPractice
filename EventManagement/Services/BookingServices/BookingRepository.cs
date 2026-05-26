@@ -2,7 +2,6 @@
 using EventManagement.Interfaces.Reposirories;
 using EventManagement.Models.BookingModels;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
 
 namespace EventManagement.Services;
@@ -15,24 +14,20 @@ public class BookingRepository(AppDbContext context) : BaseRepository<Booking>(c
     ///<inheritdoc/>
     public async Task<IReadOnlyList<Booking>> GetPendingBookingsAsync(CancellationToken token)
     {
-        return await getPendingBookingsAsync(_context, token);
-    }
-
-    ///<inheritdoc/>
-    public async Task<IReadOnlyList<Booking>> GetPendingBookingsAsync(AppDbContext context, CancellationToken token)
-    {
-        return await getPendingBookingsAsync(context, token);
+        return await _context.Bookings
+            .Where(o => o.Status == BookingStatus.Pending)
+            .ToListAsync(token);
     }    
 
     ///<inheritdoc/>
-    public async Task<Booking?> GetBookingWithBlockingAsync(Guid id, AppDbContext context, CancellationToken token)
+    public async Task<Booking?> GetBookingWithBlockingAsync(Guid id, CancellationToken token)
     {
-        if (context.Database.CurrentTransaction == null)
+        if (_context.Database.CurrentTransaction == null)
             throw new InvalidOperationException("Транзакция не открыта.");
 
         try
         {
-            var result = await context.Bookings.FromSql(
+            var result = await _context.Bookings.FromSql(
     $@"SELECT b.*    
 FROM bookings b 
 JOIN events e ON e.id = b.event_id
@@ -47,32 +42,5 @@ FOR UPDATE NOWAIT")
         {
             throw new InvalidOperationException("Ошибка плучения собыия с блокировкой", ex);
         }
-    }
-
-
-    /// <inheritdoc/>>    
-    public async Task<IReadOnlyList<Booking>> GetProcessingBookingAsync(CancellationToken token = default)
-    {
-        return await getProcessingBookingAsync(_context, token);
-    }
-
-    /// <inheritdoc/>>    
-    public async Task<IReadOnlyList<Booking>> GetProcessingBookingAsync(AppDbContext context, CancellationToken token = default)
-    {
-        return await getProcessingBookingAsync(context, token);
-    }   
-
-    private async Task<IReadOnlyList<Booking>> getPendingBookingsAsync(AppDbContext context, CancellationToken token)
-    {
-        return await context.Bookings
-            .Where(o => o.Status == BookingStatus.Pending)
-            .ToListAsync(token);
-    }
-
-    private async Task<IReadOnlyList<Booking>> getProcessingBookingAsync(AppDbContext context, CancellationToken token = default)
-    {
-        return await context.Bookings
-            .Where(o => o.Status == BookingStatus.Processing)
-            .ToListAsync(token);
     }
 }

@@ -41,10 +41,7 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
 
         builder.Property(p => p.ProcessedAt)
             .HasColumnName("processed_at");
-
-        builder.Property(p => p.ProcessedAt)
-            .HasColumnName("processing_at");
-
+        
         builder.Property(p => p.EventId)
             .HasColumnName("event_id")
             .IsRequired();

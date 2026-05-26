@@ -41,13 +41,14 @@ namespace EventManagement.Migrations
                     seats_count = table.Column<int>(type: "integer", nullable: false),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     processed_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    ProcessingAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     event_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_bookings", x => x.id);
                     table.CheckConstraint("chk_bookings_seats_count", "seats_count > 0");
-                    table.CheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected')");
+                    table.CheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected', 'Processing')");
                     table.ForeignKey(
                         name: "FK_bookings_events_event_id",
                         column: x => x.event_id,

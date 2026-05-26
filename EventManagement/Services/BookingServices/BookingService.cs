@@ -7,8 +7,7 @@ using EventManagement.Models.BookingModels;
 using EventManagement.Models.BookingModels.Extensions;
 using EventManagement.Models.Events;
 using Microsoft.EntityFrameworkCore;
-using Polly;
-using Polly.Registry;
+
 
 namespace EventManagement.Services.BookingServices;
 
@@ -17,13 +16,11 @@ namespace EventManagement.Services.BookingServices;
 /// </summary>
 public class BookingService(IBookingRepository<Booking> bookingRepository
     , IEventRepository<Event> eventRepoository
-    , IDateTimeProvider dateTimeProvider
-    , ResiliencePipelineProvider<string> pipelineProvider) : IBookingService
+    , IDateTimeProvider dateTimeProvider) :IBookingService
 {
     private readonly IBookingRepository<Booking> _bookingRepository = bookingRepository;
     private readonly IEventRepository<Event> _eventRepository = eventRepoository;
-    private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
-    private readonly ResiliencePipeline _retryPipeline = pipelineProvider.GetPipeline(Consts.CreateBookingRetry);
+    private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;    
 
     /// <summary>
     /// Создать заявку на бронирование события
@@ -43,29 +40,18 @@ public class BookingService(IBookingRepository<Booking> bookingRepository
         var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, _dateTimeProvider.UtcNow);
         
         try
-        {
-            return await _retryPipeline.ExecuteAsync(async token =>
-            {
-                var context = _eventRepository.Context;
-                using var tr = await context.Database.BeginTransactionAsync(token);
-                var ev = await _eventRepository.GetEventWithBlockingAsync(eventId, context, token);
-                if (ev == null)
-                    throw new NotFoundException($"Событие с id {eventId} не найдено в базе данных.");
+        {   
+            var ev = await _eventRepository.GetByIdAsync(eventId, token);
+            if (ev == null)
+                throw new NotFoundException($"Событие с id {eventId} не найдено в базе данных.");
 
-                if (!ev.TryReserveSeats(seatsCount))
-                    throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
+            if (ev.AvailableSeats < seatsCount)
+                throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
 
-                await _bookingRepository.AddAsync(booking, context, token);
-                await _eventRepository.SaveChangesAsync(context, token);
-                await tr.CommitAsync();
+            await _bookingRepository.AddAsync(booking, token);
+            await _eventRepository.SaveChangesAsync(token);
 
-                return booking.ToResponse();
-            });
-            
-        }
-        catch(DbOperationWithBlockingRowException ex)
-        {
-            throw new InvalidOperationException("Ошибка при получении события с блокировкой.", ex);
+            return booking.ToResponse();
         }
         catch (DbUpdateException ex)
         {

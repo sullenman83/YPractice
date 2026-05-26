@@ -38,7 +38,7 @@ namespace EventManagement.Migrations
 
                     b.Property<DateTimeOffset?>("ProcessedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processing_at");
+                        .HasColumnName("processed_at");
 
                     b.Property<DateTimeOffset?>("ProcessingAt")
                         .HasColumnType("timestamp with time zone");

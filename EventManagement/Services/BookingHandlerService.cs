@@ -36,14 +36,10 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
             {
                 await using var scope = _serviceFactory.CreateAsyncScope();                
                 var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
-                var pendingList = (await bookingRepository.GetPendingBookingsAsync(stoppingToken))
-                    .Select(o => o.Id);
-                var processingList = (await bookingRepository.GetProcessingBookingAsync(stoppingToken))
-                    .Select(o => o.Id);
-
-                var ids = pendingList.Concat(processingList)
-                    .ToList();
-
+                var ids = (await bookingRepository.GetPendingBookingsAsync(stoppingToken))
+                    .Select(o => o.Id)
+                    .ToList();               
+                
                 var tasks = ids.Select(o => ProcessBookingAsync(o, stoppingToken));
 
                 await Task.WhenAll(tasks);
@@ -64,10 +60,11 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
     }
 
     private async Task ProcessBookingAsync(Guid id, CancellationToken stoppingToken)
-    {
-        await Task.Delay(TimeSpan.FromMilliseconds(_bookingHandlerSettings.ProcessingDelay), stoppingToken);
+    {        
         try
         {
+            await Task.Delay(TimeSpan.FromMilliseconds(_bookingHandlerSettings.ProcessingDelay), stoppingToken);
+
             await using var scope =  _serviceFactory.CreateAsyncScope();
             var service = scope.ServiceProvider.GetRequiredService<IBackgroundBookingService>();
             var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();

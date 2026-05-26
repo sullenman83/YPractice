@@ -1,4 +1,5 @@
 ﻿
+using Castle.Core.Logging;
 using EventManagement.Common;
 using EventManagement.Common.AppSettings;
 using EventManagement.Common.Exceptions;
@@ -8,9 +9,11 @@ using EventManagement.Interfaces.Services;
 using EventManagement.Models.BookingModels;
 using EventManagement.Services;
 using EventManagement.Services.BookingServices;
+using EventManagement.Services.TransactionService;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace EventApi.IntegrationTest;
@@ -29,12 +32,13 @@ public class BookingHandlerServiceTest : IClassFixture<DatabaseFixture>, IAsyncL
         serviceCollection.Configure<BookingHandlerSettings>(options => 
         { 
             options.ProcessingDelay = 1000;
-            options.MaxProccessingDuration = 1000;
             options.PollingInterval = 1000;
-        });        
+        });
+        serviceCollection.AddLogging(builder => builder.AddDebug());
         serviceCollection.AddScoped<IDateTimeProvider, DateTimeProvider>();
         serviceCollection.AddScoped<IBookingRepository<Booking>, BookingRepository>();
-        serviceCollection.AddScoped<IBackgroundBookingService, BackgroundBookingService>();        
+        serviceCollection.AddScoped<IBackgroundBookingService, BackgroundBookingService>();
+        serviceCollection.AddScoped<ITransactionService, TransactionService>();
         serviceCollection.AddScoped(provider =>
         {
             return _fixture.Context;
@@ -78,11 +82,8 @@ public class BookingHandlerServiceTest : IClassFixture<DatabaseFixture>, IAsyncL
         await context.SaveChangesAsync();
         var booking = new Booking(BookingStatus.Pending, ev.Id, seatsCount, _dateTimeProvider.UtcNow);
         var dateTimeProvider = new Mock<IDateTimeProvider>();
-        dateTimeProvider.Setup(o => o.UtcNow).Returns(_dateTimeProvider.UtcNow.AddMinutes(1));
-        booking.Process(dateTimeProvider.Object);
+        dateTimeProvider.Setup(o => o.UtcNow).Returns(_dateTimeProvider.UtcNow.AddMinutes(1));        
         await context.Bookings.AddAsync(booking);
-        if (!ev.TryReserveSeats(seatsCount))
-            throw new NoAvailableSeatsException("Мест не хватило. Что-то работает не так");
         await context.SaveChangesAsync();
         var availableSeats = ev.AvailableSeats;
 
@@ -91,8 +92,7 @@ public class BookingHandlerServiceTest : IClassFixture<DatabaseFixture>, IAsyncL
         var service = scope.ServiceProvider.GetRequiredService<IBackgroundBookingService>();
         await service.RejectBookingAsync(booking.Id, CancellationToken.None);
 
-        // Assert
-        availableSeats.Should().Be(0);
+        // Assert        
         await using var ctx = _fixture.Context;
         var e = await ctx.Events.FirstOrDefaultAsync(o => o.Id == ev.Id);
         var b = await ctx.Bookings.FirstOrDefaultAsync(o => o.Id == booking.Id);
