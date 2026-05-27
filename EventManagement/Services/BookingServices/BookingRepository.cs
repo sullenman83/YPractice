@@ -1,4 +1,5 @@
-﻿using EventManagement.Data;
+﻿using EventManagement.Common.Exceptions;
+using EventManagement.Data;
 using EventManagement.Interfaces.Reposirories;
 using EventManagement.Models.BookingModels;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,9 @@ namespace EventManagement.Services;
 /// Класс хранения заявок на бронь
 /// </summary>
 public class BookingRepository(AppDbContext context) : BaseRepository<Booking>(context), IBookingRepository<Booking>
-{    
+{
+    private const string LockRowError = "55P03";
+
     ///<inheritdoc/>
     public async Task<IReadOnlyList<Booking>> GetPendingBookingsAsync(CancellationToken token)
     {
@@ -38,8 +41,13 @@ FOR UPDATE NOWAIT")
 
             return result;
         }
-        catch (NpgsqlException ex)
+        catch (Exception ex)
         {
+            if (ex.InnerException != null && ex.InnerException is PostgresException pex)
+
+            if ( pex.SqlState == LockRowError)
+                throw new DbOperationWithBlockingRowException("Не удалось полуить записи бронирования с блокировкой.");
+
             throw new InvalidOperationException("Ошибка плучения собыия с блокировкой", ex);
         }
     }

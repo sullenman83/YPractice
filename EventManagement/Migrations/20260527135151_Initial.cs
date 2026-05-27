@@ -41,7 +41,6 @@ namespace EventManagement.Migrations
                     seats_count = table.Column<int>(type: "integer", nullable: false),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     processed_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    ProcessingAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     event_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>

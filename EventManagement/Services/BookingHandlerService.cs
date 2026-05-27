@@ -72,6 +72,10 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
 
             _logger.LogInformation($"Бронирование с id {id} обработано в {dateTimeProvider.UtcNow}.");
         }
+        catch(DbOperationWithBlockingRowException)
+        {
+            throw;
+        }
         catch
         {
             await using var scope = _serviceFactory.CreateAsyncScope();

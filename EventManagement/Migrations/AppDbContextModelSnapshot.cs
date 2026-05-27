@@ -40,9 +40,6 @@ namespace EventManagement.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("processed_at");
 
-                    b.Property<DateTimeOffset?>("ProcessingAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<int>("SeatsCount")
                         .HasColumnType("integer")
                         .HasColumnName("seats_count");

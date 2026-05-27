@@ -72,12 +72,7 @@ public class Booking
     /// Дата и время обработки брони. Формат времени dd.MM.yyyy hh:mm:ssZ
     /// </summary>
     public DateTimeOffset? ProcessedAt { get; set; }
-
-    /// <summary>
-    /// Дата и время начала обработки брони. Формат времени dd.MM.yyyy hh:mm:ssZ
-    /// </summary>
-    public DateTimeOffset? ProcessingAt { get; set; }
-
+        
     /// <summary>
     /// Идентификатор события, к которому привязана бронь
     /// </summary>

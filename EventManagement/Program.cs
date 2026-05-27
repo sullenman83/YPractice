@@ -1,4 +1,6 @@
+using EventManagement.Common;
 using EventManagement.Common.AppSettings;
+using EventManagement.Common.Exceptions;
 using EventManagement.Data;
 using EventManagement.Extensions.Middleware;
 using EventManagement.Interfaces;
@@ -11,6 +13,8 @@ using EventManagement.Services.BookingServices;
 using EventManagement.Services.EventServices;
 using EventManagement.Services.TransactionService;
 using Microsoft.EntityFrameworkCore;
+using Polly;
+using Polly.Retry;
 using System.Reflection;
 
 var retrySettings = new RetrySettings();
@@ -54,6 +58,16 @@ else
         options.UseNpgsql(connectionString);
     });
 }
+builder.Services.AddResiliencePipeline(Consts.CreateBookingRetry, builder =>
+{
+    builder.AddRetry(new RetryStrategyOptions()
+    {
+        ShouldHandle = new PredicateBuilder().Handle<DbOperationWithBlockingRowException>(),
+        MaxRetryAttempts = retrySettings.MaxRetryAttempts,
+        Delay = TimeSpan.FromMilliseconds(retrySettings.Delay),
+        BackoffType = DelayBackoffType.Constant
+    });
+});
 
 builder.Services.AddScoped<IEventValidator, EventValidator>();
 builder.Services.AddScoped<IEventService, EventService>();
