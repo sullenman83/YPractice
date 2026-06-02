@@ -1,6 +1,6 @@
 ﻿using EventManagement.Models.BookingModels;
 
-namespace EventManagement.Interfaces;
+namespace EventManagement.Interfaces.Services;
 
 /// <summary>
 /// Интерфейс сервиса для работы с заявками бронирования событий
@@ -14,7 +14,7 @@ public interface IBookingService
     /// <param name="seatsCount">Количество мест для бронирования</param> 
     /// <param name="token">Токен отмены</param>
     /// <returns>Возвращает объект с описанием брони</returns>
-    Task<BookingResponseDTO> CreateBookingAsync(Guid eventId, int seatsCount, CancellationToken token);
+    Task<BookingResponseDTO> CreateBookingAsync(Guid eventId, int seatsCount, CancellationToken token = default);
 
     /// <summary>
     /// Вернуть бронирование по id
@@ -22,5 +22,5 @@ public interface IBookingService
     /// <param name="bookingId">Иденификатор брони</param>
     /// <param name="token">Токен отмены</param>
     /// <returns>Возвращает объект с описанием брони</returns>
-    Task<BookingResponseDTO> GetBookingByIdAsync(Guid bookingId, CancellationToken token);
+    Task<BookingResponseDTO> GetBookingByIdAsync(Guid bookingId, CancellationToken token = default);
 }

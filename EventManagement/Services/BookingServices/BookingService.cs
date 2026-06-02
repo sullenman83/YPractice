@@ -1,19 +1,26 @@
-﻿using EventManagement.Common.Exceptions;
-using EventManagement.Data;
+﻿using EventManagement.Common;
+using EventManagement.Common.Exceptions;
 using EventManagement.Interfaces;
+using EventManagement.Interfaces.Reposirories;
+using EventManagement.Interfaces.Services;
 using EventManagement.Models.BookingModels;
 using EventManagement.Models.BookingModels.Extensions;
+using EventManagement.Models.Events;
 using Microsoft.EntityFrameworkCore;
+
 
 namespace EventManagement.Services.BookingServices;
 
 /// <summary>
 /// Сервис для работы с заявками бронирования событий
 /// </summary>
-public class BookingService(AppDbContext dbContext) : IBookingService
+public class BookingService(IBookingRepository<Booking> bookingRepository
+    , IEventRepository<Event> eventRepoository
+    , IDateTimeProvider dateTimeProvider) :IBookingService
 {
-    private readonly AppDbContext _dbContext = dbContext;
-    private static readonly SemaphoreSlim _bookingLock = new SemaphoreSlim(1, 1);
+    private readonly IBookingRepository<Booking> _bookingRepository = bookingRepository;
+    private readonly IEventRepository<Event> _eventRepository = eventRepoository;
+    private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;    
 
     /// <summary>
     /// Создать заявку на бронирование события
@@ -24,36 +31,32 @@ public class BookingService(AppDbContext dbContext) : IBookingService
     /// <returns>Возвращает объект с описанием брони</returns>
     /// <exception cref="InvalidOperationException">Ошибка при создании нового бронирования.</exception>
     /// <exception cref="NoAvailableSeatsException">Недостаточно мест для броинрования</exception>
-    /// <exception cref="NotFoundException">Не найден объект</exception>
-    /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
-    /// <exception cref="ArgumentException">Неверные входные данные.</exception>
+    /// <exception cref="NotFoundException">Не найден объект</exception>        
+    /// <exception cref="OperationCanceledException">Операция отменена</exception>
     public async Task<BookingResponseDTO> CreateBookingAsync(Guid eventId, int seatsCount, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
 
-        token.ThrowIfCancellationRequested();
-
-        var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, DateTimeOffset.UtcNow);
-
-        await _bookingLock.WaitAsync(token);
+        var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, _dateTimeProvider.UtcNow);
+        
         try
-        {
-            var ev = _dbContext.Events.FirstOrDefault(o => o.Id == eventId);
+        {   
+            var ev = await _eventRepository.GetByIdAsync(eventId, token);
             if (ev == null)
                 throw new NotFoundException($"Событие с id {eventId} не найдено в базе данных.");
 
-            if (!ev.TryReserveSeats(seatsCount))
+            if (ev.AvailableSeats < seatsCount)
                 throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
 
-            await _dbContext.Bookings.AddAsync(booking);
-            await _dbContext.SaveChangesAsync();
-        }
-        finally
-        {
-            _bookingLock.Release();
-        }
+            await _bookingRepository.AddAsync(booking, token);
+            await _eventRepository.SaveChangesAsync(token);
 
-        return booking.ToResponse();
+            return booking.ToResponse();
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new InvalidOperationException("Ошибка при создании бронирования.", ex);
+        }
     }
 
     /// <summary>
@@ -63,12 +66,12 @@ public class BookingService(AppDbContext dbContext) : IBookingService
     /// <param name="token">Токен отмены</param>    
     /// <returns>Возвращает объект с описанием брони</returns>
     /// <exception cref="NotFoundException">Не найден объект</exception>
-    /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
+    /// <exception cref="OperationCanceledException">Операция отменена</exception>
     public async Task<BookingResponseDTO> GetBookingByIdAsync(Guid bookingId, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
 
-        var booking = await _dbContext.Bookings.FirstOrDefaultAsync(o => o.Id == bookingId);
+        var booking = await _bookingRepository.GetByIdAsync(bookingId, token);
         if (booking == null)
             throw new NotFoundException($"Бронирование с id {bookingId} не найдено в базе данных.");
                 

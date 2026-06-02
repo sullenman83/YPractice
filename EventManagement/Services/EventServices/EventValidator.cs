@@ -11,13 +11,10 @@ public class EventValidator : IEventValidator
     /// <summary>
     /// Проверить событие
     /// </summary>
-    /// <param name="ev">Данные события</param>
-    /// <param name="token">Токен отмены операции</param>
+    /// <param name="ev">Данные события</param>    
     /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
-    public async Task ValidateAsync(EventCreationDTO ev, CancellationToken token)
+    public void Validate(EventCreationDTO ev)
     {
-        token.ThrowIfCancellationRequested();
-
         ValidateDate(ev.StartAt, ev.EndAt);
     }
 
@@ -25,18 +22,21 @@ public class EventValidator : IEventValidator
     /// Проверить событие
     /// </summary>
     /// <param name="ev">Данные события</param>
-    /// <param name="token">Токен отмены операции</param>
     /// <exception cref="EventValidationException">Возникает, если событие не прошло проверку</exception>
-    public async Task ValidateAsync(EventUpdateDTO ev, CancellationToken token)
+    public void Validate(EventUpdateDTO ev)
     {
-        token.ThrowIfCancellationRequested();
-
         ValidateDate(ev.StartAt, ev.EndAt);
     }
 
-    private void ValidateDate(DateTimeOffset? statrtAt, DateTimeOffset? endAt)
+    private void ValidateDate(DateTimeOffset? starttAt, DateTimeOffset? endAt)
     {
-        if (endAt < statrtAt)
+        if (endAt < starttAt)
             throw new EventValidationException("Событие содержит некорректные данные. Дата окончания меньше даты начала.");
+
+        if (starttAt.HasValue && (starttAt.Value.Microsecond != 0 || starttAt.Value.Millisecond != 0))
+            throw new EventValidationException("Неверный формат даты начала события. Значение микросекунд и миллисекунд должны быть 0");
+
+        if (endAt.HasValue && (endAt.Value.Microsecond != 0 || endAt.Value.Millisecond != 0))
+            throw new EventValidationException("Неверный формат даты окончания события. Значение микросекунд и миллисекунд должны быть 0");
     }
 }
