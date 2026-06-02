@@ -1,6 +1,6 @@
-﻿using EventManagement.Interfaces;
-using EventManagement.Models.BookingModels;
-using EventManagement.Models.Events;
+﻿using EventManagement.Application.Models.BookingModels;
+using EventManagement.Application.Models.Events;
+using EventManagement.Interfaces;
 
 namespace EventManagement.Common;
 

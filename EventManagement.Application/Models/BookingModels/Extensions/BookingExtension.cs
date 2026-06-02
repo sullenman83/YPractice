@@ -1,4 +1,6 @@
-﻿namespace EventManagement.Models.BookingModels.Extensions;
+﻿using EventManagement.Domain.Models;
+
+namespace EventManagement.Application.Models.BookingModels.Extensions;
 
 /// <summary>
 /// Класс расширение

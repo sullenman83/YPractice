@@ -1,9 +1,6 @@
-﻿using EventManagement.Data;
-using EventManagement.Models.BookingModels;
-using EventManagement.Models.Events;
-using Microsoft.EntityFrameworkCore.Storage;
+﻿using EventManagement.Domain.Models;
 
-namespace EventManagement.Interfaces.Reposirories;
+namespace EventManagement.Application.Interfaces.Reposirories;
 
 /// <summary>
 /// Интерфейс хранилища бронирований событий

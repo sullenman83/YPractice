@@ -9,15 +9,13 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.8">
-	    <PrivateAssets>all</PrivateAssets>
-	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
-	  <PackageReference Include="Microsoft.Extensions.Resilience" Version="10.6.0" />
-	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
 	  <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
 	  <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="10.1.7" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\EventManagement.Application\EventManagement.Application.csproj" />
+	  <ProjectReference Include="..\EventManagement.Infrastructure\EventManagement.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>

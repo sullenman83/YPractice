@@ -1,7 +1,7 @@
-﻿using EventManagement.Common;
+﻿using EventManagement.Application.Interfaces.Reposirories;
+using EventManagement.Application.Models.BookingModels;
+using EventManagement.Common;
 using EventManagement.Common.Exceptions;
-using EventManagement.Interfaces.Reposirories;
-using EventManagement.Models.BookingModels;
 using EventManagement.Models.Events;
 using EventManagement.Services;
 using EventManagement.Services.BookingServices;

@@ -1,16 +1,16 @@
-﻿using EventManagement.Application.Common.Exceptions;
-using EventManagement.Common;
-using EventManagement.Common.AppSettings;
-using EventManagement.Data;
-using EventManagement.Interfaces;
-using EventManagement.Interfaces.Reposirories;
-using EventManagement.Interfaces.Services;
-using EventManagement.Models.BookingModels;
-using EventManagement.Models.Events;
-using Microsoft.EntityFrameworkCore;
+﻿using EventManagement.Application.Common.AppSettings;
+using EventManagement.Application.Common.Exceptions;
+using EventManagement.Application.Interfaces.Reposirories;
+using EventManagement.Application.Interfaces.Services;
+using EventManagement.Domain.Interfaces;
+using EventManagement.Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace EventManagement.Services;
+
+namespace EventManagement.Application.Services;
 
 /// <summary>
 /// Фоновый сервис обработки бронирований
@@ -70,7 +70,7 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
             var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
             await service.ConfirmBookingAsync(id, stoppingToken);
 
-            _logger.LogInformation($"Бронирование с id {id} обработано в {dateTimeProvider.UtcNow}.");
+            _logger.LogInformation($"Бронирование с id {id} обработано в {dateTimeProvider.GetUtcNow()}.");
         }
         catch(DbOperationWithBlockingRowException)
         {

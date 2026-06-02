@@ -1,12 +1,12 @@
-﻿using EventManagement.Interfaces.Services;
-using EventManagement.Models.BookingModels;
-using EventManagement.Models.Events;
-using EventManagement.Models.FilterModels;
+﻿using EventManagement.Application.Interfaces.Services;
+using EventManagement.Application.Models.BookingModels;
+using EventManagement.Application.Models.Events;
+using EventManagement.Application.Models.FilterModels;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
-namespace EventManagement.Controllers;
+namespace EventManagement.Web.Controllers;
 
 /// <summary>
 /// Контроллер с API для работы с событиями

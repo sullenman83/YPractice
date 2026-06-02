@@ -3,7 +3,7 @@ using EventManagement.Models.Events;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
-namespace EventManagement.Data;
+namespace EventManagement.Infrastructure.Data;
 
 /// <summary>
 /// Контекст базы данных

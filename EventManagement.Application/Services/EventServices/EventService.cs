@@ -1,14 +1,12 @@
 ﻿using EventManagement.Application.Common.Exceptions;
-using EventManagement.Extensions.EventExt;
-using EventManagement.Interfaces;
-using EventManagement.Interfaces.Reposirories;
-using EventManagement.Interfaces.Services;
-using EventManagement.Models.Events;
-using EventManagement.Models.Events.Extensions;
-using EventManagement.Models.FilterModels;
-using Microsoft.EntityFrameworkCore;
-
-namespace EventManagement.Services.EventServices;
+using EventManagement.Application.Interfaces;
+using EventManagement.Application.Interfaces.Reposirories;
+using EventManagement.Application.Interfaces.Services;
+using EventManagement.Application.Models.Events;
+using EventManagement.Application.Models.Events.Extensions;
+using EventManagement.Application.Models.FilterModels;
+using EventManagement.Domain.Models;
+namespace EventManagement.Application.Services.EventServices;
 
 /// <summary>
 /// Сервис для работы с событиями
@@ -144,5 +142,5 @@ public class EventService(IEventValidator eventValidator, IEventRepository<Event
             throw new NotFoundException($"Не найдено событие с id = {id}");
 
         return ev;
-    }
+    }   
 }

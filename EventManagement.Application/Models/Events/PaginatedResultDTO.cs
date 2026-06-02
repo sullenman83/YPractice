@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Models.Events;
+﻿namespace EventManagement.Application.Models.Events;
 
 /// <summary>
 /// Класс для возврата результата пагинации

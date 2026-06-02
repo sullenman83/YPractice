@@ -1,11 +1,11 @@
-﻿using EventManagement.Common.Exceptions;
-using EventManagement.Data;
-using EventManagement.Interfaces.Reposirories;
-using EventManagement.Models.BookingModels;
+﻿using EventManagement.Application.Interfaces.Reposirories;
+using EventManagement.Application.Models.BookingModels;
+using EventManagement.Common.Exceptions;
+using EventManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
-namespace EventManagement.Services;
+namespace EventManagement.Infrastructure.Services.BookingServices;
 
 /// <summary>
 /// Класс хранения заявок на бронь

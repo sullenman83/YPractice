@@ -1,14 +1,14 @@
-﻿using EventManagement.Common.Exceptions;
-using EventManagement.Data;
+﻿using EventManagement.Application.Interfaces.Reposirories;
+using EventManagement.Application.Models.Events;
+using EventManagement.Application.Models.FilterModels;
+using EventManagement.Common.Exceptions;
 using EventManagement.Extensions.EventExt;
-using EventManagement.Interfaces.Reposirories;
-using EventManagement.Models.Events;
+using EventManagement.Infrastructure.Data;
 using EventManagement.Models.Events.Extensions;
-using EventManagement.Models.FilterModels;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
-namespace EventManagement.Services;
+namespace EventManagement.Infrastructure.Services.EventServices;
 
 /// <summary>
 /// Хранилище данных

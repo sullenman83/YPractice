@@ -1,11 +1,11 @@
-﻿using EventManagement.Common;
+﻿using EventManagement.Application.Interfaces.Reposirories;
+using EventManagement.Application.Interfaces.Services;
+using EventManagement.Application.Models.BookingModels;
+using EventManagement.Application.Services.BookingServices;
+using EventManagement.Common;
 using EventManagement.Interfaces;
-using EventManagement.Interfaces.Reposirories;
-using EventManagement.Interfaces.Services;
-using EventManagement.Models.BookingModels;
 using EventManagement.Models.Events;
 using EventManagement.Services;
-using EventManagement.Services.BookingServices;
 using FluentAssertions;
 using FluentAssertions.Events;
 using Microsoft.Extensions.DependencyInjection;

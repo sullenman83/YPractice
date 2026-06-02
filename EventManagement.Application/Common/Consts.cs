@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Common;
+﻿namespace EventManagement.Application.Common;
 
 /// <summary>
 /// Константы

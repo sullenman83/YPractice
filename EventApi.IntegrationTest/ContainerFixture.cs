@@ -1,4 +1,4 @@
-﻿using EventManagement.Data;
+﻿using EventManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Interfaces.Services;
+﻿namespace EventManagement.Application.Interfaces.Services;
 
 /// <summary>
 /// Сервис управления транзакциями

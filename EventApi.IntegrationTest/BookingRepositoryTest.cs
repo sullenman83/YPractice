@@ -1,6 +1,6 @@
-﻿using EventManagement.Common;
+﻿using EventManagement.Application.Models.BookingModels;
+using EventManagement.Common;
 using EventManagement.Interfaces;
-using EventManagement.Models.BookingModels;
 using EventManagement.Services;
 using EventManagement.Services.TransactionService;
 using FluentAssertions;

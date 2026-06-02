@@ -1,8 +1,8 @@
-﻿using EventManagement.Common;
+﻿using EventManagement.Application.Interfaces;
+using EventManagement.Application.Interfaces.Reposirories;
+using EventManagement.Application.Models.Events;
+using EventManagement.Common;
 using EventManagement.Common.Exceptions;
-using EventManagement.Interfaces;
-using EventManagement.Interfaces.Reposirories;
-using EventManagement.Models.Events;
 using EventManagement.Models.Events.Extensions;
 using EventManagement.Models.FilterModels;
 using EventManagement.Services;

@@ -1,15 +1,15 @@
-﻿using EventManagement.Common;
-using EventManagement.Common.AppSettings;
-using EventManagement.Common.Exceptions;
-using EventManagement.Interfaces;
-using EventManagement.Interfaces.Reposirories;
-using EventManagement.Interfaces.Services;
-using EventManagement.Models.BookingModels;
-using Microsoft.Extensions.Options;
+﻿using EventManagement.Application.Common;
+using EventManagement.Application.Common.Exceptions;
+using EventManagement.Application.Interfaces.Reposirories;
+using EventManagement.Application.Interfaces.Services;
+using EventManagement.Domain.Interfaces;
+using EventManagement.Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Registry;
 
-namespace EventManagement.Services.BookingServices;
+namespace EventManagement.Application.Services.BookingServices;
 
 /// <summary>
 /// Сервис обработки событий

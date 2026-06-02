@@ -1,15 +1,15 @@
 ﻿
 using Castle.Core.Logging;
+using EventManagement.Application.Common.AppSettings;
+using EventManagement.Application.Interfaces.Reposirories;
+using EventManagement.Application.Interfaces.Services;
+using EventManagement.Application.Models.BookingModels;
+using EventManagement.Application.Services.BookingServices;
 using EventManagement.Common;
-using EventManagement.Common.AppSettings;
 using EventManagement.Common.Exceptions;
+using EventManagement.Infrastructure.Services.BookingServices;
+using EventManagement.Infrastructure.Services.TransactionService;
 using EventManagement.Interfaces;
-using EventManagement.Interfaces.Reposirories;
-using EventManagement.Interfaces.Services;
-using EventManagement.Models.BookingModels;
-using EventManagement.Services;
-using EventManagement.Services.BookingServices;
-using EventManagement.Services.TransactionService;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

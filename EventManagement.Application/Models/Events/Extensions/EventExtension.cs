@@ -1,6 +1,6 @@
-﻿using EventManagement.Models.Events;
+﻿using EventManagement.Domain.Models;
 
-namespace EventManagement.Models.Events.Extensions;
+namespace EventManagement.Application.Models.Events.Extensions;
 
 /// <summary>
 /// расширения

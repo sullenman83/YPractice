@@ -1,8 +1,7 @@
-﻿using EventManagement.Models.FilterModels;
-using EventManagement.Models.Events;
-using Microsoft.EntityFrameworkCore;
+﻿using EventManagement.Application.Models.FilterModels;
+using EventManagement.Domain.Models;
 
-namespace EventManagement.Extensions.EventExt;
+namespace EventManagement.Infrastructure.Extensions.EventExt;
 
 /// <summary>
 /// Класс расширение для событий для фильтрации данных

@@ -1,4 +1,6 @@
-﻿namespace EventManagement.Models.BookingModels;
+﻿using EventManagement.Domain.Models;
+
+namespace EventManagement.Application.Models.BookingModels;
 
 /// <summary>
 /// Класс со свойствами заявки заявки для возврата из апи

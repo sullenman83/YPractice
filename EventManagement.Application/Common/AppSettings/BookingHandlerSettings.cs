@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Common.AppSettings;
+﻿namespace EventManagement.Application.Common.AppSettings;
 
 /// <summary>
 /// Настройки для фонового сервиса обработки бронирований

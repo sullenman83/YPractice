@@ -1,10 +1,7 @@
-﻿using EventManagement.Data;
-using EventManagement.Models.Events;
-using EventManagement.Models.FilterModels;
-using Microsoft.EntityFrameworkCore.Storage;
-using System.Data;
+﻿using EventManagement.Application.Models.Events;
+using EventManagement.Application.Models.FilterModels;
 
-namespace EventManagement.Interfaces.Reposirories;
+namespace EventManagement.Application.Interfaces.Reposirories;
 
 /// <summary>
 /// Хранилище данных

@@ -1,7 +1,7 @@
-﻿using EventManagement.Data;
-using EventManagement.Interfaces.Services;
+﻿using EventManagement.Application.Interfaces.Services;
+using EventManagement.Infrastructure.Data;
 
-namespace EventManagement.Services.TransactionService;
+namespace EventManagement.Infrastructure.Services.TransactionService;
 
 /// <summary>
 /// Сервис управления транзакциями

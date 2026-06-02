@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace EventManagement.Models.Events;
+namespace EventManagement.Application.Models.Events;
 
 /// <summary>
 /// Клас для обновления события

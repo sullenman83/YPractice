@@ -1,8 +1,7 @@
-﻿using EventManagement.Common.Exceptions;
-using EventManagement.Models.Events;
-using EventManagement.Models.FilterModels;
+﻿using EventManagement.Application.Models.Events;
+using EventManagement.Application.Models.FilterModels;
 
-namespace EventManagement.Interfaces.Services;
+namespace EventManagement.Application.Interfaces.Services;
 
 /// <summary>
 /// Интерфейс сервиса для работы с событиями

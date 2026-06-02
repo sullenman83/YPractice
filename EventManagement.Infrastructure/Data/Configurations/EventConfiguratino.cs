@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace EventManagement.Data.Configurations;
+namespace EventManagement.Infrastructure.Data.Configurations;
 
 /// <summary>
 /// Конфигуратор событий

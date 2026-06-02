@@ -1,9 +1,9 @@
-﻿using EventManagement.Data;
-using EventManagement.Interfaces.Reposirories;
+﻿using EventManagement.Application.Interfaces.Reposirories;
+using EventManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace EventManagement.Services;
+namespace EventManagement.Infrastructure.Services;
 
 /// <summary>
 /// Обобщенный бвзовый репозиторий

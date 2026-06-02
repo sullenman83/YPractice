@@ -1,6 +1,6 @@
-﻿using EventManagement.Models.BookingModels;
+﻿using EventManagement.Application.Models.BookingModels;
 
-namespace EventManagement.Interfaces.Services;
+namespace EventManagement.Application.Interfaces.Services;
 
 /// <summary>
 /// Интерфейс сервиса для работы с заявками бронирования событий

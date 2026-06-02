@@ -1,7 +1,7 @@
-﻿using EventManagement.Interfaces.Services;
+﻿using EventManagement.Application.Interfaces.Services;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace EventManagement.Services.TransactionService;
+namespace EventManagement.Infrastructure.Services.TransactionService;
 
 /// <summary>
 /// Обертк  над IDbContexttransaction
