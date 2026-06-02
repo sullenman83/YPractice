@@ -1,13 +1,6 @@
 <Solution>
-  <Project Path="EventApi.IntegrationTest/EventApi.IntegrationTest.csproj" Id="9eb48215-0164-4861-a728-c9ee344d82aa">
-    <Build Solution="Debug|*" Project="false" />
-  </Project>
-  <Project Path="EventManagement.Application/EventManagement.Application.csproj" Id="66fb49ac-5979-4c35-b9e0-a1256453e2b2" />
-  <Project Path="EventManagement.Domain/EventManagement.Domain.csproj" Id="b6f8cdff-5c0b-4e25-889e-58edf5e75ddf" />
-  <Project Path="EventManagement.Infrastructure/EventManagement.Infrastructure.csproj" Id="dbfeac5c-36b6-46c0-877c-65cdda86dc86" />
+  <Project Path="EventApi.IntegrationTest/EventApi.IntegrationTest.csproj" Id="9eb48215-0164-4861-a728-c9ee344d82aa" />
   <Project Path="EventManagement/EventManagement.csproj" />
   <Project Path="EventService.Test/UnitTests.csproj" Id="f7436146-07b8-4dec-b63f-0ad1c2c49159" />
-  <Project Path="TestData/TestData.csproj" Id="fc81538e-008c-4611-8104-6bf9effec498">
-    <Build Solution="Debug|*" Project="false" />
-  </Project>
+  <Project Path="TestData/TestData.csproj" Id="fc81538e-008c-4611-8104-6bf9effec498" />
 </Solution>
