@@ -1,5 +1,5 @@
-﻿using EventManagement.Common;
-using EventManagement.Common.Exceptions;
+﻿using EventManagement.Application.Common.Exceptions;
+using EventManagement.Common;
 using EventManagement.Interfaces;
 using EventManagement.Interfaces.Reposirories;
 using EventManagement.Interfaces.Services;

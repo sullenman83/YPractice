@@ -1,13 +1,7 @@
-﻿using EventManagement.Common;
-using EventManagement.Interfaces;
-using EventManagement.Models.Events;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore.Storage;
-using System.Data;
+﻿using EventManagement.Domain.Interfaces;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.NetworkInformation;
 
-namespace EventManagement.Models.BookingModels;
+namespace EventManagement.Domain.Models;
 
 /// <summary>
 /// Класс бронирования
@@ -89,7 +83,7 @@ public class Booking
     public void Confirm(IDateTimeProvider dateTimeProvider)
     {
         Status = BookingStatus.Confirmed;
-        ProcessedAt = dateTimeProvider.UtcNow;
+        ProcessedAt = dateTimeProvider.GetUtcNow();
     }
 
     /// <summary>
@@ -98,6 +92,6 @@ public class Booking
     public void Reject(IDateTimeProvider dateTimeProvider)
     {
         Status = BookingStatus.Rejected;
-        ProcessedAt = dateTimeProvider.UtcNow;
+        ProcessedAt = dateTimeProvider.GetUtcNow();
     }    
 }

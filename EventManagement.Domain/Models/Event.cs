@@ -1,8 +1,6 @@
-﻿using EventManagement.Models.BookingModels;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
-namespace EventManagement.Models.Events;
+namespace EventManagement.Domain.Models;
 
 /// <summary>
 /// Класс события
@@ -27,6 +25,8 @@ public class Event
     {
         if (totalSeats <= 0)
             throw new ArgumentException("Количество мест не может быть отрицательным");
+        if (endAt < startAt)
+            throw new ArgumentException("Событие содержит некорректные данные. Дата окончания меньше даты начала.");
         Id = Guid.NewGuid();
         TotalSeats = totalSeats;
         AvailableSeats = totalSeats;

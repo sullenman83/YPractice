@@ -1,6 +1,6 @@
-﻿using EventManagement.Common;
+﻿using EventManagement.Application.Common.Exceptions;
+using EventManagement.Common;
 using EventManagement.Common.AppSettings;
-using EventManagement.Common.Exceptions;
 using EventManagement.Data;
 using EventManagement.Interfaces;
 using EventManagement.Interfaces.Reposirories;

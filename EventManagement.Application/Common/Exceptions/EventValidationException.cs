@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Common.Exceptions;
+﻿namespace EventManagement.Application.Common.Exceptions;
 
 /// <summary>
 /// Класс исключение для генерации в случае неуспешной валидациисобытия

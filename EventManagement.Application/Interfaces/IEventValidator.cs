@@ -1,4 +1,4 @@
-﻿using EventManagement.Common.Exceptions;
+﻿using EventManagement.Application.Common.Exceptions;
 using EventManagement.Models.Events;
 
 namespace EventManagement.Interfaces;

@@ -1,4 +1,4 @@
-﻿using EventManagement.Common.Exceptions;
+﻿using EventManagement.Application.Common.Exceptions;
 using EventManagement.Interfaces;
 using EventManagement.Models.Events;
 namespace EventManagement.Services.EventServices;
@@ -30,9 +30,6 @@ public class EventValidator : IEventValidator
 
     private void ValidateDate(DateTimeOffset? starttAt, DateTimeOffset? endAt)
     {
-        if (endAt < starttAt)
-            throw new EventValidationException("Событие содержит некорректные данные. Дата окончания меньше даты начала.");
-
         if (starttAt.HasValue && (starttAt.Value.Microsecond != 0 || starttAt.Value.Millisecond != 0))
             throw new EventValidationException("Неверный формат даты начала события. Значение микросекунд и миллисекунд должны быть 0");
 

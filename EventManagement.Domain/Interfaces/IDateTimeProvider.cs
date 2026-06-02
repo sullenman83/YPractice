@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Interfaces;
+﻿namespace EventManagement.Domain.Interfaces;
 
 /// <summary>
 /// Генератор времени
@@ -6,7 +6,7 @@
 public interface IDateTimeProvider
 {
     /// <summary>
-    /// Текущее utc время 
+    /// Вернуть текущее utc время 
     /// </summary>
-    public DateTimeOffset UtcNow { get; }
+    public DateTimeOffset GetUtcNow();
 }

@@ -1,4 +1,4 @@
-﻿using EventManagement.Common.Exceptions;
+﻿using EventManagement.Application.Common.Exceptions;
 using EventManagement.Extensions.EventExt;
 using EventManagement.Interfaces;
 using EventManagement.Interfaces.Reposirories;
