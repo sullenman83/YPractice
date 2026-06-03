@@ -1,12 +1,11 @@
 ﻿using EventManagement.Application.Interfaces;
 using EventManagement.Application.Interfaces.Reposirories;
 using EventManagement.Application.Models.Events;
+using EventManagement.Application.Models.Events.Extensions;
+using EventManagement.Application.Services.EventServices;
 using EventManagement.Common;
-using EventManagement.Common.Exceptions;
-using EventManagement.Models.Events.Extensions;
-using EventManagement.Models.FilterModels;
-using EventManagement.Services;
-using EventManagement.Services.EventServices;
+using EventManagement.Domain.Exceptions;
+using EventManagement.Domain.Models;
 using FluentAssertions;
 using Moq;
 

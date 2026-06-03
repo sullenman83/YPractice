@@ -29,9 +29,12 @@ public class EventValidator : IEventValidator
         ValidateDate(ev.StartAt, ev.EndAt);
     }
 
-    private void ValidateDate(DateTimeOffset? starttAt, DateTimeOffset? endAt)
+    private void ValidateDate(DateTimeOffset? startAt, DateTimeOffset? endAt)
     {
-        if (starttAt.HasValue && (starttAt.Value.Microsecond != 0 || starttAt.Value.Millisecond != 0))
+        if (endAt < startAt)
+            throw new EventValidationException("Событие содержит некорректные данные. Дата окончания меньше даты начала.");
+
+        if (startAt.HasValue && (startAt.Value.Microsecond != 0 || startAt.Value.Millisecond != 0))
             throw new EventValidationException("Неверный формат даты начала события. Значение микросекунд и миллисекунд должны быть 0");
 
         if (endAt.HasValue && (endAt.Value.Microsecond != 0 || endAt.Value.Millisecond != 0))

@@ -1,10 +1,10 @@
 ﻿using EventManagement.Application.Interfaces.Reposirories;
 using EventManagement.Application.Models.BookingModels;
+using EventManagement.Application.Services.BookingServices;
 using EventManagement.Common;
-using EventManagement.Common.Exceptions;
-using EventManagement.Models.Events;
-using EventManagement.Services;
-using EventManagement.Services.BookingServices;
+using EventManagement.Domain.Exceptions;
+using EventManagement.Domain.Models;
+using EventManagement.Domain.Services;
 using FluentAssertions;
 using Moq;
 
@@ -104,7 +104,7 @@ public class BookingTest
     {
         // Arrange
         var eventID = Guid.NewGuid();
-        var booking = new Booking(BookingStatus.Pending, eventID, 1, _dateTimeProvider.UtcNow);
+        var booking = new Booking(BookingStatus.Pending, eventID, 1, _dateTimeProvider.GetUtcNow());
         var id = booking.Id;
         _bookingRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(booking);
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object, _dateTimeProvider);
@@ -123,7 +123,7 @@ public class BookingTest
     {
         // Arrange        
         var eventID = Guid.NewGuid();
-        var booking = new Booking(BookingStatus.Pending, eventID, 1, _dateTimeProvider.UtcNow);
+        var booking = new Booking(BookingStatus.Pending, eventID, 1, _dateTimeProvider.GetUtcNow());
         var id = booking.Id;
         _bookingRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(booking);
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object, _dateTimeProvider);
@@ -235,7 +235,7 @@ public class BookingTest
     {
         // Arrange                
         var eventID = Guid.NewGuid();
-        var booking = new Booking(BookingStatus.Pending, eventID, 1, _dateTimeProvider.UtcNow);
+        var booking = new Booking(BookingStatus.Pending, eventID, 1, _dateTimeProvider.GetUtcNow());
         var id = booking.Id;
         _bookingRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(booking);
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object, _dateTimeProvider);
@@ -257,7 +257,7 @@ public class BookingTest
     {
         // Arrange                
         var eventID = Guid.NewGuid();
-        var booking = new Booking(BookingStatus.Pending, eventID, 1, _dateTimeProvider.UtcNow);
+        var booking = new Booking(BookingStatus.Pending, eventID, 1, _dateTimeProvider.GetUtcNow());
         var id = booking.Id;
         _bookingRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(booking);
         var service = new BookingService(_bookingRepository.Object, _eventRepository.Object, _dateTimeProvider);
@@ -281,7 +281,7 @@ public class BookingTest
         // Arrange        
         int cnt = 5;
         var ev = TestData.GetTestEvent(10);
-        var booking = new Booking(BookingStatus.Confirmed, Guid.NewGuid(), cnt, _dateTimeProvider.UtcNow);
+        var booking = new Booking(BookingStatus.Confirmed, Guid.NewGuid(), cnt, _dateTimeProvider.GetUtcNow());
         ev.TryReserveSeats(cnt);
         var availableSeats = ev.AvailableSeats;
 
@@ -301,7 +301,7 @@ public class BookingTest
         // Arrange        
         int cnt = 5;
         var ev = TestData.GetTestEvent(10);
-        var booking = new Booking(BookingStatus.Confirmed, Guid.NewGuid(), cnt, _dateTimeProvider.UtcNow);
+        var booking = new Booking(BookingStatus.Confirmed, Guid.NewGuid(), cnt, _dateTimeProvider.GetUtcNow());
         ev.TryReserveSeats(cnt);
         var availableSeats = ev.AvailableSeats;
 

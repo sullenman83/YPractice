@@ -100,6 +100,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository<Event
     /// <exception cref="EventValidationException">Ошибка валидации</exception>    
     /// <exception cref="OperationCanceledException">Операция отменена.</exception>    
     /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
+    /// <exception cref="ArgumentException">Неверные входные данные.</exception>
     public async Task<EventResponseDto> UpdateEventAsync(Guid id, EventUpdateDTO ev, CancellationToken token)
     {        
         _eventValidator.Validate(ev);

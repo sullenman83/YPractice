@@ -1,19 +1,17 @@
-﻿using EventManagement.Application.Interfaces.Reposirories;
+﻿using EventManagement.Application.Common;
+using EventManagement.Application.Interfaces.Reposirories;
 using EventManagement.Application.Interfaces.Services;
-using EventManagement.Application.Models.BookingModels;
 using EventManagement.Application.Services.BookingServices;
 using EventManagement.Common;
-using EventManagement.Interfaces;
-using EventManagement.Models.Events;
-using EventManagement.Services;
+using EventManagement.Domain.Interfaces;
+using EventManagement.Domain.Models;
+using EventManagement.Domain.Services;
 using FluentAssertions;
-using FluentAssertions.Events;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Polly;
+using Polly.Registry;
 
 namespace EventServiceTest;
 
@@ -26,6 +24,7 @@ public class BackgroundBookingServiceTest
     private readonly Mock<ITransactionService> _mockTransactionService = new Mock<ITransactionService>();
     private readonly Mock<ITransaction> _mockTransaction = new Mock<ITransaction>();
     private readonly NullLogger<BackgroundBookingService> _logger = NullLogger<BackgroundBookingService>.Instance;
+    private readonly Mock<ResiliencePipelineProvider<string>> _pipelineProvider;
 
     public BackgroundBookingServiceTest()
     {
@@ -35,6 +34,10 @@ public class BackgroundBookingServiceTest
         _mockProvider.Setup(o => o.GetService(typeof(ITransactionService))).Returns(_mockTransactionService.Object);
         _mockScope.Setup(o => o.ServiceProvider).Returns(_mockProvider.Object);
         _mockScopeFactory.Setup(o => o.CreateScope()).Returns(_mockScope.Object);
+        _pipelineProvider = new Mock<ResiliencePipelineProvider<string>>();
+        _pipelineProvider.Setup(p => p.GetPipeline(Consts.CreateBookingRetry))
+            .Returns(ResiliencePipeline.Empty);
+
     }
 
     [Fact]
@@ -46,7 +49,7 @@ public class BackgroundBookingServiceTest
         var id = ev.Id;        
         var booking = new Booking(BookingStatus.Pending, ev, seatsCount, DateTimeOffset.UtcNow);
         _mockBookingRepository.Setup(o => o.GetBookingWithBlockingAsync(It.IsAny<Guid>())).ReturnsAsync(booking);
-        var service = new BackgroundBookingService(_mockScopeFactory.Object, _logger);
+        var service = new BackgroundBookingService(_mockScopeFactory.Object, _logger, _pipelineProvider.Object);
 
         // Act
         await service.ConfirmBookingAsync(id, CancellationToken.None);
@@ -71,7 +74,7 @@ public class BackgroundBookingServiceTest
         var id = ev.Id;
         var booking = new Booking(BookingStatus.Pending, ev, seatsCount + 1, DateTimeOffset.UtcNow);
         _mockBookingRepository.Setup(o => o.GetBookingWithBlockingAsync(It.IsAny<Guid>())).ReturnsAsync(booking);
-        var service = new BackgroundBookingService(_mockScopeFactory.Object, _logger);
+        var service = new BackgroundBookingService(_mockScopeFactory.Object, _logger, _pipelineProvider.Object);
 
         // Act
         await service.ConfirmBookingAsync(id, CancellationToken.None);
@@ -96,7 +99,7 @@ public class BackgroundBookingServiceTest
         var id = ev.Id;
         var booking = new Booking(BookingStatus.Pending, ev, seatsCount, DateTimeOffset.UtcNow);
         _mockBookingRepository.Setup(o => o.GetBookingWithBlockingAsync(It.IsAny<Guid>())).ReturnsAsync(booking);
-        var service = new BackgroundBookingService(_mockScopeFactory.Object, _logger);
+        var service = new BackgroundBookingService(_mockScopeFactory.Object, _logger, _pipelineProvider.Object);
 
         // Act
         await service.RejectBookingAsync(id, CancellationToken.None);

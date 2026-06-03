@@ -1,9 +1,7 @@
-﻿using EventManagement.Application.Models.BookingModels;
-using EventManagement.Application.Models.Events;
-using EventManagement.Interfaces;
+﻿using EventManagement.Application.Models.Events;
+using EventManagement.Domain.Models;
 
 namespace EventManagement.Common;
-
 
 /// <summary>
 /// Генератор тестовых данных

@@ -24,9 +24,7 @@ public class Event
         int totalSeats)
     {
         if (totalSeats <= 0)
-            throw new ArgumentException("Количество мест не может быть отрицательным");
-        if (endAt < startAt)
-            throw new ArgumentException("Событие содержит некорректные данные. Дата окончания меньше даты начала.");
+            throw new ArgumentException("Количество мест не может быть отрицательным");        
         Id = Guid.NewGuid();
         TotalSeats = totalSeats;
         AvailableSeats = totalSeats;

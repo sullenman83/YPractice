@@ -68,8 +68,8 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
         return ex switch
         {
             ArgumentNullException ane => StatusCodes.Status400BadRequest,
-            NotFoundException nfe => StatusCodes.Status404NotFound,
-            ArgumentException arg => StatusCodes.Status400BadRequest,
+            ArgumentException ae => StatusCodes.Status400BadRequest,
+            NotFoundException nfe => StatusCodes.Status404NotFound,            
             NullReferenceException nr => StatusCodes.Status400BadRequest,
             HttpRequestException hr => StatusCodes.Status400BadRequest,
             ValidationException ve => StatusCodes.Status400BadRequest,
