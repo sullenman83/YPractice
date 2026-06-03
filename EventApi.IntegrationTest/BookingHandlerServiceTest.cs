@@ -1,4 +1,5 @@
 ﻿
+using EventManagement.Application.Common;
 using EventManagement.Application.Common.AppSettings;
 using EventManagement.Application.Interfaces.Reposirories;
 using EventManagement.Application.Interfaces.Services;
@@ -14,6 +15,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Polly;
+using Polly.Registry;
 
 namespace EventApi.IntegrationTest;
 
@@ -22,6 +25,7 @@ public class BookingHandlerServiceTest : IClassFixture<DatabaseFixture>, IAsyncL
     private readonly DatabaseFixture _fixture;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly Mock<ResiliencePipelineProvider<string>> _pipelineProvider;
 
     public BookingHandlerServiceTest(DatabaseFixture fixture)
     {
@@ -33,11 +37,15 @@ public class BookingHandlerServiceTest : IClassFixture<DatabaseFixture>, IAsyncL
             options.ProcessingDelay = 1000;
             options.PollingInterval = 1000;
         });
+        _pipelineProvider = new Mock<ResiliencePipelineProvider<string>>();
+        _pipelineProvider.Setup(p => p.GetPipeline(Consts.CreateBookingRetry))
+            .Returns(ResiliencePipeline.Empty);
         serviceCollection.AddLogging(builder => builder.AddDebug());
         serviceCollection.AddScoped<IDateTimeProvider, DateTimeProvider>();
         serviceCollection.AddScoped<IBookingRepository<Booking>, BookingRepository>();
         serviceCollection.AddScoped<IBackgroundBookingService, BackgroundBookingService>();
         serviceCollection.AddScoped<ITransactionService, TransactionService>();
+        serviceCollection.AddScoped<ResiliencePipelineProvider<string>>(provider => _pipelineProvider.Object);
         serviceCollection.AddScoped(provider =>
         {
             return _fixture.Context;

@@ -4,7 +4,7 @@ using EventManagement.Domain.Interfaces;
 using EventManagement.Domain.Services;
 using System.Reflection;
 
-namespace EventManagement.Web.Extensions;
+namespace EventManagement.Presentation.Extensions;
 
 /// <summary>
 /// Расширение для добавления зависимостей
@@ -17,7 +17,7 @@ public static class WebDIExt
     /// <param name="services">Коллекция сервисов</param>
     /// <param name="env">Окружение</param>
     /// <returns>Коллекция сервисов</returns>
-    public static IServiceCollection AddWeb(this IServiceCollection services, IHostEnvironment env)
+    public static IServiceCollection AddPresentation(this IServiceCollection services, IHostEnvironment env)
     {
         if (env.IsDevelopment())
         {

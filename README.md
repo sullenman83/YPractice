@@ -231,7 +231,7 @@ BookingStatus
 				сервис управления транзакциями
 				контекст базы данных, описание можели базы данных и миграции
 				Проект зависит от EventManagement.Domain и EventManagement.Application
-			# EventManagement.Web
+			# EventManagement.Presentation
 				Это переименованный проект EventManagement
 				В нем остались контроллеры
 				глобальный обработчик исключений 
@@ -240,12 +240,16 @@ BookingStatus
 	# Тесты
 		Адаптированы под новую  архитектуру
 
+## Команда создания миграций 
+dotnet ef migrations add Initial --project EventManagement.Infrastructure.csproj --startup-project ..\EventManagement.Presentation\EventManagement.Presentation.csproj
+## команда обновления бд 
+dotnet ef database update --project EventManagement.Infrastructure.csproj --startup-project ..\EventManagement.Presentation\EventManagement.Presentation.csproj
 		
 ## Сборка осуществляется из директории репозитория командой 
-dotnet build EventManagement\EventManagement.Web.csproj
+dotnet build EventManagement.Presentation\EventManagement.Presentation.csproj
 
 ## Запуск осуществляется из директории репозитория командой 
-dotnet run --project EventManagement\EventManagement.Web.csproj
+dotnet run --project EventManagement.Presentation\EventManagement.Presentation.csproj
 
 ## Запуск осуществляется из директории репозитория командой 
 dotnet test

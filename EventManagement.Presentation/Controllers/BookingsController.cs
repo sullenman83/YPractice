@@ -2,7 +2,7 @@
 using EventManagement.Application.Models.BookingModels;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EventManagement.Web.Controllers;
+namespace EventManagement.Presentation.Controllers;
 
 
 /// <summary>

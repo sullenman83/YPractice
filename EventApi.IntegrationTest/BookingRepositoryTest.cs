@@ -1,4 +1,5 @@
 ﻿using Castle.Core.Logging;
+using EventManagement.Application.Common.Exceptions;
 using EventManagement.Common;
 using EventManagement.Domain.Interfaces;
 using EventManagement.Domain.Models;
@@ -234,7 +235,7 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         // Assert
         res1.Should().NotBeNull();
         res1.Id.Should().Be(b1.Id);
-        await act.Should().ThrowAsync<InvalidOperationException>();        
+        await act.Should().ThrowAsync<DbOperationWithBlockingRowException>();        
         res2.Should().NotBeNull();
         res2.Id.Should().Be(b2.Id);
         await tr1.RollbackAsync();

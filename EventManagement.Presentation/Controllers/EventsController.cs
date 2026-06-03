@@ -5,7 +5,7 @@ using EventManagement.Application.Models.FilterModels;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
-namespace EventManagement.Web.Controllers;
+namespace EventManagement.Presentation.Controllers;
 
 /// <summary>
 /// Контроллер с API для работы с событиями

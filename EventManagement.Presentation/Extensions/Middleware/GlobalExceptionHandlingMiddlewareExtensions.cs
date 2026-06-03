@@ -1,6 +1,6 @@
-﻿using EventManagement.Web.Middleware;
+﻿using EventManagement.Presentation.Middleware;
 
-namespace EventManagement.Web.Extensions.Middleware;
+namespace EventManagement.Presentation.Extensions.Middleware;
 
 /// <summary>
 /// Расширение для добавления промежуточного по в конвеер

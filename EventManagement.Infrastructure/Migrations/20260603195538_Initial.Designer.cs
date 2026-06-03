@@ -9,10 +9,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace EventManagement.Migrations
+namespace EventManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260527135151_Initial")]
+    [Migration("20260603195538_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -25,7 +25,7 @@ namespace EventManagement.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("EventManagement.Models.BookingModels.Booking", b =>
+            modelBuilder.Entity("EventManagement.Domain.Models.Booking", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -64,7 +64,7 @@ namespace EventManagement.Migrations
                         });
                 });
 
-            modelBuilder.Entity("EventManagement.Models.Events.Event", b =>
+            modelBuilder.Entity("EventManagement.Domain.Models.Event", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -117,9 +117,9 @@ namespace EventManagement.Migrations
                         });
                 });
 
-            modelBuilder.Entity("EventManagement.Models.BookingModels.Booking", b =>
+            modelBuilder.Entity("EventManagement.Domain.Models.Booking", b =>
                 {
-                    b.HasOne("EventManagement.Models.Events.Event", "Event")
+                    b.HasOne("EventManagement.Domain.Models.Event", "Event")
                         .WithMany("Bookings")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -128,7 +128,7 @@ namespace EventManagement.Migrations
                     b.Navigation("Event");
                 });
 
-            modelBuilder.Entity("EventManagement.Models.Events.Event", b =>
+            modelBuilder.Entity("EventManagement.Domain.Models.Event", b =>
                 {
                     b.Navigation("Bookings");
                 });

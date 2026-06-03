@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Security;
 
-namespace EventManagement.Web.Middleware;
+namespace EventManagement.Presentation.Middleware;
 
 /// <summary>
 /// Глобальный обрабюотчик исключений. Встраивается в конвеер обработки запросов

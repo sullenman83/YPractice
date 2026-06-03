@@ -9,6 +9,9 @@ namespace EventManagement.Infrastructure.Data;
 /// </summary>
 public class AppDbContext : DbContext
 {
+
+    public AppDbContext() { }
+
     /// <summary>
     /// Конструктор
     /// </summary>
@@ -34,6 +37,6 @@ public class AppDbContext : DbContext
     /// <param name="modelBuilder">Конструктор модели</param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 }
