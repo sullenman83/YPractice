@@ -54,12 +54,14 @@ public class Event
 
     /// <summary>
     /// Дата и время начала события. Формат времени dd.MM.yyyy hh:mm:ssZ
-    /// </summary>
+    /// </summary>    
+    /// <example>22.05.2026 11:34:33+00:00</example>
     public required DateTimeOffset StartAt { get; set; }
 
     /// <summary>
     /// Дата и время окончания события. Формат времени dd.MM.yyyy hh:mm:ssZ
     /// </summary>
+    /// <example>23.05.2026 11:34:33+00:00</example>
     public required DateTimeOffset EndAt { get; set; }
 
     /// <summary>
