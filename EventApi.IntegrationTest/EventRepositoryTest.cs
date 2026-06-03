@@ -1,13 +1,15 @@
-﻿using EventManagement.Common;
-using EventManagement.Interfaces;
-using EventManagement.Models.Events;
-using EventManagement.Models.FilterModels;
-using EventManagement.Services;
+﻿using EventManagement.Application.Models.FilterModels;
+using EventManagement.Common;
+using EventManagement.Domain.Interfaces;
+using EventManagement.Domain.Models;
+using EventManagement.Domain.Services;
+using EventManagement.Infrastructure.Services;
+using EventManagement.Infrastructure.Services.EventServices;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
-using Org.BouncyCastle.Crypto.Signers;
 
 namespace EventApi.IntegrationTest
 {
@@ -15,6 +17,7 @@ namespace EventApi.IntegrationTest
     {
         private readonly DatabaseFixture _fixture ;
         private readonly IDateTimeProvider _dateTimeProvider = new DateTimeProvider();
+        private readonly ILogger<BaseRepository<Event>> _logger = NullLogger<BaseRepository<Event>>.Instance;
 
         public EventRepositoryTest(DatabaseFixture fixture)
         {
@@ -32,7 +35,7 @@ namespace EventApi.IntegrationTest
             await context.SaveChangesAsync();
 
             // Act
-            var rep = new EventRepository(_fixture.Context);
+            var rep = new EventRepository(_fixture.Context, _logger);
             var res = await rep.GetByIdAsync(id, CancellationToken.None);
 
             // Assert
@@ -51,7 +54,7 @@ namespace EventApi.IntegrationTest
             await context.SaveChangesAsync();
 
             // Act
-            var rep = new EventRepository(_fixture.Context);
+            var rep = new EventRepository(_fixture.Context, _logger);
             var res = await rep.GetByIdAsync(Guid.NewGuid(), CancellationToken.None);
 
             // Assert
@@ -67,7 +70,7 @@ namespace EventApi.IntegrationTest
             var id = ev.Id;
 
             // Act
-            var rep = new EventRepository(context);
+            var rep = new EventRepository(context, _logger);
             var res = await rep.AddAsync(ev, CancellationToken.None);
 
 
@@ -85,14 +88,14 @@ namespace EventApi.IntegrationTest
             await using var context = _fixture.Context;
             var ev = TestData.GetTestEvent();
             var id = ev.Id;
-            var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
+            var booking = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
             await context.Events.AddAsync(ev);
             await context.SaveChangesAsync();
             await context.Bookings.AddAsync(booking);
             await context.SaveChangesAsync();
 
             // Act
-            var rep = new EventRepository(_fixture.Context);
+            var rep = new EventRepository(_fixture.Context, _logger);
             await rep.DeleteAsync(id, CancellationToken.None);
 
             // Assert
@@ -109,7 +112,7 @@ namespace EventApi.IntegrationTest
             // Arrange            
 
             // Act
-            var rep = new EventRepository(_fixture.Context);
+            var rep = new EventRepository(_fixture.Context, _logger);
             var res = await rep.DeleteAsync(Guid.NewGuid(), CancellationToken.None);
 
             // Assert
@@ -127,7 +130,7 @@ namespace EventApi.IntegrationTest
             var filter = new EventFilterRequestDTO();
 
             // Act
-            var rep = new EventRepository(_fixture.Context);
+            var rep = new EventRepository(_fixture.Context, _logger);
             var res = await rep.GetAllAsync(CancellationToken.None);
 
             // Assert
@@ -144,7 +147,7 @@ namespace EventApi.IntegrationTest
             await context.SaveChangesAsync();
 
             // Act
-            var rep = new EventRepository(_fixture.Context);
+            var rep = new EventRepository(_fixture.Context, _logger);
             var res = await rep.GetCountAsync(CancellationToken.None);
 
             // Assert
@@ -162,7 +165,7 @@ namespace EventApi.IntegrationTest
             var title = ev.Title + "Changed";
 
             // Act
-            var rep = new EventRepository(_fixture.Context);
+            var rep = new EventRepository(_fixture.Context, _logger);
             var e = await rep.GetByIdAsync(ev.Id, CancellationToken.None);
             if (e == null)
                 throw new InvalidOperationException("Что-то работает не так");

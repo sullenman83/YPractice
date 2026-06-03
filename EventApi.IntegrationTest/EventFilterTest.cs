@@ -1,15 +1,18 @@
-﻿using EventApi.IntegrationTest;
+﻿using EventManagement.Application.Models.Events.Extensions;
+using EventManagement.Application.Models.FilterModels;
 using EventManagement.Common;
-using EventManagement.Models.Events.Extensions;
-using EventManagement.Models.FilterModels;
-using EventManagement.Services;
+using EventManagement.Domain.Models;
+using EventManagement.Infrastructure.Services;
+using EventManagement.Infrastructure.Services.EventServices;
 using FluentAssertions;
-
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 namespace EventApi.IntegrationTest;
 
 public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFixture>, IAsyncLifetime
 {
     private readonly DatabaseFixture _fixture = fixture;
+    private readonly ILogger<BaseRepository<Event>> _logger = NullLogger<BaseRepository<Event>>.Instance;
 
     [Fact]
     public async Task Test_EmptyFilter_ReturnAllEvents()
@@ -23,7 +26,7 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
         var response = events.Select(o => o.ToResponse());
 
         // Act
-        var rep = new EventRepository(_fixture.Context);
+        var rep = new EventRepository(_fixture.Context, _logger);
         var res = await rep.GetEventsByFilterAsync(filter, CancellationToken.None);        
 
         // Assert
@@ -42,7 +45,7 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
         var filter = new EventFilterRequestDTO() { Title = title };
 
         // Act
-        var rep = new EventRepository(_fixture.Context);
+        var rep = new EventRepository(_fixture.Context, _logger);
         var result = await rep.GetEventsByFilterAsync(filter, CancellationToken.None);
 
         // Assert
@@ -68,7 +71,7 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
         var response = events.Select(o => o.ToResponse()).ToList();
         
         // Act
-        var rep = new EventRepository(_fixture.Context);
+        var rep = new EventRepository(_fixture.Context, _logger);
         var result = await rep.GetEventsByFilterAsync(filter, CancellationToken.None);
 
         // Assert
@@ -92,7 +95,7 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
         var filter = new EventFilterRequestDTO() { PageSize = pageSize, Page = currentPage};
 
         // Act
-        var rep = new EventRepository(_fixture.Context);
+        var rep = new EventRepository(_fixture.Context, _logger);
         var result = await rep.GetEventsByFilterAsync(filter, CancellationToken.None);
 
         // Assert
@@ -117,7 +120,7 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
         var filter = new EventFilterRequestDTO() { Title = title, PageSize = pageSize, Page = currentPage };
 
         // Act
-        var rep = new EventRepository(_fixture.Context);
+        var rep = new EventRepository(_fixture.Context, _logger);
         var result = await rep.GetEventsByFilterAsync(filter, CancellationToken.None);
 
         // Assert

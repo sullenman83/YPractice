@@ -1,15 +1,14 @@
 ﻿
-using Castle.Core.Logging;
 using EventManagement.Application.Common.AppSettings;
 using EventManagement.Application.Interfaces.Reposirories;
 using EventManagement.Application.Interfaces.Services;
-using EventManagement.Application.Models.BookingModels;
 using EventManagement.Application.Services.BookingServices;
 using EventManagement.Common;
-using EventManagement.Common.Exceptions;
+using EventManagement.Domain.Interfaces;
+using EventManagement.Domain.Models;
+using EventManagement.Domain.Services;
 using EventManagement.Infrastructure.Services.BookingServices;
 using EventManagement.Infrastructure.Services.TransactionService;
-using EventManagement.Interfaces;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,7 +54,7 @@ public class BookingHandlerServiceTest : IClassFixture<DatabaseFixture>, IAsyncL
         await using var context = _fixture.Context;
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
-        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
         await context.Bookings.AddAsync(booking);
         await context.SaveChangesAsync();
 
@@ -80,9 +79,9 @@ public class BookingHandlerServiceTest : IClassFixture<DatabaseFixture>, IAsyncL
         await using var context = _fixture.Context;
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
-        var booking = new Booking(BookingStatus.Pending, ev.Id, seatsCount, _dateTimeProvider.UtcNow);
+        var booking = new Booking(BookingStatus.Pending, ev.Id, seatsCount, _dateTimeProvider.GetUtcNow());
         var dateTimeProvider = new Mock<IDateTimeProvider>();
-        dateTimeProvider.Setup(o => o.UtcNow).Returns(_dateTimeProvider.UtcNow.AddMinutes(1));        
+        dateTimeProvider.Setup(o => o.GetUtcNow()).Returns(_dateTimeProvider.GetUtcNow().AddMinutes(1));        
         await context.Bookings.AddAsync(booking);
         await context.SaveChangesAsync();
         var availableSeats = ev.AvailableSeats;

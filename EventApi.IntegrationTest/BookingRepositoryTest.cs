@@ -1,13 +1,16 @@
-﻿using EventManagement.Application.Models.BookingModels;
+﻿using Castle.Core.Logging;
 using EventManagement.Common;
-using EventManagement.Interfaces;
-using EventManagement.Services;
-using EventManagement.Services.TransactionService;
+using EventManagement.Domain.Interfaces;
+using EventManagement.Domain.Models;
+using EventManagement.Domain.Services;
+using EventManagement.Infrastructure.Services;
+using EventManagement.Infrastructure.Services.BookingServices;
+using EventManagement.Infrastructure.Services.TransactionService;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
-using System.Runtime.CompilerServices;
 
 namespace EventApi.IntegrationTest;
 
@@ -15,6 +18,7 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
 {
     private readonly IDateTimeProvider _dateTimeProvider = new DateTimeProvider();
     private readonly DatabaseFixture _fixture = fixture;
+    private readonly ILogger<BaseRepository<Booking>> _logger = NullLogger<BaseRepository<Booking>>.Instance;
 
     [Fact]
     public async Task GetBookingById_ReturnsBooking()
@@ -24,13 +28,13 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
-        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
         await context.Bookings.AddAsync(booking);
         await context.SaveChangesAsync();
         var id = booking.Id;
 
         // Act
-        var rep = new BookingRepository(_fixture.Context);
+        var rep = new BookingRepository(_fixture.Context, _logger);
         var res = await rep.GetByIdAsync(id, CancellationToken.None);
 
         // Assert
@@ -47,7 +51,7 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         // Arrange
         await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();
-        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
         await context.Bookings.AddAsync(booking);
@@ -55,7 +59,7 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         var id = booking.Id;
 
         // Act
-        var rep = new BookingRepository(_fixture.Context);
+        var rep = new BookingRepository(_fixture.Context, _logger);
         var res = await rep.GetByIdAsync(Guid.NewGuid(), CancellationToken.None);
 
         // Assert
@@ -70,11 +74,11 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
-        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
         var id = booking.Id;
 
         // Act
-        var rep = new BookingRepository(context);
+        var rep = new BookingRepository(context, _logger);
         var res = await rep.AddAsync(booking, CancellationToken.None);
 
 
@@ -95,7 +99,7 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         // Arrange
         await using var context = _fixture.Context;
         var ev = TestData.GetTestEvent();
-        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
         await context.Bookings.AddAsync(booking);
@@ -103,7 +107,7 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         var id = booking.Id;
 
         // Act
-        var rep = new BookingRepository(_fixture.Context);
+        var rep = new BookingRepository(_fixture.Context, _logger);
         await rep.DeleteAsync(id, CancellationToken.None);
 
         // Assert
@@ -118,7 +122,7 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         // Arrange
 
         // Act
-        var rep = new BookingRepository(_fixture.Context);
+        var rep = new BookingRepository(_fixture.Context, _logger);
         await using var exCtx = _fixture.Context;
         var res = await rep.DeleteAsync(Guid.NewGuid(), CancellationToken.None);
 
@@ -134,15 +138,15 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
-        var b1 = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
-        var b2 = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
+        var b1 = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
+        var b2 = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
         var list = new List<Booking>() { b1, b2 };
         await context.Bookings.AddRangeAsync(list);
         await context.SaveChangesAsync();
         var ids = list.Select(o => o.Id).ToList();
 
         // Act
-        var rep = new BookingRepository(_fixture.Context);
+        var rep = new BookingRepository(_fixture.Context, _logger);
         var res = (await rep.GetAllAsync(CancellationToken.None)).Select(o => o.Id).ToList();
 
         // Assert
@@ -157,14 +161,14 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
-        var b1 = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
-        var b2 = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
+        var b1 = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
+        var b2 = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
         var list = new List<Booking>() { b1, b2 };
         await context.Bookings.AddRangeAsync(list);
         await context.SaveChangesAsync();
 
         // Act
-        var rep = new BookingRepository(_fixture.Context);
+        var rep = new BookingRepository(_fixture.Context, _logger);
         var res = await rep.GetCountAsync(CancellationToken.None);
 
         // Assert
@@ -179,12 +183,12 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         var ev = TestData.GetTestEvent();
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
-        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
         await context.Bookings.AddAsync(booking);
         await context.SaveChangesAsync();
 
         // Act
-        var rep = new BookingRepository(_fixture.Context);
+        var rep = new BookingRepository(_fixture.Context, _logger);
         var b = await rep.GetByIdAsync(booking.Id, CancellationToken.None);
         if (b == null)
             throw new InvalidOperationException("Что-то работает не так");
@@ -207,20 +211,20 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         await using var ctx = _fixture.Context;
         await ctx.Events.AddRangeAsync(events);
         await ctx.SaveChangesAsync();
-        var b1 = TestData.GetTestBooking(events[0], _dateTimeProvider.UtcNow);
-        var b2 = TestData.GetTestBooking(events[1], _dateTimeProvider.UtcNow);
+        var b1 = TestData.GetTestBooking(events[0], _dateTimeProvider.GetUtcNow());
+        var b2 = TestData.GetTestBooking(events[1], _dateTimeProvider.GetUtcNow());
         await ctx.Bookings.AddRangeAsync(b1, b2);
         await ctx.SaveChangesAsync();
 
         var ctx1 = _fixture.Context;
         var transactionService1 = new TransactionService(ctx1);
         await using var tr1 = await transactionService1.BeginTransactionAsync(CancellationToken.None);
-        var rep1 = new BookingRepository(ctx1);
+        var rep1 = new BookingRepository(ctx1, _logger);
 
         var ctx2 = _fixture.Context;
         var transactionService2 = new TransactionService(ctx2);
         await using var tr2 = await transactionService2.BeginTransactionAsync(CancellationToken.None);
-        var rep2 = new BookingRepository(ctx2);
+        var rep2 = new BookingRepository(ctx2, _logger);
 
         // Act
         var res1 = await rep1.GetBookingWithBlockingAsync(b1.Id, CancellationToken.None);
@@ -238,7 +242,7 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         var ctx3 = _fixture.Context;
         var transactionService3 = new TransactionService(ctx3);
         await using var tr3 = await transactionService3.BeginTransactionAsync(CancellationToken.None);
-        var rep3 = new BookingRepository(ctx3);
+        var rep3 = new BookingRepository(ctx3, _logger);
 
         var res3 = await rep3.GetBookingWithBlockingAsync(b1.Id, CancellationToken.None);
         res3.Should().NotBeNull();
@@ -252,7 +256,7 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         var ev = TestData.GetTestEvent();
         var ctx = _fixture.Context;
         await ctx.SaveChangesAsync();
-        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow, status: (BookingStatus)10);
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow(), status: (BookingStatus)10);
 
         // Act
         ctx.Bookings.Add(booking);
@@ -262,8 +266,6 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         await act.Should().ThrowAsync<DbUpdateException>();
     }
 
-
-
     [Fact]
     public async Task SaveBooking_NegativeSeatsCount_ThrowsDbUpdateException()
     {
@@ -271,7 +273,7 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         var ev = TestData.GetTestEvent();
         var ctx = _fixture.Context;
         await ctx.SaveChangesAsync();
-        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.UtcNow);
+        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
         var seatsCount = -1;
 
         // Act        
