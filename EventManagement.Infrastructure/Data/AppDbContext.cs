@@ -1,5 +1,4 @@
-﻿using EventManagement.Models.BookingModels;
-using EventManagement.Models.Events;
+﻿using EventManagement.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 

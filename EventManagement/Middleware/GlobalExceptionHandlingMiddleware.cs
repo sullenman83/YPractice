@@ -1,4 +1,4 @@
-﻿using EventManagement.Common.Exceptions;
+﻿using EventManagement.Application.Common.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Security;
@@ -77,6 +77,7 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
             SecurityException se => StatusCodes.Status401Unauthorized,
             NoAvailableSeatsException nae => StatusCodes.Status409Conflict,
             InvalidOperationException ioe => StatusCodes.Status500InternalServerError,
+            DbOperationException dboe => StatusCodes.Status500InternalServerError,
 
             _ => StatusCodes.Status500InternalServerError
         };

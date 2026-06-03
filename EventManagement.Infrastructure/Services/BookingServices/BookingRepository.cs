@@ -1,8 +1,9 @@
-﻿using EventManagement.Application.Interfaces.Reposirories;
-using EventManagement.Application.Models.BookingModels;
-using EventManagement.Common.Exceptions;
+﻿using EventManagement.Application.Common.Exceptions;
+using EventManagement.Application.Interfaces.Reposirories;
+using EventManagement.Domain.Models;
 using EventManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 
 namespace EventManagement.Infrastructure.Services.BookingServices;
@@ -10,16 +11,25 @@ namespace EventManagement.Infrastructure.Services.BookingServices;
 /// <summary>
 /// Класс хранения заявок на бронь
 /// </summary>
-public class BookingRepository(AppDbContext context) : BaseRepository<Booking>(context), IBookingRepository<Booking>
+public class BookingRepository(AppDbContext context, ILogger<BaseRepository<Booking>> logger) : BaseRepository<Booking>(context, logger), IBookingRepository<Booking>
 {
-    private const string LockRowError = "55P03";
+    private const string LockRowError = "55P03";    
 
     ///<inheritdoc/>
     public async Task<IReadOnlyList<Booking>> GetPendingBookingsAsync(CancellationToken token)
     {
-        return await _context.Bookings
-            .Where(o => o.Status == BookingStatus.Pending)
-            .ToListAsync(token);
+        try
+        {
+            return await _context.Bookings
+                .Where(o => o.Status == BookingStatus.Pending)
+                .ToListAsync(token);
+        }
+        catch (Exception ex)
+        {
+            var message = "Ошибка чтения необработанных бронирований.";
+            _logger.LogDebug(ex, message);
+            throw new DbOperationException(message);
+        }
     }    
 
     ///<inheritdoc/>
@@ -43,12 +53,14 @@ FOR UPDATE NOWAIT")
         }
         catch (Exception ex)
         {
+            var message = "Ошибка плучения собыия с блокировкой";
+            _logger.LogDebug(ex, message);
+            
             if (ex.InnerException != null && ex.InnerException is PostgresException pex)
+                if ( pex.SqlState == LockRowError)
+                    throw new DbOperationWithBlockingRowException(message);
 
-            if ( pex.SqlState == LockRowError)
-                throw new DbOperationWithBlockingRowException("Не удалось полуить записи бронирования с блокировкой.");
-
-            throw new InvalidOperationException("Ошибка плучения собыия с блокировкой", ex);
+            throw new DbOperationException(message, ex);
         }
     }
 }

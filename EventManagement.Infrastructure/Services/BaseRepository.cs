@@ -1,7 +1,9 @@
-﻿using EventManagement.Application.Interfaces.Reposirories;
+﻿using EventManagement.Application.Common.Exceptions;
+using EventManagement.Application.Interfaces.Reposirories;
 using EventManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace EventManagement.Infrastructure.Services;
 
@@ -10,55 +12,111 @@ namespace EventManagement.Infrastructure.Services;
 /// </summary>
 /// <typeparam name="T">Тип сущности</typeparam>
 /// <param name="context">Контекст базы данных</param>
-public class BaseRepository<T>(AppDbContext context) : IBaseRepository<T> where T : class
+public class BaseRepository<T>(AppDbContext context, ILogger<BaseRepository<T>> logger) : IBaseRepository<T> where T : class
 {
     /// <summary>
     /// Контекст базы данных
     /// </summary>
     protected readonly AppDbContext _context = context;
 
+    protected readonly ILogger<BaseRepository<T>> _logger = logger;
+
     /// <inheritdoc/>    
     public async Task<T> AddAsync(T entity, CancellationToken token = default)
     {
-        await _context.Set<T>().AddAsync(entity, token);
-        await _context.SaveChangesAsync(token);
+        try
+        {
+            await _context.Set<T>().AddAsync(entity, token);
+            await _context.SaveChangesAsync(token);
 
-        return entity;
-    }    
+            return entity;
+        }
+        catch (Exception ex)
+        {
+            var message = "Ошибка добавления элемента в БД";
+            _logger.LogDebug(message, ex);
+            throw new DbOperationException(message);
+        }
+    }
 
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(Guid id, CancellationToken token = default)
     {
-        var entity = await _context.Set<T>().FindAsync(id, token);
-        if (entity == null)
-            return false;
-        _context.Remove(entity);
-        await _context.SaveChangesAsync(token);
+        try
+        {
+            var entity = await _context.Set<T>().FindAsync(id, token);
+            if (entity == null)
+                return false;
+            _context.Remove(entity);
+            await _context.SaveChangesAsync(token);
 
-        return true;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            var message = $"Ошибка добавления элемента {id} в БД";
+            _logger.LogDebug(message, ex);
+            throw new DbOperationException(message);
+        }
     }
 
     /// <inheritdoc/>
     public async Task<T?> GetByIdAsync(Guid id, CancellationToken token = default)
     {
-        return await _context.Set<T>().FindAsync(id, token);
+        try
+        {
+            return await _context.Set<T>().FindAsync(id, token);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Ошибка получения записи по Id = {id}";
+            _logger.LogDebug(message, ex);
+            throw new DbOperationException(message);
+        }
     }
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<T>> GetAllAsync(CancellationToken token = default)
     {
-        return await _context.Set<T>().ToListAsync(token);
+        try
+        {
+            return await _context.Set<T>().ToListAsync(token);
+        }
+        catch (Exception ex)
+        {
+            var message = "Ошибка чтения записей.";
+            _logger.LogDebug(message, ex);
+            throw new DbOperationException(message);
+        }
     }
 
     /// <inheritdoc/>
     public async Task<int> GetCountAsync(CancellationToken token = default)
     {
-        return await _context.Set<T>().CountAsync(token);
+        try
+        {
+            return await _context.Set<T>().CountAsync(token);
+        }
+        catch(Exception ex)
+        {
+            var message = "Ошибка получения количества записей.";
+            _logger.LogDebug(message, ex);
+            throw new DbOperationException(message);
+        }
     }
 
     /// <inheritdoc/>
     public async Task SaveChangesAsync(CancellationToken token = default)
     {
-        await _context.SaveChangesAsync(token);
+        try
+        {
+            await _context.SaveChangesAsync(token);
+        }
+        catch (Exception ex)
+        {
+            var message = "Ошибка сохранения.";
+            _logger.LogDebug(message, ex);
+            throw new DbOperationException(message);
+        }
     }
 }

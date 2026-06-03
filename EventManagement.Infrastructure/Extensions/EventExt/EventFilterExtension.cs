@@ -1,5 +1,6 @@
 ﻿using EventManagement.Application.Models.FilterModels;
 using EventManagement.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Infrastructure.Extensions.EventExt;
 

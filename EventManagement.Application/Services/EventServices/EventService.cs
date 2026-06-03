@@ -22,7 +22,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository<Event
     /// <param name="event">Данные события</param>
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Обновленное событие</returns>
-    /// <exception cref="InvalidOperationException">Ошибка при создании нового события.</exception>
+    /// <exception cref="DbOperationException">Ошибка операций с БД.</exception>
     /// <exception cref="OperationCanceledException">Операция отменена.</exception>    
     /// <exception cref="EventValidationException">Ошибка валидации</exception>    
     public async Task<EventResponseDto> CreateEventAsync(EventCreationDTO @event, CancellationToken token)
@@ -31,15 +31,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository<Event
 
         token.ThrowIfCancellationRequested();
         Event ev = @event.ToEvent();
-
-        try
-        {
-            ev = await _eventRepository.AddAsync(ev, token);
-        }                                
-        catch(DbUpdateException ex)
-        {
-            throw new InvalidOperationException($"Ошибка при создании события", ex);
-        }
+        ev = await _eventRepository.AddAsync(ev, token);
                             
         return ev.ToResponse();
     }
@@ -50,22 +42,15 @@ public class EventService(IEventValidator eventValidator, IEventRepository<Event
     /// <param name="id">Идентификатор удаляемого события</param>
     /// <param name="token">Токен отмены операции</param>
     /// <exception cref="NotFoundException">Не найдено событие с заданным id</exception>
-    /// <exception cref="InvalidOperationException">Ошибка при удалении события.</exception>
+    /// <exception cref="DbOperationException">Ошибка операций с БД.</exception>
     /// <exception cref="OperationCanceledException">Операция отменена.</exception>    
     public async Task DeleteEventAsync(Guid id, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-
-        try
+        
+        if (!await _eventRepository.DeleteAsync(id, token))
         {
-            if (!await _eventRepository.DeleteAsync(id, token))
-            {
-                throw new NotFoundException($"Не найдено событие с id = {id}");
-            }
-        } 
-        catch(DbUpdateException ex)
-        {
-            throw new InvalidOperationException($"Ошибка при удалении события id = {id}", ex);
+            throw new NotFoundException($"Не найдено событие с id = {id}");
         }
     }
 
@@ -76,6 +61,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository<Event
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Отфильтрованный список событий по страницам</returns>
     /// <exception cref="OperationCanceledException">Операция отменена.</exception>    
+    /// <exception cref="DbOperationException">Ошибка операций с БД.</exception>
     public async Task<PaginatedResultDTO> GetEventsAsync(EventFilterRequestDTO filter, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
@@ -90,7 +76,8 @@ public class EventService(IEventValidator eventValidator, IEventRepository<Event
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Событие с искомым идентификатором</returns>
     /// <exception cref="NotFoundException">Не найдено событие с заданным id</exception>
-    /// <exception cref="OperationCanceledException">Операция отменена.</exception>    
+    /// <exception cref="OperationCanceledException">Операция отменена.</exception>
+    /// <exception cref="DbOperationException">Ошибка операций с БД.</exception>
     public async Task<EventResponseDto> GetEventByIdAsync(Guid id, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
@@ -108,7 +95,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository<Event
     /// <param name="token">Токен отмены операции</param>
     /// <returns>Обновленное событие</returns>
     /// <exception cref="NotFoundException">Не найдено событие с заданным id</exception>
-    /// <exception cref="InvalidOperationException">Ошибка при удалении события.</exception>
+    /// <exception cref="DbOperationException">Ошибка операций с БД.</exception>
     /// <exception cref="EventValidationException">Ошибка валидации</exception>    
     /// <exception cref="OperationCanceledException">Операция отменена.</exception>    
     /// <exception cref="ArgumentNullException">Неверные входные данные.</exception>
@@ -117,22 +104,15 @@ public class EventService(IEventValidator eventValidator, IEventRepository<Event
         _eventValidator.Validate(ev);
 
         token.ThrowIfCancellationRequested();
-
-        try
-        { 
-            var e = await GetById(id, token);
-            e.Title = ev.Title;
-            e.Description = ev.Description;
-            e.StartAt = ev.StartAt.HasValue ? ev.StartAt.Value : throw new ArgumentNullException("Дата начала события должна быть заполнена");
-            e.EndAt = ev.EndAt.HasValue ? ev.EndAt.Value : throw new ArgumentNullException("Дата окончания события должна быть заполнена");
+         
+        var e = await GetById(id, token);
+        e.Title = ev.Title;
+        e.Description = ev.Description;
+        e.StartAt = ev.StartAt.HasValue ? ev.StartAt.Value : throw new ArgumentNullException("Дата начала события должна быть заполнена");
+        e.EndAt = ev.EndAt.HasValue ? ev.EndAt.Value : throw new ArgumentNullException("Дата окончания события должна быть заполнена");
                 
-            await _eventRepository.SaveChangesAsync(token);
-            return e.ToResponse();
-        }
-        catch (DbUpdateException ex)
-        {
-            throw new InvalidOperationException($"Ошибка при сохранении события id = {id}", ex);
-        }
+        await _eventRepository.SaveChangesAsync(token);
+        return e.ToResponse();
     }
 
     private async Task<Event> GetById(Guid id, CancellationToken token)
