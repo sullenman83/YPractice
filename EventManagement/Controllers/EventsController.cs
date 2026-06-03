@@ -2,7 +2,6 @@
 using EventManagement.Application.Models.BookingModels;
 using EventManagement.Application.Models.Events;
 using EventManagement.Application.Models.FilterModels;
-using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 

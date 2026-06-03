@@ -3,6 +3,7 @@ using EventManagement.Application.Interfaces.Reposirories;
 using EventManagement.Application.Interfaces.Services;
 using EventManagement.Application.Models.BookingModels;
 using EventManagement.Application.Models.BookingModels.Extensions;
+using EventManagement.Domain.Exceptions;
 using EventManagement.Domain.Interfaces;
 using EventManagement.Domain.Models;
 

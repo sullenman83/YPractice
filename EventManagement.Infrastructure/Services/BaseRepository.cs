@@ -2,7 +2,6 @@
 using EventManagement.Application.Interfaces.Reposirories;
 using EventManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace EventManagement.Infrastructure.Services;

@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Application.Common.Exceptions;
+﻿namespace EventManagement.Domain.Exceptions;
 
 /// <summary>
 /// Класс исключение для генерации в случае нехватки мест при бронировании

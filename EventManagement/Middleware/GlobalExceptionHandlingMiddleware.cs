@@ -1,4 +1,5 @@
 ﻿using EventManagement.Application.Common.Exceptions;
+using EventManagement.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Security;

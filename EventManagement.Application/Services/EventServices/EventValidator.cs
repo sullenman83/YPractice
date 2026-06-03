@@ -1,6 +1,6 @@
-﻿using EventManagement.Application.Common.Exceptions;
-using EventManagement.Application.Interfaces;
+﻿using EventManagement.Application.Interfaces;
 using EventManagement.Application.Models.Events;
+using EventManagement.Domain.Exceptions;
 
 namespace EventManagement.Application.Services.EventServices;
 
