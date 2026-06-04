@@ -2,6 +2,7 @@
 using EventManagement.Application.Common;
 using EventManagement.Application.Common.AppSettings;
 using EventManagement.Application.Common.Exceptions;
+using EventManagement.Application.Interfaces;
 using EventManagement.Application.Interfaces.Services;
 using EventManagement.Application.Services;
 using EventManagement.Application.Services.BookingServices;
@@ -30,6 +31,7 @@ public static class ApplicationDIExt
                 BackoffType = DelayBackoffType.Constant
             });
         });
+        services.AddScoped<IEventValidator, EventValidator>();
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IBookingService, BookingService>();        
         services.AddScoped<IBackgroundBookingService, BackgroundBookingService>();        

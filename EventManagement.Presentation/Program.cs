@@ -22,11 +22,7 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
+app.ApplyMigration();
 
 app.UseGlobalExceptionHandling();
 if (app.Environment.IsDevelopment())

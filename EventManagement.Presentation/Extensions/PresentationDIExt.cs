@@ -27,8 +27,7 @@ public static class PresentationDIExt
                 var path = Path.Combine(AppContext.BaseDirectory, file);
                 options.IncludeXmlComments(path);
             });
-        }
-        services.AddScoped<IEventValidator, EventValidator>();
+        }        
         services.AddScoped<IDateTimeProvider, DateTimeProvider>();
         services.AddControllers(options =>
         {
