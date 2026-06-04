@@ -22,28 +22,22 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
             .HasKey(b => b.Id);
 
         builder.Property(p => p.Id)
-            .HasColumnName("id")
             .IsRequired()
             .ValueGeneratedNever();
 
         builder.Property(p => p.Status)
-            .HasColumnName("status")
             .IsRequired()
             .HasConversion<string>();
 
         builder.Property(p => p.SeatsCount)
-            .HasColumnName("seats_count")
             .IsRequired();
 
         builder.Property(p => p.CreatedAt)
-            .HasColumnName("created_at")            
             .IsRequired();
 
-        builder.Property(p => p.ProcessedAt)
-            .HasColumnName("processed_at");
+        builder.Property(p => p.ProcessedAt);
         
         builder.Property(p => p.EventId)
-            .HasColumnName("event_id")
             .IsRequired();
 
         builder.HasOne(b => b.Event)

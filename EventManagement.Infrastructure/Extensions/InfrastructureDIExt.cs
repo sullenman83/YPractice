@@ -25,7 +25,8 @@ public static  class InfrastructureDIExt
         {
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseNpgsql(connectionString)
+                options.UseNpgsql(connectionString)                
+                .UseSnakeCaseNamingConvention()
                 .LogTo(Console.WriteLine)
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging();
@@ -35,7 +36,8 @@ public static  class InfrastructureDIExt
         {
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseNpgsql(connectionString);
+                options.UseNpgsql(connectionString)
+                .UseSnakeCaseNamingConvention();
             });
         }
         services.AddScoped<IEventRepository<Event>, EventRepository>();

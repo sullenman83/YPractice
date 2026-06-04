@@ -49,9 +49,11 @@ namespace EventManagement.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("status");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_bookings");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("EventId")
+                        .HasDatabaseName("ix_bookings_event_id");
 
                     b.ToTable("bookings", null, t =>
                         {
@@ -94,13 +96,17 @@ namespace EventManagement.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("total_seats");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_events");
 
-                    b.HasIndex("EndAt");
+                    b.HasIndex("EndAt")
+                        .HasDatabaseName("ix_events_end_at");
 
-                    b.HasIndex("StartAt");
+                    b.HasIndex("StartAt")
+                        .HasDatabaseName("ix_events_start_at");
 
-                    b.HasIndex("Title");
+                    b.HasIndex("Title")
+                        .HasDatabaseName("ix_events_title");
 
                     b.ToTable("events", null, t =>
                         {
@@ -120,7 +126,8 @@ namespace EventManagement.Infrastructure.Migrations
                         .WithMany("Bookings")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_bookings_events_event_id");
 
                     b.Navigation("Event");
                 });

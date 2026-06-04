@@ -25,7 +25,7 @@ namespace EventManagement.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_events", x => x.id);
+                    table.PrimaryKey("pk_events", x => x.id);
                     table.CheckConstraint("chk_events_available_seats", "available_seats <= total_seats");
                     table.CheckConstraint("chk_events_end_at", "end_at >= start_at");
                     table.CheckConstraint("chk_events_title", "LENGTH(title) > 0");
@@ -45,11 +45,11 @@ namespace EventManagement.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_bookings", x => x.id);
+                    table.PrimaryKey("pk_bookings", x => x.id);
                     table.CheckConstraint("chk_bookings_seats_count", "seats_count > 0");
                     table.CheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected', 'Processing')");
                     table.ForeignKey(
-                        name: "FK_bookings_events_event_id",
+                        name: "fk_bookings_events_event_id",
                         column: x => x.event_id,
                         principalTable: "events",
                         principalColumn: "id",
@@ -57,22 +57,22 @@ namespace EventManagement.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_bookings_event_id",
+                name: "ix_bookings_event_id",
                 table: "bookings",
                 column: "event_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_events_end_at",
+                name: "ix_events_end_at",
                 table: "events",
                 column: "end_at");
 
             migrationBuilder.CreateIndex(
-                name: "IX_events_start_at",
+                name: "ix_events_start_at",
                 table: "events",
                 column: "start_at");
 
             migrationBuilder.CreateIndex(
-                name: "IX_events_title",
+                name: "ix_events_title",
                 table: "events",
                 column: "title");
         }
