@@ -1,9 +1,7 @@
 using EventManagement.Application.Extensions;
-using EventManagement.Infrastructure.Data;
 using EventManagement.Infrastructure.Extensions;
 using EventManagement.Presentation.Extensions;
 using EventManagement.Presentation.Extensions.Middleware;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 

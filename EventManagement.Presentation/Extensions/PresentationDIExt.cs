@@ -22,9 +22,12 @@ public static class PresentationDIExt
         {
             services.AddSwaggerGen(options =>
             {
-                var file = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var path = Path.Combine(AppContext.BaseDirectory, file);
-                options.IncludeXmlComments(path);
+                var baseDirectory = AppContext.BaseDirectory;
+                var xmlFiles = Directory.GetFiles(baseDirectory, "*.xml", SearchOption.TopDirectoryOnly);
+                foreach(var f in xmlFiles)
+                {
+                    options.IncludeXmlComments(f);
+                }
             });
         }
         services.AddControllers(options =>
