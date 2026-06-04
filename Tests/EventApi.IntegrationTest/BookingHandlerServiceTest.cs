@@ -1,13 +1,13 @@
 ﻿
 using EventManagement.Application.Common;
 using EventManagement.Application.Common.AppSettings;
+using EventManagement.Application.Interfaces;
 using EventManagement.Application.Interfaces.Repositories;
 using EventManagement.Application.Interfaces.Services;
 using EventManagement.Application.Services.BookingServices;
 using EventManagement.Common;
-using EventManagement.Domain.Interfaces;
 using EventManagement.Domain.Models;
-using EventManagement.Domain.Services;
+using EventManagement.Infrastructure.Services;
 using EventManagement.Infrastructure.Services.BookingServices;
 using EventManagement.Infrastructure.Services.TransactionService;
 using FluentAssertions;

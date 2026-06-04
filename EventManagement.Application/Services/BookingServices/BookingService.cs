@@ -1,10 +1,10 @@
 ﻿using EventManagement.Application.Common.Exceptions;
+using EventManagement.Application.Interfaces;
 using EventManagement.Application.Interfaces.Repositories;
 using EventManagement.Application.Interfaces.Services;
 using EventManagement.Application.Models.BookingModels;
 using EventManagement.Application.Models.BookingModels.Extensions;
 using EventManagement.Domain.Exceptions;
-using EventManagement.Domain.Interfaces;
 using EventManagement.Domain.Models;
 
 namespace EventManagement.Application.Services.BookingServices;

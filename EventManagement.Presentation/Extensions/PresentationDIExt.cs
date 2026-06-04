@@ -1,7 +1,6 @@
 ﻿using EventManagement.Application.Interfaces;
 using EventManagement.Application.Services.EventServices;
-using EventManagement.Domain.Interfaces;
-using EventManagement.Domain.Services;
+using EventManagement.Infrastructure.Services;
 using System.Reflection;
 
 namespace EventManagement.Presentation.Extensions;
@@ -27,8 +26,7 @@ public static class PresentationDIExt
                 var path = Path.Combine(AppContext.BaseDirectory, file);
                 options.IncludeXmlComments(path);
             });
-        }        
-        services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+        }
         services.AddControllers(options =>
         {
             options.SuppressAsyncSuffixInActionNames = false;

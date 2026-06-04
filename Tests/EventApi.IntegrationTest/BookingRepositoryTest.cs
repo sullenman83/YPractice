@@ -1,9 +1,7 @@
-﻿using Castle.Core.Logging;
-using EventManagement.Application.Common.Exceptions;
+﻿using EventManagement.Application.Common.Exceptions;
+using EventManagement.Application.Interfaces;
 using EventManagement.Common;
-using EventManagement.Domain.Interfaces;
 using EventManagement.Domain.Models;
-using EventManagement.Domain.Services;
 using EventManagement.Infrastructure.Services;
 using EventManagement.Infrastructure.Services.BookingServices;
 using EventManagement.Infrastructure.Services.TransactionService;
@@ -193,7 +191,7 @@ public class BookingRepositoryTest(DatabaseFixture fixture) : IClassFixture<Data
         var b = await rep.GetByIdAsync(booking.Id, CancellationToken.None);
         if (b == null)
             throw new InvalidOperationException("Что-то работает не так");
-        b.Confirm(_dateTimeProvider);
+        b.Confirm(_dateTimeProvider.GetUtcNow());
         await rep.SaveChangesAsync(CancellationToken.None);
 
 

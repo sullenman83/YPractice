@@ -1,5 +1,4 @@
-﻿using EventManagement.Domain.Interfaces;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace EventManagement.Domain.Models;
 
@@ -80,18 +79,18 @@ public class Booking
     /// <summary>
     /// Подтвердить бронирование
     /// </summary>
-    public void Confirm(IDateTimeProvider dateTimeProvider)
+    public void Confirm(DateTimeOffset dateTime)
     {
         Status = BookingStatus.Confirmed;
-        ProcessedAt = dateTimeProvider.GetUtcNow();
+        ProcessedAt = dateTime;
     }
 
     /// <summary>
     /// Отклонить бронирование
     /// </summary>
-    public void Reject(IDateTimeProvider dateTimeProvider)
+    public void Reject(DateTimeOffset dateTime)
     {
         Status = BookingStatus.Rejected;
-        ProcessedAt = dateTimeProvider.GetUtcNow();
+        ProcessedAt = dateTime;
     }    
 }

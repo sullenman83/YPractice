@@ -1,8 +1,8 @@
 ﻿using EventManagement.Application.Common;
+using EventManagement.Application.Interfaces;
 using EventManagement.Application.Interfaces.Repositories;
 using EventManagement.Application.Interfaces.Services;
 using EventManagement.Domain.Exceptions;
-using EventManagement.Domain.Interfaces;
 using EventManagement.Domain.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -44,12 +44,12 @@ public class BackgroundBookingService(IServiceScopeFactory serviceFactory,
 
             if (!booking.Event.TryReserveSeats(booking.SeatsCount))
             {
-                booking.Reject(dateTimeProvider);
+                booking.Reject(dateTimeProvider.GetUtcNow());
                 _logger.LogWarning($"Недостаточно мест для бронирования событие {booking.Event.Id}, бронирование {booking.Id}");
             }
             else
             {
-                booking.Confirm(dateTimeProvider);
+                booking.Confirm(dateTimeProvider.GetUtcNow());
             }
             await repository.SaveChangesAsync(token);
             await transaction.CommitAsync(token);
@@ -69,7 +69,7 @@ public class BackgroundBookingService(IServiceScopeFactory serviceFactory,
 
         if (booking != null)
         {
-            booking.Reject(dateTimeProvider);
+            booking.Reject(dateTimeProvider.GetUtcNow());
            
             await repository.SaveChangesAsync(token);
             await tr.CommitAsync(token);

@@ -1,6 +1,6 @@
-﻿using EventManagement.Domain.Interfaces;
+﻿using EventManagement.Application.Interfaces;
 
-namespace EventManagement.Domain.Services;
+namespace EventManagement.Infrastructure.Services;
 
 /// <inheritdoc/>>
 public class DateTimeProvider : IDateTimeProvider

@@ -1,11 +1,10 @@
 ﻿using EventManagement.Application.Common;
+using EventManagement.Application.Interfaces;
 using EventManagement.Application.Interfaces.Repositories;
 using EventManagement.Application.Interfaces.Services;
 using EventManagement.Application.Services.BookingServices;
 using EventManagement.Common;
-using EventManagement.Domain.Interfaces;
 using EventManagement.Domain.Models;
-using EventManagement.Domain.Services;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -25,11 +24,13 @@ public class BackgroundBookingServiceTest
     private readonly Mock<ITransaction> _mockTransaction = new Mock<ITransaction>();
     private readonly NullLogger<BackgroundBookingService> _logger = NullLogger<BackgroundBookingService>.Instance;
     private readonly Mock<ResiliencePipelineProvider<string>> _pipelineProvider;
+    private readonly Mock<IDateTimeProvider> _dateTimeProvider = new Mock<IDateTimeProvider>();
 
     public BackgroundBookingServiceTest()
     {
+        _dateTimeProvider.Setup(o => o.GetUtcNow()).Returns(DateTimeOffset.UtcNow.Date);
         _mockTransactionService.Setup(o => o.BeginTransactionAsync()).ReturnsAsync(_mockTransaction.Object);
-        _mockProvider.Setup(o => o.GetService(typeof(IDateTimeProvider))).Returns(new DateTimeProvider());
+        _mockProvider.Setup(o => o.GetService(typeof(IDateTimeProvider))).Returns(_dateTimeProvider.Object);
         _mockProvider.Setup(o => o.GetService(typeof(IBookingRepository<Booking>))).Returns(_mockBookingRepository.Object);
         _mockProvider.Setup(o => o.GetService(typeof(ITransactionService))).Returns(_mockTransactionService.Object);
         _mockScope.Setup(o => o.ServiceProvider).Returns(_mockProvider.Object);

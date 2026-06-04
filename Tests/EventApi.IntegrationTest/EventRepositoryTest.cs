@@ -1,8 +1,7 @@
-﻿using EventManagement.Application.Models.FilterModels;
+﻿using EventManagement.Application.Interfaces;
+using EventManagement.Application.Models.FilterModels;
 using EventManagement.Common;
-using EventManagement.Domain.Interfaces;
 using EventManagement.Domain.Models;
-using EventManagement.Domain.Services;
 using EventManagement.Infrastructure.Services;
 using EventManagement.Infrastructure.Services.EventServices;
 using FluentAssertions;

@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Domain.Interfaces;
+﻿namespace EventManagement.Application.Interfaces;
 
 /// <summary>
 /// Генератор времени
