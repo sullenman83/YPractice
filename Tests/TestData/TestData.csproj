@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EventManagement.Application\EventManagement.Application.csproj" />
+    <ProjectReference Include="..\..\EventManagement.Application\EventManagement.Application.csproj" />
   </ItemGroup>
 
 </Project>

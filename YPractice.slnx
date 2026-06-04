@@ -1,8 +1,8 @@
 <Solution>
   <Folder Name="/Tests/">
-    <Project Path="EventApi.IntegrationTest/EventApi.IntegrationTest.csproj" Id="9eb48215-0164-4861-a728-c9ee344d82aa" />
-    <Project Path="EventService.Test/UnitTests.csproj" Id="f7436146-07b8-4dec-b63f-0ad1c2c49159" />
-    <Project Path="TestData/TestData.csproj" Id="fc81538e-008c-4611-8104-6bf9effec498" />
+    <Project Path="Tests/EventApi.IntegrationTest/EventApi.IntegrationTest.csproj" />
+    <Project Path="Tests/EventService.Test/UnitTests.csproj" />
+    <Project Path="Tests/TestData/TestData.csproj" />
   </Folder>
   <Project Path="EventManagement.Application/EventManagement.Application.csproj" Id="0fed859a-08c5-46d0-81dd-6f191b7b8011" />
   <Project Path="EventManagement.Domain/EventManagement.Domain.csproj" Id="3f791b3b-5fec-4c02-8219-306191cf1068" />
