@@ -1,5 +1,5 @@
 ﻿using EventManagement.Application.Common.Exceptions;
-using EventManagement.Application.Interfaces.Reposirories;
+using EventManagement.Application.Interfaces.Repositories;
 using EventManagement.Application.Interfaces.Services;
 using EventManagement.Application.Models.BookingModels;
 using EventManagement.Application.Models.BookingModels.Extensions;

@@ -1,7 +1,7 @@
 ﻿using EventManagement.Application.Models.Events;
 using EventManagement.Application.Models.FilterModels;
 
-namespace EventManagement.Application.Interfaces.Reposirories;
+namespace EventManagement.Application.Interfaces.Repositories;
 
 /// <summary>
 /// Хранилище данных

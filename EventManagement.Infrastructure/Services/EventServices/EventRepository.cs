@@ -1,5 +1,4 @@
 ﻿using EventManagement.Application.Common.Exceptions;
-using EventManagement.Application.Interfaces.Reposirories;
 using EventManagement.Application.Models.Events;
 using EventManagement.Application.Models.FilterModels;
 using EventManagement.Domain.Models;
@@ -8,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using EventManagement.Infrastructure.Extensions.EventExt;
 using EventManagement.Application.Models.Events.Extensions;
+using EventManagement.Application.Interfaces.Repositories;
 
 namespace EventManagement.Infrastructure.Services.EventServices;
 

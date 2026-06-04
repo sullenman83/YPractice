@@ -1,4 +1,4 @@
-﻿using EventManagement.Application.Interfaces.Reposirories;
+﻿using EventManagement.Application.Interfaces.Repositories;
 using EventManagement.Application.Models.BookingModels;
 using EventManagement.Application.Services.BookingServices;
 using EventManagement.Common;

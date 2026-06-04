@@ -1,6 +1,6 @@
 ﻿using EventManagement.Domain.Models;
 
-namespace EventManagement.Application.Interfaces.Reposirories;
+namespace EventManagement.Application.Interfaces.Repositories;
 
 /// <summary>
 /// Интерфейс хранилища бронирований событий

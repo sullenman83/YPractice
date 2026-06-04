@@ -1,5 +1,4 @@
-﻿
-namespace EventManagement.Application.Interfaces.Reposirories;
+﻿namespace EventManagement.Application.Interfaces.Repositories;
 
 /// <summary>
 /// Интерфейс базового репозитория 

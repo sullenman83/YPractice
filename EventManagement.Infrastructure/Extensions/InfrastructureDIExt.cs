@@ -1,5 +1,4 @@
-﻿
-using EventManagement.Application.Interfaces.Reposirories;
+﻿using EventManagement.Application.Interfaces.Repositories;
 using EventManagement.Application.Interfaces.Services;
 using EventManagement.Domain.Models;
 using EventManagement.Infrastructure.Data;

@@ -183,7 +183,7 @@ BookingStatus
 	# Booking в клас добавлено навигационное свойство и внешний ключ
 		public required Guid EventId { get; init; }
 	    public Event? Event { get; init; }
-	# Добавлен контекст базы данных  AppDbContext и классы конфигурации сущностей BookingConfiguration и EventConfiguratino
+	# Добавлен контекст базы данных  AppDbContext и классы конфигурации сущностей BookingConfiguration и EventConfiguration
 	# В файл конфигурации добавлена строка подключения к БД
 		Перед запуском приложения необходимо изменить строку подключения в файле appsettings.json, указав в DefaultConnection необходимые параметры подключения к БД
 

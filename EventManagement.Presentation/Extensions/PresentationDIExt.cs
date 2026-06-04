@@ -9,7 +9,7 @@ namespace EventManagement.Presentation.Extensions;
 /// <summary>
 /// Расширение для добавления зависимостей
 /// </summary>
-public static class WebDIExt
+public static class PresentationDIExt
 {
     /// <summary>
     /// добавить зависимости 

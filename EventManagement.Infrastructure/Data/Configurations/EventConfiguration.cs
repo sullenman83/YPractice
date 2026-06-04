@@ -7,7 +7,7 @@ namespace EventManagement.Infrastructure.Data.Configurations;
 /// <summary>
 /// Конфигуратор событий
 /// </summary>
-public class EventConfiguratino : IEntityTypeConfiguration<Event>
+public class EventConfiguration : IEntityTypeConfiguration<Event>
 {
     /// <summary>
     /// Сконфигурировать сущность

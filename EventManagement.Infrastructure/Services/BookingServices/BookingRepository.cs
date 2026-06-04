@@ -1,5 +1,5 @@
 ﻿using EventManagement.Application.Common.Exceptions;
-using EventManagement.Application.Interfaces.Reposirories;
+using EventManagement.Application.Interfaces.Repositories;
 using EventManagement.Domain.Models;
 using EventManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
