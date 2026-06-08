@@ -1,0 +1,18 @@
+﻿using EventManagement.Application.Interfaces.Services;
+using EventManagement.Infrastructure.Data;
+
+namespace EventManagement.Infrastructure.Services.TransactionService;
+
+/// <summary>
+/// Сервис управления транзакциями
+/// </summary>
+public class TransactionService(AppDbContext context) : ITransactionService
+{
+    private readonly AppDbContext _appDbContext = context;
+
+    /// <inheritdoc/>
+    public async Task<ITransaction> BeginTransactionAsync(CancellationToken token)
+    {
+        return new Transaction(await _appDbContext.Database.BeginTransactionAsync(token));
+    }
+}

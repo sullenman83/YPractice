@@ -1,0 +1,87 @@
+﻿using EventManagement.Application.Common.Exceptions;
+using EventManagement.Domain.Exceptions;
+using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using System.Security;
+
+namespace EventManagement.Presentation.Middleware;
+
+/// <summary>
+/// Глобальный обрабюотчик исключений. Встраивается в конвеер обработки запросов
+/// </summary>
+public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<GlobalExceptionHandlingMiddleware> logger)
+{
+    private readonly RequestDelegate _next = next;
+    private readonly ILogger _logger = logger;
+
+    /// <summary>
+    /// Метод обработки http запроса 
+    /// </summary>
+    /// <param name="httpContext">Контекст запроса</param>
+    /// <returns>Задача, выполняющая обработку запроса</returns>
+    public async Task InvokeAsync(HttpContext httpContext)
+    {
+        try
+        {
+            await _next(httpContext);
+        }
+        catch (Exception ex)
+        {
+            await HandleException(ex, httpContext);
+        }
+    }
+
+    #region Закрытые методы
+
+    private async Task HandleException(Exception ex, HttpContext httpContext)
+    {
+        LogError(ex, httpContext);
+
+        if (httpContext.Response.HasStarted)
+        {
+            return;
+        }
+
+        var statusCode = GetStatusCode(ex);
+
+        httpContext.Response.StatusCode = statusCode;
+        httpContext.Response.ContentType = "application/json";
+
+        var error = new ProblemDetails
+        {
+            Title = "Необработанная ошибка",
+            Detail = ex.Message,
+            Status = statusCode,
+        };
+
+        await httpContext.Response.WriteAsJsonAsync(error);
+    }
+    
+    private void LogError(Exception ex, HttpContext httpContext)
+    {
+        _logger.LogError(ex,
+            $"Unhandled exception. Method={httpContext.Request.Method}, Path={httpContext.Request.Path}");
+    }
+
+    private int GetStatusCode(Exception ex)
+    {
+        return ex switch
+        {
+            ArgumentNullException ane => StatusCodes.Status400BadRequest,
+            ArgumentException ae => StatusCodes.Status400BadRequest,
+            NotFoundException nfe => StatusCodes.Status404NotFound,            
+            NullReferenceException nr => StatusCodes.Status400BadRequest,
+            HttpRequestException hr => StatusCodes.Status400BadRequest,
+            ValidationException ve => StatusCodes.Status400BadRequest,
+            EventValidationException eve => StatusCodes.Status400BadRequest,            
+            IOException io => StatusCodes.Status500InternalServerError,            
+            SecurityException se => StatusCodes.Status401Unauthorized,
+            NoAvailableSeatsException nae => StatusCodes.Status409Conflict,
+            InvalidOperationException ioe => StatusCodes.Status500InternalServerError,
+            DbOperationException dboe => StatusCodes.Status500InternalServerError,
+
+            _ => StatusCodes.Status500InternalServerError
+        };
+    }
+    #endregion
+}

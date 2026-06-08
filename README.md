@@ -183,7 +183,7 @@ BookingStatus
 	# Booking в клас добавлено навигационное свойство и внешний ключ
 		public required Guid EventId { get; init; }
 	    public Event? Event { get; init; }
-	# Добавлен контекст базы данных  AppDbContext и классы конфигурации сущностей BookingConfiguration и EventConfiguratino
+	# Добавлен контекст базы данных  AppDbContext и классы конфигурации сущностей BookingConfiguration и EventConfiguration
 	# В файл конфигурации добавлена строка подключения к БД
 		Перед запуском приложения необходимо изменить строку подключения в файле appsettings.json, указав в DefaultConnection необходимые параметры подключения к БД
 
@@ -208,12 +208,48 @@ BookingStatus
 		Контейнер создается перед запуском теста. Интеграционные тесты работают автономно, перед запуском теста БД очищается.
 		Интеграционные тесты покрывают весь апи репозиториев
 
+## Спринт 7 Рефакторинг кода
+	# Архитектура
+		Монолитный проект поделен на следующие слои
+			# EventManagement.Domain
+				Включает доменные сущности, перечисдление BookingStatus
+				определения исключений отражающие нарушение бизнес правил
+				У проекта нет зависимостей от других проектов
+			# EventManagement.Application 
+				Включает бизнес логику 
+				опредеоение интерфейсов сервисов и их реализацию  
+				определение интерфесов для репозиториев доступа к данным и провайдера времени
+				DTO объекты для передачи данных между слоями
+				фоновый сервис обработки бронирований и сервисы для его работы
+				классы настроек конфигурации
+				попределение интерфейсов сервисов 
+				исключения для инфраструктурного слоя
+				Проект зависит от EventManagement.Domain
+			# EventManagement.Infrastructure
+				Включает реализации интерфейсов доступа к данным (сервисы репозиториев)
+				сервис управления транзакциями
+				сервис провайдера времени
+				контекст базы данных, описание можели базы данных и миграции
+				Проект зависит от EventManagement.Domain и EventManagement.Application
+			# EventManagement.Presentation
+				Это переименованный проект EventManagement
+				В нем остались контроллеры
+				глобальный обработчик исключений 
+				добавление зависимостей в DI
+				Проект зависит от EventManagement.Infrastructure и EventManagement.Application
+	# Тесты
+		Адаптированы под новую  архитектуру
+
+## Команда создания миграций 
+dotnet ef migrations add Initial --project EventManagement.Infrastructure.csproj --startup-project ..\EventManagement.Presentation\EventManagement.Presentation.csproj
+## команда обновления бд 
+dotnet ef database update --project EventManagement.Infrastructure.csproj --startup-project ..\EventManagement.Presentation\EventManagement.Presentation.csproj
 		
 ## Сборка осуществляется из директории репозитория командой 
-dotnet build EventManagement\EventManagement.csproj 
+dotnet build EventManagement.Presentation\EventManagement.Presentation.csproj
 
 ## Запуск осуществляется из директории репозитория командой 
-dotnet run --project EventManagement\EventManagement.csproj 
+dotnet run --project EventManagement.Presentation\EventManagement.Presentation.csproj
 
 ## Запуск осуществляется из директории репозитория командой 
 dotnet test
