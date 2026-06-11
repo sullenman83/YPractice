@@ -1,4 +1,5 @@
-﻿using EventManagement.Application.Common.Exceptions;
+﻿using EventManagement.Application.Common;
+using EventManagement.Application.Common.Exceptions;
 using EventManagement.Application.Interfaces;
 using EventManagement.Application.Interfaces.Repositories;
 using EventManagement.Application.Interfaces.Services;
@@ -6,6 +7,8 @@ using EventManagement.Application.Models.BookingModels;
 using EventManagement.Application.Models.BookingModels.Extensions;
 using EventManagement.Domain.Exceptions;
 using EventManagement.Domain.Models;
+using Polly;
+using Polly.Registry;
 
 namespace EventManagement.Application.Services.BookingServices;
 
@@ -14,11 +17,15 @@ namespace EventManagement.Application.Services.BookingServices;
 /// </summary>
 public class BookingService(IBookingRepository<Booking> bookingRepository
     , IEventRepository<Event> eventRepoository
-    , IDateTimeProvider dateTimeProvider) :IBookingService
+    , ITransactionService transactionService
+    , IDateTimeProvider dateTimeProvider
+    , ResiliencePipelineProvider<string> pipelineProvider) :IBookingService
 {
     private readonly IBookingRepository<Booking> _bookingRepository = bookingRepository;
     private readonly IEventRepository<Event> _eventRepository = eventRepoository;
-    private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;    
+    private readonly ITransactionService _transactionService = transactionService;
+    private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
+    private readonly ResiliencePipeline _resiliencePipeline = pipelineProvider.GetPipeline(Consts.CreateBookingRepeater);
 
     /// <summary>
     /// Создать заявку на бронирование события
@@ -36,18 +43,23 @@ public class BookingService(IBookingRepository<Booking> bookingRepository
         token.ThrowIfCancellationRequested();
 
         var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, _dateTimeProvider.GetUtcNow());
-           
-        var ev = await _eventRepository.GetByIdAsync(eventId, token);
-        if (ev == null)
-            throw new NotFoundException($"Событие с id {eventId} не найдено в базе данных.");
+        return await _resiliencePipeline.ExecuteAsync(async token =>
+        {
+            await using var tr = await _transactionService.BeginTransactionAsync(token);
 
-        if (ev.AvailableSeats < seatsCount)
-            throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
+            var ev = await _eventRepository.GetEventWithBlockingAsync(eventId, token);
+            if (ev == null)
+                throw new NotFoundException($"Событие с id {eventId} не найдено в базе данных.");
 
-        await _bookingRepository.AddAsync(booking, token);
-        await _eventRepository.SaveChangesAsync(token);
+            if (!ev.TryReserveSeats(seatsCount))
+                throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
 
-        return booking.ToResponse();
+            await _bookingRepository.AddAsync(booking, token);
+            await _eventRepository.SaveChangesAsync(token);
+            await tr.CommitAsync();
+
+            return booking.ToResponse();
+        });
     }
 
     /// <summary>

@@ -21,7 +21,7 @@ public class BackgroundBookingService(IServiceScopeFactory serviceFactory,
 {
     private readonly IServiceScopeFactory _serviceFactory = serviceFactory;
     private readonly ILogger<BackgroundBookingService> _logger = logger;
-    private readonly ResiliencePipeline _pipeline = pipelineProvider.GetPipeline(Consts.CreateBookingRetry);
+    private readonly ResiliencePipeline _pipeline = pipelineProvider.GetPipeline(Consts.BackgroundBookingServiceRepeater);
 
     /// <inheritdoc/>
     public async Task ConfirmBookingAsync(Guid id, CancellationToken token)
@@ -41,16 +41,9 @@ public class BackgroundBookingService(IServiceScopeFactory serviceFactory,
                 throw new NotFoundException($"Не найдено бронирование с id {id}");
             if (booking.Event == null)
                 throw new InvalidOperationException("Непредвиденная ошибка при получении бронирования. Не найдено событие.");
-
-            if (!booking.Event.TryReserveSeats(booking.SeatsCount))
-            {
-                booking.Reject(dateTimeProvider.GetUtcNow());
-                _logger.LogWarning($"Недостаточно мест для бронирования событие {booking.Event.Id}, бронирование {booking.Id}");
-            }
-            else
-            {
-                booking.Confirm(dateTimeProvider.GetUtcNow());
-            }
+                        
+            booking.Confirm(dateTimeProvider.GetUtcNow());
+            
             await repository.SaveChangesAsync(token);
             await transaction.CommitAsync(token);
         });

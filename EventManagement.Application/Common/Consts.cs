@@ -6,7 +6,12 @@
 public static class Consts
 {
     /// <summary>
-    /// Константа для именнованного Reciliense Pipeline
+    /// Константа для именнованного повторителя в фоновом сервисе обработки бронирований
     /// </summary>
-    public const string CreateBookingRetry = "CreateBookingRetry";
+    public const string BackgroundBookingServiceRepeater = "CreateBookingRepeater";
+
+    /// <summary>
+    /// Константа для именнованного повторителя в сервисе бронирований
+    /// </summary>
+    public const string CreateBookingRepeater = "CreateBookingRepeater";
 }

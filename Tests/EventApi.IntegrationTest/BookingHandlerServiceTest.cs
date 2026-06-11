@@ -38,14 +38,14 @@ public class BookingHandlerServiceTest : IClassFixture<DatabaseFixture>, IAsyncL
             options.PollingInterval = 1000;
         });
         _pipelineProvider = new Mock<ResiliencePipelineProvider<string>>();
-        _pipelineProvider.Setup(p => p.GetPipeline(Consts.CreateBookingRetry))
+        _pipelineProvider.Setup(p => p.GetPipeline(Consts.BackgroundBookingServiceRepeater))
             .Returns(ResiliencePipeline.Empty);
         serviceCollection.AddLogging(builder => builder.AddDebug());
         serviceCollection.AddScoped<IDateTimeProvider, DateTimeProvider>();
         serviceCollection.AddScoped<IBookingRepository<Booking>, BookingRepository>();
         serviceCollection.AddScoped<IBackgroundBookingService, BackgroundBookingService>();
         serviceCollection.AddScoped<ITransactionService, TransactionService>();
-        serviceCollection.AddScoped<ResiliencePipelineProvider<string>>(provider => _pipelineProvider.Object);
+        serviceCollection.AddScoped(provider => _pipelineProvider.Object);
         serviceCollection.AddScoped(provider =>
         {
             return _fixture.Context;

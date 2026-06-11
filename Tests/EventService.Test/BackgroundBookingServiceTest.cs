@@ -36,9 +36,8 @@ public class BackgroundBookingServiceTest
         _mockScope.Setup(o => o.ServiceProvider).Returns(_mockProvider.Object);
         _mockScopeFactory.Setup(o => o.CreateScope()).Returns(_mockScope.Object);
         _pipelineProvider = new Mock<ResiliencePipelineProvider<string>>();
-        _pipelineProvider.Setup(p => p.GetPipeline(Consts.CreateBookingRetry))
+        _pipelineProvider.Setup(p => p.GetPipeline(Consts.BackgroundBookingServiceRepeater))
             .Returns(ResiliencePipeline.Empty);
-
     }
 
     [Fact]

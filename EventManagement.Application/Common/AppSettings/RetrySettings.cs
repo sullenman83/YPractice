@@ -1,7 +1,7 @@
 ﻿namespace EventManagement.Application.Common.AppSettings;
 
 /// <summary>
-/// Натсройки для репитера
+/// Настройки для репитера
 /// </summary>
 public class RetrySettings
 {
@@ -13,5 +13,21 @@ public class RetrySettings
     /// <summary>
     /// Максимально число повторов
     /// </summary>
-    public int MaxRetryAttempts { get; set; }
+    public int MaxRetryAttempts { get; set; }    
 }
+
+/// <summary>
+/// Настройки для повторителя в срвисе создания бронирований
+/// </summary>
+public class CreateBookingRetrySettigs : RetrySettings 
+{
+    /// <summary>
+    /// Максмальное время для выполнения операции
+    /// </summary>
+    public int Timeout { get; set; }
+}
+
+/// <summary>
+/// Настройки для повторителя в фоновом срвисе обработки бронирований
+/// </summary>
+public class BackgroundBookingServiceRetrySettigs : RetrySettings { }

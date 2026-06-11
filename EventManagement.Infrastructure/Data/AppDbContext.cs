@@ -10,6 +10,9 @@ namespace EventManagement.Infrastructure.Data;
 public class AppDbContext : DbContext
 {
 
+    /// <summary>
+    /// Конструктор
+    /// </summary>
     public AppDbContext() { }
 
     /// <summary>
