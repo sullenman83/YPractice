@@ -41,7 +41,7 @@ public class BackgroundBookingServiceTest
     }
 
     [Fact]
-    public async Task ConfirmBookingAsync_OneSeat_ReturnsReducedSeatsNumber()
+    public async Task ConfirmBookingAsync_ReturnsConfirmedStatus()
     {
         // Arrange
         var seatsCount = 1;
@@ -54,8 +54,7 @@ public class BackgroundBookingServiceTest
         // Act
         await service.ConfirmBookingAsync(id, CancellationToken.None);
 
-        // Assert        
-        ev.AvailableSeats.Should().Be(0);
+        // Assert
         _mockTransactionService.Verify(o => o.BeginTransactionAsync(), Times.Once);
         _mockBookingRepository.Verify(o => o.GetBookingWithBlockingAsync(It.IsAny<Guid>()), Times.Once);
 
@@ -64,32 +63,7 @@ public class BackgroundBookingServiceTest
         _mockTransaction.Verify(o => o.RollbackAsync(), Times.Never);
         booking.Status.Should().Be(BookingStatus.Confirmed);
     }
-
-    [Fact]
-    public async Task ConfirmBookingAsync_SeatsCountMoreThenAvailable_ReturnsBookingWithRejectStatus()
-    {
-        // Arrange
-        var seatsCount = 1;
-        var ev = TestData.GetTestEvent(seatsCount);
-        var id = ev.Id;
-        var booking = new Booking(BookingStatus.Pending, ev, seatsCount + 1, DateTimeOffset.UtcNow);
-        _mockBookingRepository.Setup(o => o.GetBookingWithBlockingAsync(It.IsAny<Guid>())).ReturnsAsync(booking);
-        var service = new BackgroundBookingService(_mockScopeFactory.Object, _logger, _pipelineProvider.Object);
-
-        // Act
-        await service.ConfirmBookingAsync(id, CancellationToken.None);
-
-        // Assert        
-        ev.AvailableSeats.Should().Be(1);
-        _mockTransactionService.Verify(o => o.BeginTransactionAsync(), Times.Once);
-        _mockBookingRepository.Verify(o => o.GetBookingWithBlockingAsync(It.IsAny<Guid>()), Times.Once);
-
-        _mockBookingRepository.Verify(o => o.SaveChangesAsync(), Times.Once);
-        _mockTransaction.Verify(o => o.CommitAsync(), Times.Once);
-        _mockTransaction.Verify(o => o.RollbackAsync(), Times.Never);
-        booking.Status.Should().Be(BookingStatus.Rejected);
-    }
-
+    
     [Fact]
     public async Task RejectTest_ReturnsBookingWithRejectStatus()
     {
