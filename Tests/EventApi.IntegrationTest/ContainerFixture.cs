@@ -16,7 +16,6 @@ public class DatabaseFixture : IAsyncLifetime
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(_container.GetConnectionString())
-            .UseSnakeCaseNamingConvention()
             .Options;
             return new AppDbContext(options);
         }
@@ -36,7 +35,6 @@ public class DatabaseFixture : IAsyncLifetime
         await _container.StartAsync();
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(_container.GetConnectionString())
-            .UseSnakeCaseNamingConvention()
             .Options;
         using var context = new AppDbContext(options);
         await context.Database.EnsureDeletedAsync();
