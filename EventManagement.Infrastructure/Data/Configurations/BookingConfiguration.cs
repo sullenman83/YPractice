@@ -17,7 +17,7 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
     public void Configure(EntityTypeBuilder<Booking> builder)
     {
         builder.ToTable("bookings")            
-            .ToTable(t => t.HasCheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected', 'Processing')"))
+            .ToTable(t => t.HasCheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected', 'Processing', 'Cancelled')"))
             .ToTable(t => t.HasCheckConstraint("chk_bookings_seats_count", "seats_count > 0"))
             .HasKey(b => b.Id);
 

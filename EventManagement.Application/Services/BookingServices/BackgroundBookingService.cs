@@ -62,8 +62,11 @@ public class BackgroundBookingService(IServiceScopeFactory serviceFactory,
 
         if (booking != null)
         {
+            if (booking.Event == null)
+                throw new InvalidOperationException("Непредвиденная ошибка при получении бронирования. Не найдено событие.");
+
             booking.Reject(dateTimeProvider.GetUtcNow());
-           
+            booking.Event.ReleaseSeats(booking.SeatsCount);           
             await repository.SaveChangesAsync(token);
             await tr.CommitAsync(token);
         }

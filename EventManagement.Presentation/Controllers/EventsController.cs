@@ -128,7 +128,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost("{id}/book")]
-    public async Task<IActionResult> CreateBooking(Guid id, 
+    public async Task<IActionResult> CreateBooking(Guid id,
         [Required] [Range(1, int.MaxValue)]int seatsCount, 
         CancellationToken token)
     {

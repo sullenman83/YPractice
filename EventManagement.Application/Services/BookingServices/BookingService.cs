@@ -27,22 +27,16 @@ public class BookingService(IBookingRepository<Booking> bookingRepository
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
     private readonly ResiliencePipeline _resiliencePipeline = pipelineProvider.GetPipeline(Consts.CreateBookingRepeater);
 
-    /// <summary>
-    /// Создать заявку на бронирование события
-    /// </summary>
-    /// <param name="eventId">Id события </param>
-    /// <param name="seatsCount">Количество мест для бронирования</param> 
-    /// <param name="token">Токен отмены</param>
-    /// <returns>Возвращает объект с описанием брони</returns>
+    ///<inheritdoc/>
     /// <exception cref="DbOperationException">Ошибка операций с БД.</exception>
     /// <exception cref="NoAvailableSeatsException">Недостаточно мест для броинрования</exception>
     /// <exception cref="NotFoundException">Не найден объект</exception>        
     /// <exception cref="OperationCanceledException">Операция отменена</exception>
-    public async Task<BookingResponseDTO> CreateBookingAsync(Guid eventId, int seatsCount, CancellationToken token)
+    public async Task<BookingResponseDTO> CreateBookingAsync(Guid eventId, Guid userId, int seatsCount, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
 
-        var booking = new Booking(BookingStatus.Pending, eventId, seatsCount, _dateTimeProvider.GetUtcNow());
+        var booking = new Booking(BookingStatus.Pending, eventId, userId, seatsCount, _dateTimeProvider.GetUtcNow());
         return await _resiliencePipeline.ExecuteAsync(async token =>
         {
             await using var tr = await _transactionService.BeginTransactionAsync(token);
@@ -62,12 +56,7 @@ public class BookingService(IBookingRepository<Booking> bookingRepository
         });
     }
 
-    /// <summary>
-    /// Вернуть бронирование по id
-    /// </summary>
-    /// <param name="bookingId">Иденификатор брони</param>
-    /// <param name="token">Токен отмены</param>    
-    /// <returns>Возвращает объект с описанием брони</returns>
+    ///<inheritdoc/>
     /// <exception cref="NotFoundException">Не найден объект</exception>
     /// <exception cref="OperationCanceledException">Операция отменена</exception>
     /// <exception cref="DbOperationException">Ошибка операций с БД.</exception>
@@ -80,5 +69,25 @@ public class BookingService(IBookingRepository<Booking> bookingRepository
             throw new NotFoundException($"Бронирование с id {bookingId} не найдено в базе данных.");
                 
         return booking.ToResponse();
+    }
+
+    ///<inheritdoc/>
+    public async Task CancelBookingAsync(Guid id, CancellationToken token = default)
+    {
+        token.ThrowIfCancellationRequested();
+
+        var booking = await _bookingRepository.GetBookingWithBlockingAsync(id, token);
+        if (booking == null)
+            throw new NotFoundException($"Бронирование с id {id} не найдено в базе данных.");
+        if (booking.Event == null)
+            throw new InvalidOperationException("Непредвиденная ошибка при получении бронирования. Не найдено событие.");
+
+        if (booking.Status == BookingStatus.Cancelled)
+        {
+            return;
+        }       
+        
+        booking.Event.ReleaseSeats(booking.SeatsCount);
+
     }
 }
