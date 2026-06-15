@@ -75,6 +75,16 @@ public class Booking
     /// Событие
     /// </summary>
     public Event? Event { get; init; }
+
+    /// <summary>
+    /// Идентификатор пользователя
+    /// </summary>
+    public Guid UserId { get; set; }
+
+    /// <summary>
+    /// Пользователь
+    /// </summary>
+    public User? User { get; set; }
     
     /// <summary>
     /// Подтвердить бронирование

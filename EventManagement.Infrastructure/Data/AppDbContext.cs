@@ -35,6 +35,11 @@ public class AppDbContext : DbContext
     public DbSet<Booking> Bookings => Set<Booking>();
 
     /// <summary>
+    /// Коллекция пользователей
+    /// </summary>
+    public DbSet<User> Users => Set<User>();
+
+    /// <summary>
     /// Создание модели
     /// </summary>
     /// <param name="modelBuilder">Конструктор модели</param>
