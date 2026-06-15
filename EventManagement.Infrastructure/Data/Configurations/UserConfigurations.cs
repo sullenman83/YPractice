@@ -11,7 +11,10 @@ internal class UserConfigurations : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.HasKey(x => x.Id);
+        builder.ToTable(t => t.HasCheckConstraint("chk_users_role", "role IN('User', 'Admin')"))
+            .ToTable(t => t.HasCheckConstraint("chk_users_loginLen", "LENGTH(login) >= 3"))
+            .ToTable(t => t.HasCheckConstraint("chk_users_passwordLen", "LENGTH(password) > 0"))
+            .HasKey(x => x.Id);
         
         builder.Property(p => p.Id)
             .IsRequired()
@@ -26,6 +29,7 @@ internal class UserConfigurations : IEntityTypeConfiguration<User>
             .HasMaxLength(256);
 
         builder.Property(p => p.Role)
+            .HasConversion<string>()
             .IsRequired();
 
         builder.HasIndex(x => x.Login)
