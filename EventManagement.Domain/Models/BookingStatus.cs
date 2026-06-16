@@ -9,12 +9,7 @@ public enum BookingStatus
     /// Брони создана, ожидает обработки
     /// </summary>
     Pending,
-
-    /// <summary>
-    /// В обработке
-    /// </summary>
-    Processing,
-
+        
     /// <summary>
     /// Бронь подтверждена
     /// </summary>

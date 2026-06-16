@@ -1,4 +1,4 @@
-﻿using EventManagement.Application.Interfaces;
+﻿using EventManagement.Application.Interfaces.Services.EventServices;
 using EventManagement.Application.Models.Events;
 using EventManagement.Domain.Exceptions;
 

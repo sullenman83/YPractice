@@ -22,4 +22,13 @@ public interface IBookingRepository<T> :IBaseRepository<T>
     /// <returns>Бронирование</returns>
     /// <exception cref="InvalidOperationException"></exception>
     Task<Booking?> GetBookingWithBlockingAsync(Guid id, CancellationToken token = default);
+
+    /// <summary>
+    /// Получить бронирования 
+    /// </summary>
+    /// <param name="eventId">id события</param>
+    /// <param name="userId">id пользователя</param>
+    /// <param name="token">Токен отмены</param>
+    /// <returns>Список бронирований</returns>
+    Task<List<Booking>> GetActiveUserBookingByEventIdAsync(Guid eventId, Guid userId, CancellationToken token = default);
 }

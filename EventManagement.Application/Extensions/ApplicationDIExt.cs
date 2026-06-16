@@ -2,8 +2,9 @@
 using EventManagement.Application.Common;
 using EventManagement.Application.Common.AppSettings;
 using EventManagement.Application.Common.Exceptions;
-using EventManagement.Application.Interfaces;
 using EventManagement.Application.Interfaces.Services;
+using EventManagement.Application.Interfaces.Services.BookingServices;
+using EventManagement.Application.Interfaces.Services.EventServices;
 using EventManagement.Application.Services;
 using EventManagement.Application.Services.BookingServices;
 using EventManagement.Application.Services.EventServices;
@@ -44,7 +45,7 @@ public static class ApplicationDIExt
 
         var cbSettings = new CreateBookingRetrySettigs();
         configuration.GetSection("CreateBookingRetrySettigs").Bind(bbsSettigs);
-        services.AddResiliencePipeline(Consts.CreateBookingRepeater, builder =>
+        services.AddResiliencePipeline(Consts.BookingServiceRepeater, builder =>
         {
             builder.AddTimeout(new TimeoutStrategyOptions() { Timeout = TimeSpan.FromMilliseconds(cbSettings.Timeout) });
             builder.AddRetry(new RetryStrategyOptions()

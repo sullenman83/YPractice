@@ -1,4 +1,5 @@
-﻿using EventManagement.Application.Interfaces.Services;
+﻿using EventManagement.Application.Interfaces.Services.BookingServices;
+using EventManagement.Application.Interfaces.Services.EventServices;
 using EventManagement.Application.Models.BookingModels;
 using EventManagement.Application.Models.Events;
 using EventManagement.Application.Models.FilterModels;

@@ -3,7 +3,7 @@
 /// <summary>
 /// Настройки для репитера
 /// </summary>
-public class RetrySettings
+internal class RetrySettings
 {
     /// <summary>
     /// Задержка между повторными вызовами (мс)
@@ -19,7 +19,7 @@ public class RetrySettings
 /// <summary>
 /// Настройки для повторителя в срвисе создания бронирований
 /// </summary>
-public class CreateBookingRetrySettigs : RetrySettings 
+internal class CreateBookingRetrySettigs : RetrySettings 
 {
     /// <summary>
     /// Максмальное время для выполнения операции
@@ -30,4 +30,4 @@ public class CreateBookingRetrySettigs : RetrySettings
 /// <summary>
 /// Настройки для повторителя в фоновом срвисе обработки бронирований
 /// </summary>
-public class BackgroundBookingServiceRetrySettigs : RetrySettings { }
+internal class BackgroundBookingServiceRetrySettigs : RetrySettings { }

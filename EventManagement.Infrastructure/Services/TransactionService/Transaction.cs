@@ -1,4 +1,4 @@
-﻿using EventManagement.Application.Interfaces.Services;
+﻿using EventManagement.Application.Interfaces;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EventManagement.Infrastructure.Services.TransactionService;

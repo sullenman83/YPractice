@@ -1,7 +1,7 @@
 ﻿using EventManagement.Application.Models.Events;
 using EventManagement.Domain.Exceptions;
 
-namespace EventManagement.Application.Interfaces;
+namespace EventManagement.Application.Interfaces.Services.EventServices;
 
 /// <summary>
 /// Интерфейс валидатора событий

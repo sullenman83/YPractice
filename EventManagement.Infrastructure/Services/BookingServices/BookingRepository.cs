@@ -46,6 +46,7 @@ JOIN events e ON e.id = b.event_id
 WHERE b.id = {id}
 FOR UPDATE NOWAIT")
                 .Include(o => o.Event)
+                .Include(o => o.User)
                 .FirstOrDefaultAsync(token);
 
             return result;
@@ -61,5 +62,16 @@ FOR UPDATE NOWAIT")
 
             throw new DbOperationException(message, ex);
         }
+    }
+
+    ///<inheritdoc/>
+    public async Task<List<Booking>> GetActiveUserBookingByEventIdAsync(Guid eventId, Guid userId, CancellationToken token = default)
+    {
+        var bookings = _context.Bookings
+            .Where(o => o.EventId == eventId && o.UserId == userId);
+
+        return await bookings.Where(o => o.Status == BookingStatus.Pending 
+            || o.Status == BookingStatus.Confirmed)
+            .ToListAsync();
     }
 }
