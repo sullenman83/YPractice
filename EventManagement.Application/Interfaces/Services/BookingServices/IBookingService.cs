@@ -29,6 +29,7 @@ public interface IBookingService
     /// Отмена бронирования
     /// </summary>
     /// <param name="id">id брони</param>
+    /// <param name="userId">id пользователя</param>
     /// <param name="token">Токен отмены</param>
-    Task CancelBookingAsync(Guid id, CancellationToken token = default);
+    Task CancelBookingAsync(Guid id, Guid userId, CancellationToken token = default);
 }

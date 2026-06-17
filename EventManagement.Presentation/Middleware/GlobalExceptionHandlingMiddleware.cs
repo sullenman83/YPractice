@@ -81,6 +81,7 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
             DbOperationException dboe => StatusCodes.Status500InternalServerError,
             ActiveBookingLimitException abe => StatusCodes.Status409Conflict,
             PastEventBookingException pee => StatusCodes.Status400BadRequest,
+            NoRightsException nre => StatusCodes.Status403Forbidden,
 
             _ => StatusCodes.Status500InternalServerError
         };

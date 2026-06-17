@@ -21,6 +21,7 @@ public class BookingService(IBookingRepository<Booking> bookingRepository
     , ITransactionService transactionService
     , IDateTimeProvider dateTimeProvider
     , IBookingValidator bookingValidator
+    , ICurrentUserService currentUserService
     , ResiliencePipelineProvider<string> pipelineProvider) :IBookingService
 {
     private readonly IBookingRepository<Booking> _bookingRepository = bookingRepository;
@@ -28,6 +29,7 @@ public class BookingService(IBookingRepository<Booking> bookingRepository
     private readonly ITransactionService _transactionService = transactionService;
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
     private readonly IBookingValidator _bookingValidator = bookingValidator;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
     private readonly ResiliencePipeline _resiliencePipeline = pipelineProvider.GetPipeline(Consts.BookingServiceRepeater);
 
     ///<inheritdoc/>
@@ -80,7 +82,10 @@ public class BookingService(IBookingRepository<Booking> bookingRepository
     }
 
     ///<inheritdoc/>
-    public async Task CancelBookingAsync(Guid id, CancellationToken token = default)
+    ///<exception cref="NotFoundException">Не найден объект</exception>
+    ///<exception cref="InvalidOperationException">Непредвиденная ошибка</exception>
+    ///<exception cref="NoRightsException">Недостаточно прав</exception>
+    public async Task CancelBookingAsync(Guid id, Guid userId, CancellationToken token = default)
     {
         token.ThrowIfCancellationRequested();
 
@@ -101,7 +106,8 @@ public class BookingService(IBookingRepository<Booking> bookingRepository
                 return;
             }
 
-            if (booking.User.Id != )
+            if (booking.User.Id != userId || !_currentUserService.IsInRole(UserRole.Admin.ToString()))
+                throw new NoRightsException("Недостаточно прав для удаления бронирования");
 
             booking.Cancel(_dateTimeProvider.GetUtcNow());
             booking.Event.ReleaseSeats(booking.SeatsCount);
