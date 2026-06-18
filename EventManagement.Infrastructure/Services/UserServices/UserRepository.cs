@@ -20,7 +20,7 @@ public class UserRepository(AppDbContext context, ILogger<UserRepository> logger
 
     ///<inheritdoc/>
     ///<exception cref="DbOperationException">Ошибка при работе с базой данных</exception>
-    public async Task<User> AddUser(User user, CancellationToken token)
+    public async Task<User> AddUserAsync(User user, CancellationToken token)
     {
         try
         {
@@ -39,7 +39,7 @@ public class UserRepository(AppDbContext context, ILogger<UserRepository> logger
 
     ///<inheritdoc/>
     ///<exception cref="DbOperationException">Ошибка при работе с базой данных</exception>
-    public async Task<User?> GetUserByLogin(string login, CancellationToken token)
+    public async Task<User?> GetUserByLoginAsync(string login, CancellationToken token)
     {
         try
         {

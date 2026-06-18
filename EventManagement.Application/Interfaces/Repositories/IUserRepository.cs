@@ -13,7 +13,7 @@ public interface IUserRepository
     /// <param name="user">Данные пользователя</param>
     ///<param name="token">Токен отмены</param>
     /// <returns>Добавленный пользователь</returns>
-    Task<User> AddUser(User user, CancellationToken token = default);
+    Task<User> AddUserAsync(User user, CancellationToken token = default);
 
     /// <summary>
     /// Получить пользователя по логину
@@ -21,5 +21,5 @@ public interface IUserRepository
     /// <param name="login">Логин пользователя</param>
     ///<param name="token">Токен отмены</param>
     /// <returns>Пользователь или null, если не найден</returns>
-    Task<User?> GetUserByLogin(string login, CancellationToken token = default);
+    Task<User?> GetUserByLoginAsync(string login, CancellationToken token = default);
 }

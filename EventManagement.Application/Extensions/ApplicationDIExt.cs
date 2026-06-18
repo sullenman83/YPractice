@@ -8,6 +8,7 @@ using EventManagement.Application.Interfaces.Services.EventServices;
 using EventManagement.Application.Services;
 using EventManagement.Application.Services.BookingServices;
 using EventManagement.Application.Services.EventServices;
+using EventManagement.Application.Services.UserService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
@@ -61,6 +62,8 @@ public static class ApplicationDIExt
         services.AddScoped<IBookingService, BookingService>();        
         services.AddScoped<IBackgroundBookingService, BackgroundBookingService>();        
         services.AddHostedService<BookingHandlerService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IBookingValidator, BookingValidator>();
 
         return services;
     }

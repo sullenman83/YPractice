@@ -3,6 +3,7 @@ using EventManagement.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Security;
+using System.Security.Authentication;
 
 namespace EventManagement.Presentation.Middleware;
 
@@ -82,7 +83,8 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
             ActiveBookingLimitException abe => StatusCodes.Status409Conflict,
             PastEventBookingException pee => StatusCodes.Status400BadRequest,
             NoRightsException nre => StatusCodes.Status403Forbidden,
-
+            InvalidCredentialsException ice => StatusCodes.Status404NotFound,
+            
             _ => StatusCodes.Status500InternalServerError
         };
     }

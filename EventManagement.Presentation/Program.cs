@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddApplication(builder.Configuration);
-builder.Services.AddPresentation(builder.Environment);
+builder.Services.AddPresentation(builder.Environment, builder.Configuration);
 
 if (builder.Environment.IsDevelopment())
 {
@@ -20,9 +20,11 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-app.ApplyMigration();
-
 app.UseGlobalExceptionHandling();
+app.ApplyMigration();
+app.UseAuthentication();
+app.UseAuthorization();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

@@ -1,12 +1,16 @@
 ﻿using EventManagement.Application.Interfaces;
 using EventManagement.Application.Interfaces.Repositories;
+using EventManagement.Application.Interfaces.Security;
 using EventManagement.Application.Interfaces.Services;
 using EventManagement.Domain.Models;
 using EventManagement.Infrastructure.Data;
 using EventManagement.Infrastructure.Services;
 using EventManagement.Infrastructure.Services.BookingServices;
 using EventManagement.Infrastructure.Services.EventServices;
+using EventManagement.Infrastructure.Services.Securiry;
 using EventManagement.Infrastructure.Services.TransactionService;
+using EventManagement.Infrastructure.Services.UserServices;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,7 +59,11 @@ public static  class InfrastructureDIExt
         services.AddScoped<IBookingRepository<Booking>, BookingRepository>();
         services.AddScoped<ITransactionService, TransactionService>();
         services.AddScoped<IDateTimeProvider, DateTimeProvider>();
-
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+        
         return services;
     }
 }

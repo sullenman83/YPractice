@@ -27,5 +27,5 @@ public class UserRequestDTO
     /// Роль пользователя
     /// </summary>
     [Required]
-    public required UserRole Role{ get; set; }
+    public required UserRole Role { get; set; } = UserRole.User;
 }

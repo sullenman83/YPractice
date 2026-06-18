@@ -2,11 +2,9 @@
 using EventManagement.Application.Interfaces.Security;
 using EventManagement.Application.Models;
 using EventManagement.Infrastructure.Common;
-using Microsoft.EntityFrameworkCore.Scaffolding.Metadata;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using System.Net.Http.Headers;
 using System.Text;
 
 namespace EventManagement.Infrastructure.Services.Securiry;
@@ -23,6 +21,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
     /// Конструкотр
     /// </summary>
     /// <param name="jwtToketSettings">Настройки для генератора токенов</param>
+    /// <param name="dateTimeProvider">Провайдер времени</param>
     public JwtTokenGenerator(IOptions<JwtTokenSettings> jwtToketSettings, IDateTimeProvider dateTimeProvider)
     {
         _jwtTokenSettings = jwtToketSettings.Value;

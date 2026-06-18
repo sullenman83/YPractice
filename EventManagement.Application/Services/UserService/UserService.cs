@@ -1,7 +1,12 @@
-﻿using EventManagement.Application.Interfaces.Repositories;
+﻿using EventManagement.Application.Common.Exceptions;
+using EventManagement.Application.Interfaces.Repositories;
 using EventManagement.Application.Interfaces.Security;
 using EventManagement.Application.Interfaces.Services;
+using EventManagement.Application.Models;
 using EventManagement.Application.Models.UserModels;
+using EventManagement.Application.Models.UserModels.Extensions;
+using EventManagement.Domain.Exceptions;
+using EventManagement.Domain.Models;
 using Microsoft.Extensions.Logging;
 
 namespace EventManagement.Application.Services.UserService;
@@ -32,14 +37,36 @@ public class UserService : IUserService
     }
 
     ///<inheritdoc/>
-    public Task<UserResponseDTO> CreateUser(UserRequestDTO user)
-    {
-        throw new NotImplementedException();
+    ///<exception cref="DbOperationException">Ошмбки при работе с БД</exception>
+    public async Task<UserResponseDTO> CreateUserAsync(UserRequestDTO user, CancellationToken token)
+    {        
+        var password = _passwordHasher.GenerateHash(user.Password);
+
+        var u = new User(user.Login, password, user.Role);
+
+        u = await _userRepository.AddUserAsync(u, token);
+
+        return u.ToResponse();
     }
 
     ///<inheritdoc/>
-    public Task<string> Login(string login, string password)
+    ///<exception cref="InvalidCredentialsException">Ошибка входа</exception>    
+    public async Task<string> LoginAsync(string login, string password, CancellationToken token)
     {
-        throw new NotImplementedException();
+        var u = await _userRepository.GetUserByLoginAsync(login, token);
+        if (u == null)
+            throw new InvalidCredentialsException($"Не найден пользователь с логином {login}.");
+
+        if (!_passwordHasher.VerifyPassword(password, u.Password))
+            throw new InvalidCredentialsException("Ошибка ввода логина или пароля.");
+
+        var jwtData = new JwtToketDTO()
+        {
+            Id = u.Id,
+            Login = login,
+            Role = u.Role,
+        };
+
+        return _tokenGenerator.CreateJwtToken(jwtData);
     }
 }

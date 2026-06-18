@@ -5,6 +5,8 @@ using EventManagement.Application.Models.Events;
 using EventManagement.Application.Models.FilterModels;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Authentication;
+using System.Security.Claims;
 
 namespace EventManagement.Presentation.Controllers;
 
@@ -133,7 +135,11 @@ public class EventsController(IEventService eventService, IBookingService bookin
         [Required] [Range(1, int.MaxValue)]int seatsCount, 
         CancellationToken token)
     {
-        var result = await _bookingService.CreateBookingAsync(id, seatsCount, token);
+        var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null)
+            throw new InvalidCredentialException("Пользователь не авторизован");
+
+        var result = await _bookingService.CreateBookingAsync(id, new Guid(userId), seatsCount, token);
 
         var values = new RouteValueDictionary
         {

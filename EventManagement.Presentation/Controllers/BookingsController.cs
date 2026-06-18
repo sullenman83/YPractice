@@ -29,7 +29,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBookingByIdAsync(Guid id, CancellationToken token)
     {
-        var result =await _bookingService.GetBookingByIdAsync(id, token);
+        var result = await _bookingService.GetBookingByIdAsync(id, token);
         
         return Ok(result);
     }    
