@@ -36,7 +36,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         {
             [JwtRegisteredClaimNames.Sub] = data.Id,
             [JwtRegisteredClaimNames.Name] = data.Login,
-            ["role"] = data.Role
+            ["role"] = data.Role.ToString()
         };
 
         var key = Environment.GetEnvironmentVariable("JWT_KEY") ?? throw new InvalidOperationException("Не найден секретный ключ.");

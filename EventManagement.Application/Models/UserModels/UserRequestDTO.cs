@@ -19,13 +19,11 @@ public class UserRequestDTO
     /// <summary>
     /// Пароль пользователя
     /// </summary>
-    [Required]
-    [MinLength(1)]
+    [Required]    
     public required string Password { get; set; }
 
     /// <summary>
     /// Роль пользователя
-    /// </summary>
-    [Required]
+    /// </summary>    
     public required UserRole Role { get; set; } = UserRole.User;
 }

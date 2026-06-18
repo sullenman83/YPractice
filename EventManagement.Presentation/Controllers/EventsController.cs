@@ -3,6 +3,8 @@ using EventManagement.Application.Interfaces.Services.EventServices;
 using EventManagement.Application.Models.BookingModels;
 using EventManagement.Application.Models.Events;
 using EventManagement.Application.Models.FilterModels;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Authentication;
@@ -15,6 +17,7 @@ namespace EventManagement.Presentation.Controllers;
 /// </summary>
 /// <param name="eventService">Сервис для работы с событиями</param>
 /// <param name="bookingService">Сервис бронирования событий</param>
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class EventsController(IEventService eventService, IBookingService bookingService) : ControllerBase
@@ -71,6 +74,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
+    [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpPost]
     public async Task<IActionResult> CreateAsync([FromBody] EventCreationDTO @event, CancellationToken token)
     {      

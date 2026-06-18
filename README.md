@@ -240,6 +240,14 @@ BookingStatus
 	# Тесты
 		Адаптированы под новую  архитектуру
 
+## спринт 8
+	
+	Секретный ключ для подпись JWT хранится в переменной среды оружения
+	команда для добавления 
+	setx JWT_KEY "<значение ключа>"
+
+
+
 ## Команда создания миграций 
 dotnet ef migrations add Initial --project EventManagement.Infrastructure.csproj --startup-project ..\EventManagement.Presentation\EventManagement.Presentation.csproj
 ## команда обновления бд 

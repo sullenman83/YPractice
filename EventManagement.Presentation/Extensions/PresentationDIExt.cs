@@ -1,6 +1,7 @@
 ﻿using EventManagement.Infrastructure.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using System.Text;
 
 
@@ -42,7 +43,8 @@ public static class PresentationDIExt
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
-                ClockSkew = TimeSpan.Zero
+                ClockSkew = TimeSpan.Zero,
+                RoleClaimType = "role"
             };
         });
 
@@ -59,6 +61,16 @@ public static class PresentationDIExt
                 {
                     options.IncludeXmlComments(f);
                 }
+
+                options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme()
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Ведите 'Bearer' [пробел] ваш токен",
+                    Name = "Аутентификация",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = JwtBearerDefaults.AuthenticationScheme
+                });
             });
         }
         services.AddControllers(options =>

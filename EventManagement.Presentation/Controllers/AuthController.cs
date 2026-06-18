@@ -1,6 +1,8 @@
 ﻿using EventManagement.Application.Interfaces.Services;
 using EventManagement.Application.Models.UserModels;
+using EventManagement.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace EventManagement.Presentation.Controllers;
 
@@ -24,8 +26,22 @@ public class AuthController(IUserService userService): ControllerBase
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
     [HttpPost("register")]
-    public async Task<IActionResult> Register(UserRequestDTO user, CancellationToken token)
+    public async Task<IActionResult> Register(
+        [Required]
+        [MinLength(3)]
+        string login,
+        [Required]
+        [MinLength(1)]
+        string password,
+        UserRole role = UserRole.User,
+        CancellationToken token = default)
     {
+        var user = new UserRequestDTO()
+        {
+            Login = login,
+            Password = password,
+            Role = role
+        };
         await _userService.CreateUserAsync(user, token);
 
         return NoContent();
