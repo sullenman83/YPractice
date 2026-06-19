@@ -88,10 +88,12 @@ namespace EventApi.IntegrationTest
             // Arrange
             await using var context = _fixture.Context;
             var ev = TestData.GetTestEvent();
-            var id = ev.Id;
-            var booking = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
+            var user = TestData.GetTestUser();
             await context.Events.AddAsync(ev);
+            await context.Users.AddAsync(user);
             await context.SaveChangesAsync();
+            var id = ev.Id;
+            var booking = TestData.GetTestBooking(ev, user, _dateTimeProvider.GetUtcNow());
             await context.Bookings.AddAsync(booking);
             await context.SaveChangesAsync();
 

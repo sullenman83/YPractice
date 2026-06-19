@@ -52,7 +52,7 @@ public class DatabaseFixture : IAsyncLifetime
     {
         await using var context = Context;
         await context.Database.ExecuteSqlRawAsync(
-"TRUNCATE TABLE bookings, events CASCADE"
+"TRUNCATE TABLE bookings, users, events CASCADE"
         );
     }
 }

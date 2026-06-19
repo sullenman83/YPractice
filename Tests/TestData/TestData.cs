@@ -121,9 +121,8 @@ public static class TestData
     /// <param name="seatsCount">Сколько мест бронируется</param>
     /// <param name="status">Статус брони</param>
     /// <returns>Бронирование</returns>
-    public static Booking GetTestBooking(Event ev, DateTimeOffset dateTime, int seatsCount = 1, BookingStatus status = BookingStatus.Pending)
-    {
-        var user = GetTestUser();
+    public static Booking GetTestBooking(Event ev, User user, DateTimeOffset dateTime, int seatsCount = 1, BookingStatus status = BookingStatus.Pending)
+    {        
         return new Booking(status, ev.Id, user.Id, seatsCount, dateTime);
     }
 
