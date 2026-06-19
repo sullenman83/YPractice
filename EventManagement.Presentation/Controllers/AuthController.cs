@@ -19,7 +19,9 @@ public class AuthController(IUserService userService): ControllerBase
     /// <summary>
     /// Создать нового пользователя
     /// </summary>
-    /// <param name="user">Параметры пользователя</param>
+    /// <param name="login">Логин пользователя</param>
+    /// <param name="password">Пароль пользователя</param>
+    /// <param name="role">Роль пользователя</param>
     /// <param name="token">Токен отмены</param>
     [Produces("application/json")]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]

@@ -22,14 +22,16 @@ var app = builder.Build();
 
 app.UseGlobalExceptionHandling();
 app.ApplyMigration();
-app.UseAuthentication();
-app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();
