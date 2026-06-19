@@ -106,15 +106,16 @@ public class BookingService(IBookingRepository<Booking> bookingRepository
                 return;
             }
 
-            if (booking.User.Id != userId || !_currentUserService.IsInRole(UserRole.Admin.ToString()))
+            if (booking.User.Id != userId && !_currentUserService.IsInRole(UserRole.Admin.ToString()))
                 throw new NoRightsException("Недостаточно прав для удаления бронирования");
 
             booking.Cancel(_dateTimeProvider.GetUtcNow());
             booking.Event.ReleaseSeats(booking.SeatsCount);
             await _bookingRepository.SaveChangesAsync();
+            await tr.CommitAsync();
         });
     }
-
+    
     private async Task ValidateBookingAsync(Guid eventId, Guid userId, CancellationToken token)
     {
         var bookings = await _bookingRepository.GetActiveUserBookingByEventIdAsync(eventId, userId, token);

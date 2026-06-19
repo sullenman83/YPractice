@@ -81,15 +81,16 @@ public static class TestData
     public static List<Booking> GetTestBookings()
     {
         var events = GetTestEvents();
+        var user = GetTestUser();
 
         return new List<Booking>()
         {
-            new Booking(BookingStatus.Pending, events[0].Id, 1, DateTimeOffset.Parse("2026.03.24 18:30:00 +0:00"))
+            new Booking(BookingStatus.Pending, events[0].Id, user.Id, 1, DateTimeOffset.Parse("2026.03.24 18:30:00 +0:00"))
             {                
                 ProcessedAt = DateTimeOffset.Parse("2026.03.24 18:30:02 +0:00"),
             },
 
-            new Booking(BookingStatus.Rejected, events[1].Id, 1, DateTimeOffset.Parse("2026.03.25 18:30:00 +0:00"))
+            new Booking(BookingStatus.Rejected, events[1].Id, user.Id, 1, DateTimeOffset.Parse("2026.03.25 18:30:00 +0:00"))
             {
                 ProcessedAt = DateTimeOffset.Parse("2026.03.25 18:30:02 +0:00"),
             }
@@ -121,7 +122,17 @@ public static class TestData
     /// <param name="status">Статус брони</param>
     /// <returns>Бронирование</returns>
     public static Booking GetTestBooking(Event ev, DateTimeOffset dateTime, int seatsCount = 1, BookingStatus status = BookingStatus.Pending)
-    {        
-        return new Booking(status, ev.Id, seatsCount, dateTime);
+    {
+        var user = GetTestUser();
+        return new Booking(status, ev.Id, user.Id, seatsCount, dateTime);
+    }
+
+    /// <summary>
+    /// Получить тестового пользователя
+    /// </summary>
+    /// <returns>Тестовый пользователь</returns>
+    public static User GetTestUser()
+    {
+        return new User("user", "password", UserRole.User);        
     }
 }

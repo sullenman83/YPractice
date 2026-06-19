@@ -30,9 +30,11 @@ public static class ApplicationDIExt
     /// <returns>Коллекция сервисов</returns>
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
     {
-        var bbsSettigs = new BackgroundBookingServiceRetrySettigs();
-        configuration.GetSection("BackgroundBookingServiceRetrySettigs").Bind(bbsSettigs);
         services.Configure<BookingHandlerSettings>(configuration.GetSection("BookingHandlerSettings"));
+        services.Configure<BookingSettings>(configuration.GetSection("BookingSettings"));
+        
+        var bbsSettigs = new BackgroundBookingServiceRepeaterSettigs();
+        configuration.GetSection("BackgroundBookingServiceRepeaterSettigs").Bind(bbsSettigs);        
         services.AddResiliencePipeline(Consts.BackgroundBookingServiceRepeater, builder =>
         {
             builder.AddRetry(new RetryStrategyOptions()
@@ -44,8 +46,8 @@ public static class ApplicationDIExt
             });
         });
 
-        var cbSettings = new CreateBookingRetrySettigs();
-        configuration.GetSection("CreateBookingRetrySettigs").Bind(bbsSettigs);
+        var cbSettings = new BookingServiceRepeaterSettings();
+        configuration.GetSection("BookingServiceRepeaterSettings").Bind(cbSettings);
         services.AddResiliencePipeline(Consts.BookingServiceRepeater, builder =>
         {
             builder.AddTimeout(new TimeoutStrategyOptions() { Timeout = TimeSpan.FromMilliseconds(cbSettings.Timeout) });

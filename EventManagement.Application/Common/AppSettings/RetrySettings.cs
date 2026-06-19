@@ -19,7 +19,7 @@ internal class RetrySettings
 /// <summary>
 /// Настройки для повторителя в срвисе создания бронирований
 /// </summary>
-internal class CreateBookingRetrySettigs : RetrySettings 
+internal class BookingServiceRepeaterSettings : RetrySettings 
 {
     /// <summary>
     /// Максмальное время для выполнения операции
@@ -30,4 +30,4 @@ internal class CreateBookingRetrySettigs : RetrySettings
 /// <summary>
 /// Настройки для повторителя в фоновом срвисе обработки бронирований
 /// </summary>
-internal class BackgroundBookingServiceRetrySettigs : RetrySettings { }
+internal class BackgroundBookingServiceRepeaterSettigs : RetrySettings { }

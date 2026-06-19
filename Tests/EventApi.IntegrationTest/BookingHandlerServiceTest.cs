@@ -84,10 +84,12 @@ public class BookingHandlerServiceTest : IClassFixture<DatabaseFixture>, IAsyncL
         // Arrange
         var seatsCount = 2;
         var ev = TestData.GetTestEvent(seatsCount);
+        var user = TestData.GetTestUser();
         await using var context = _fixture.Context;
         await context.Events.AddAsync(ev);
+        await context.Users.AddAsync(user);
         await context.SaveChangesAsync();
-        var booking = new Booking(BookingStatus.Pending, ev.Id, seatsCount, _dateTimeProvider.GetUtcNow());
+        var booking = new Booking(BookingStatus.Pending, ev.Id, user.Id, seatsCount, _dateTimeProvider.GetUtcNow());
         var dateTimeProvider = new Mock<IDateTimeProvider>();
         dateTimeProvider.Setup(o => o.GetUtcNow()).Returns(_dateTimeProvider.GetUtcNow().AddMinutes(1));        
         await context.Bookings.AddAsync(booking);

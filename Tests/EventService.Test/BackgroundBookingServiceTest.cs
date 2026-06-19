@@ -46,8 +46,9 @@ public class BackgroundBookingServiceTest
         // Arrange
         var seatsCount = 1;
         var ev = TestData.GetTestEvent(seatsCount);
-        var id = ev.Id;        
-        var booking = new Booking(BookingStatus.Pending, ev, seatsCount, DateTimeOffset.UtcNow);
+        var id = ev.Id;
+        var user = TestData.GetTestUser();
+        var booking = new Booking(BookingStatus.Pending, ev, user, seatsCount, DateTimeOffset.UtcNow);
         _mockBookingRepository.Setup(o => o.GetBookingWithBlockingAsync(It.IsAny<Guid>())).ReturnsAsync(booking);
         var service = new BackgroundBookingService(_mockScopeFactory.Object, _logger, _pipelineProvider.Object);
 
@@ -71,7 +72,8 @@ public class BackgroundBookingServiceTest
         var seatsCount = 1;
         var ev = TestData.GetTestEvent(seatsCount);
         var id = ev.Id;
-        var booking = new Booking(BookingStatus.Pending, ev, seatsCount, DateTimeOffset.UtcNow);
+        var user = TestData.GetTestUser();
+        var booking = new Booking(BookingStatus.Pending, ev, user, seatsCount, DateTimeOffset.UtcNow);
         _mockBookingRepository.Setup(o => o.GetBookingWithBlockingAsync(It.IsAny<Guid>())).ReturnsAsync(booking);
         var service = new BackgroundBookingService(_mockScopeFactory.Object, _logger, _pipelineProvider.Object);
 

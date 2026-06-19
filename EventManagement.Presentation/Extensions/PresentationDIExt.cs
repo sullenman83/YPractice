@@ -1,4 +1,5 @@
-﻿using EventManagement.Infrastructure.Common;
+﻿using EventManagement.Application.Common.AppSettings;
+using EventManagement.Infrastructure.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -21,7 +22,9 @@ public static class PresentationDIExt
     /// <returns>Коллекция сервисов</returns>
     public static IServiceCollection AddPresentation(this IServiceCollection services, IHostEnvironment env, IConfiguration configuration)
     {
-        var toketSettings = configuration.GetSection(nameof(JwtTokenSettings)).Get<JwtTokenSettings>() 
+        services.Configure<JwtTokenSettings>(configuration.GetSection("JwtTokenSettings"));
+
+        var tokenSettings = configuration.GetSection(nameof(JwtTokenSettings)).Get<JwtTokenSettings>() 
             ?? throw new InvalidOperationException("не найдены настройки для токена");
         var key = Environment.GetEnvironmentVariable("JWT_KEY") ?? throw new InvalidOperationException("Не найден секретный ключ.");
 
@@ -35,10 +38,10 @@ public static class PresentationDIExt
             options.TokenValidationParameters = new TokenValidationParameters()
             {
                 ValidateIssuer = true,
-                ValidIssuer = toketSettings.Issuer,
+                ValidIssuer = tokenSettings.Issuer,
 
                 ValidateAudience = true,
-                ValidAudience = toketSettings.Audience,
+                ValidAudience = tokenSettings.Audience,
 
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
@@ -46,6 +49,7 @@ public static class PresentationDIExt
                 ClockSkew = TimeSpan.Zero,
                 RoleClaimType = "role"
             };
+            options.MapInboundClaims = false;
         });
 
         services.AddAuthorization();
@@ -65,11 +69,16 @@ public static class PresentationDIExt
                 options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme()
                 {
                     In = ParameterLocation.Header,
-                    Description = "Ведите 'Bearer' [пробел] ваш токен",
+                    Description = "Ведите ваш токен",
                     Name = "Аутентификация",
                     Type = SecuritySchemeType.Http,
                     BearerFormat = "JWT",
                     Scheme = JwtBearerDefaults.AuthenticationScheme
+                });
+
+                options.AddSecurityRequirement(document => new OpenApiSecurityRequirement()
+                {
+                    [new OpenApiSecuritySchemeReference("Bearer", document)] = []
                 });
             });
         }
