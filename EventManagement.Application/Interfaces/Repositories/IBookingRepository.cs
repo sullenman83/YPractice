@@ -24,11 +24,10 @@ public interface IBookingRepository<T> :IBaseRepository<T>
     Task<Booking?> GetBookingWithBlockingAsync(Guid id, CancellationToken token = default);
 
     /// <summary>
-    /// Получить бронирования 
+    /// Получить активные бронирования 
     /// </summary>
-    /// <param name="eventId">id события</param>
     /// <param name="userId">id пользователя</param>
     /// <param name="token">Токен отмены</param>
     /// <returns>Список бронирований</returns>
-    Task<List<Booking>> GetActiveUserBookingByEventIdAsync(Guid eventId, Guid userId, CancellationToken token = default);
+    Task<List<Booking>> GetActiveUserBookingAsync(Guid userId, CancellationToken token = default);
 }

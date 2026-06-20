@@ -32,7 +32,7 @@ public class BookingValidator : IBookingValidator
     ///<inheritdoc/>
     public void ValidateActiveBooking(IReadOnlyCollection<Booking> bookings)
     {
-        if (bookings.Count > _bookingSettings.MaxActiveBookingCount)
+        if (bookings.Count >= _bookingSettings.MaxActiveBookingCount)
             throw new ActiveBookingLimitException($"Превышено максимальное количество бронирований ({_bookingSettings.MaxActiveBookingCount})");
     }
 

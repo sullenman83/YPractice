@@ -65,10 +65,10 @@ FOR UPDATE NOWAIT")
     }
 
     ///<inheritdoc/>
-    public async Task<List<Booking>> GetActiveUserBookingByEventIdAsync(Guid eventId, Guid userId, CancellationToken token = default)
+    public async Task<List<Booking>> GetActiveUserBookingAsync(Guid userId, CancellationToken token = default)
     {
         var bookings = _context.Bookings
-            .Where(o => o.EventId == eventId && o.UserId == userId);
+            .Where(o => o.UserId == userId);
 
         return await bookings.Where(o => o.Status == BookingStatus.Pending 
             || o.Status == BookingStatus.Confirmed)
