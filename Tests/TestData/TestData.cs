@@ -1,4 +1,5 @@
 ﻿using EventManagement.Application.Models.Events;
+using EventManagement.Application.Models.UserModels;
 using EventManagement.Domain.Models;
 
 namespace EventManagement.Common;
@@ -134,4 +135,18 @@ public static class TestData
     {
         return new User("user", "password", UserRole.User);        
     }
+
+    /// <summary>
+    /// Получить пользователя для мередачи в метод создания пользователя
+    /// </summary>
+    /// <returns>DTO польщователь</returns>
+    public static UserRequestDTO getRequestUser()
+    {
+        return new UserRequestDTO()
+        {
+            Login = "user",
+            Password = "password",
+            Role = UserRole.User
+        };
+    }    
 }
