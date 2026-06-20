@@ -53,12 +53,13 @@ public class UserService : IUserService
     ///<exception cref="InvalidCredentialsException">Ошибка входа</exception>    
     public async Task<string> LoginAsync(string login, string password, CancellationToken token)
     {
+        var message = "Ошибка авторизации. Неверный логин или пароль.";
         var u = await _userRepository.GetUserByLoginAsync(login, token);
         if (u == null)
-            throw new InvalidCredentialsException($"Не найден пользователь с логином {login}.");
+            throw new InvalidCredentialsException(message);
 
         if (!_passwordHasher.VerifyPassword(password, u.Password))
-            throw new InvalidCredentialsException("Ошибка ввода логина или пароля.");
+            throw new InvalidCredentialsException(message);
 
         var jwtData = new JwtToketDTO()
         {

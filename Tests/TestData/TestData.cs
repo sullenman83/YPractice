@@ -124,14 +124,14 @@ public static class TestData
     /// <returns>Бронирование</returns>
     public static Booking GetTestBooking(Event ev, User user, DateTimeOffset dateTime, int seatsCount = 1, BookingStatus status = BookingStatus.Pending)
     {        
-        return new Booking(status, ev.Id, user.Id, seatsCount, dateTime);
+        return new Booking(status, ev, user, seatsCount, dateTime);
     }
 
     /// <summary>
     /// Получить тестового пользователя
     /// </summary>
     /// <returns>Тестовый пользователь</returns>
-    public static User GetTestUser()
+    public static User GetTestUser(UserRole role = UserRole.User)
     {
         return new User("user", "password", UserRole.User);        
     }

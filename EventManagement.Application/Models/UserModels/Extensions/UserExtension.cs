@@ -18,7 +18,6 @@ public static class UserExtension
         {
             Id = user.Id,
             Login = user.Login,
-            Password = user.Password,
             Role = user.Role
         };
     }

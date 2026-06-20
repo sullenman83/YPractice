@@ -40,7 +40,6 @@ public class UserTest
 
         // Assert
         res.Login.Should().Be(requestUser.Login);
-        res.Password.Should().Be(requestUser.Password);
         res.Role.Should().Be(requestUser.Role);
         _mockPasswordHasher.Verify(o => o.GenerateHash(requestUser.Password), Times.Once);
         _mockUserRepository.Verify(o => o.AddUserAsync(It.IsAny<User>()), Times.Once);

@@ -303,6 +303,50 @@ $@"INSERT INTO bookings(id, status, seats_count, created_at, processed_at,event_
         await act.Should().ThrowAsync<PostgresException>();
     }
 
+    [Fact]
+    public async Task GetActiveBookingForUser_ReturnsCorrectBookingCount()
+    {
+        // Arrange
+
+        var events = new List<Event>()
+        {
+            new Event("Событие 1", "Описание", DateTimeOffset.UtcNow.AddDays(2), DateTimeOffset.UtcNow.AddDays(10), 10),
+            new Event("Событие 2", "Описание", DateTimeOffset.UtcNow.AddDays(2), DateTimeOffset.UtcNow.AddDays(10),  10),
+        };
+        var ctx = _fixture.Context;
+        await ctx.AddRangeAsync(events);
+        var users = new List<User>()
+        {
+            new User("user1", "Password1", UserRole.User),
+            new User("user2", "Password2", UserRole.User)
+        };
+        await ctx.Users.AddRangeAsync(users);
+        await ctx.SaveChangesAsync();
+
+        var bookings = new List<Booking>()
+        {
+            new Booking(BookingStatus.Pending, events[0], users[0], 1, DateTimeOffset.UtcNow),
+            new Booking(BookingStatus.Pending, events[0], users[1], 1, DateTimeOffset.UtcNow),
+
+            new Booking(BookingStatus.Pending, events[1], users[0], 1, DateTimeOffset.UtcNow),
+            new Booking(BookingStatus.Pending, events[1], users[1], 1, DateTimeOffset.UtcNow),
+            new Booking(BookingStatus.Confirmed, events[1], users[1], 1, DateTimeOffset.UtcNow),
+            new Booking(BookingStatus.Cancelled, events[1], users[1], 1, DateTimeOffset.UtcNow),
+            new Booking(BookingStatus.Rejected, events[1], users[1], 1, DateTimeOffset.UtcNow),
+        };
+        await ctx.Bookings.AddRangeAsync(bookings);
+        await ctx.SaveChangesAsync();
+
+        var bookingRepository = new BookingRepository(_fixture.Context, _logger);
+
+        // Act
+        var res = await bookingRepository.GetActiveUserBookingAsync(users[1].Id);
+
+        // Assert
+        res.Should().HaveCount(3);
+    }
+    
+
     public async Task InitializeAsync()
     {
         await _fixture.ResetDatabaseAsync();

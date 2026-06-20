@@ -19,11 +19,6 @@ public class UserResponseDTO
     public required string Login { get; set; }
 
     /// <summary>
-    /// Пароль пользователя
-    /// </summary>
-    public required string Password { get; set; }
-
-    /// <summary>
     /// Роль пользователя
     /// </summary>    
     public required UserRole Role { get; set; }

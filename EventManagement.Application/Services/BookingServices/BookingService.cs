@@ -118,7 +118,7 @@ public class BookingService(IBookingRepository<Booking> bookingRepository
     
     private async Task ValidateBookingAsync(Guid eventId, Guid userId, CancellationToken token)
     {
-        var bookings = await _bookingRepository.GetActiveUserBookingAsync(eventId, userId, token);
+        var bookings = await _bookingRepository.GetActiveUserBookingAsync(userId, token);
         var ev = await _eventRepository.GetByIdAsync(eventId);
         if (ev == null)
             throw new NotFoundException($"Не найдено событие с id {eventId}");
