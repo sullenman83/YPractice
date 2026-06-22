@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Application.Interfaces.Services;
+﻿namespace EventManagement.Application.Interfaces;
 
 /// <summary>
 /// Интекрфейс транзакции

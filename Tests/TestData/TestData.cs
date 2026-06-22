@@ -1,4 +1,5 @@
 ﻿using EventManagement.Application.Models.Events;
+using EventManagement.Application.Models.UserModels;
 using EventManagement.Domain.Models;
 
 namespace EventManagement.Common;
@@ -81,15 +82,16 @@ public static class TestData
     public static List<Booking> GetTestBookings()
     {
         var events = GetTestEvents();
+        var user = GetTestUser();
 
         return new List<Booking>()
         {
-            new Booking(BookingStatus.Pending, events[0].Id, 1, DateTimeOffset.Parse("2026.03.24 18:30:00 +0:00"))
+            new Booking(BookingStatus.Pending, events[0].Id, user.Id, 1, DateTimeOffset.Parse("2026.03.24 18:30:00 +0:00"))
             {                
                 ProcessedAt = DateTimeOffset.Parse("2026.03.24 18:30:02 +0:00"),
             },
 
-            new Booking(BookingStatus.Rejected, events[1].Id, 1, DateTimeOffset.Parse("2026.03.25 18:30:00 +0:00"))
+            new Booking(BookingStatus.Rejected, events[1].Id, user.Id, 1, DateTimeOffset.Parse("2026.03.25 18:30:00 +0:00"))
             {
                 ProcessedAt = DateTimeOffset.Parse("2026.03.25 18:30:02 +0:00"),
             }
@@ -120,8 +122,31 @@ public static class TestData
     /// <param name="seatsCount">Сколько мест бронируется</param>
     /// <param name="status">Статус брони</param>
     /// <returns>Бронирование</returns>
-    public static Booking GetTestBooking(Event ev, DateTimeOffset dateTime, int seatsCount = 1, BookingStatus status = BookingStatus.Pending)
+    public static Booking GetTestBooking(Event ev, User user, DateTimeOffset dateTime, int seatsCount = 1, BookingStatus status = BookingStatus.Pending)
     {        
-        return new Booking(status, ev.Id, seatsCount, dateTime);
+        return new Booking(status, ev, user, seatsCount, dateTime);
     }
+
+    /// <summary>
+    /// Получить тестового пользователя
+    /// </summary>
+    /// <returns>Тестовый пользователь</returns>
+    public static User GetTestUser(UserRole role = UserRole.User)
+    {
+        return new User("user", "password", UserRole.User);        
+    }
+
+    /// <summary>
+    /// Получить пользователя для мередачи в метод создания пользователя
+    /// </summary>
+    /// <returns>DTO польщователь</returns>
+    public static UserRequestDTO getRequestUser()
+    {
+        return new UserRequestDTO()
+        {
+            Login = "user",
+            Password = "password",
+            Role = UserRole.User
+        };
+    }    
 }

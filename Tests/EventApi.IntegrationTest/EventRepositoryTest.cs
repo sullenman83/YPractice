@@ -1,9 +1,11 @@
-﻿using EventManagement.Application.Interfaces;
+﻿using EventManagement.Application.Common.Exceptions;
+using EventManagement.Application.Interfaces;
 using EventManagement.Application.Models.FilterModels;
 using EventManagement.Common;
 using EventManagement.Domain.Models;
 using EventManagement.Infrastructure.Services;
 using EventManagement.Infrastructure.Services.EventServices;
+using EventManagement.Infrastructure.Services.TransactionService;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -86,10 +88,12 @@ namespace EventApi.IntegrationTest
             // Arrange
             await using var context = _fixture.Context;
             var ev = TestData.GetTestEvent();
-            var id = ev.Id;
-            var booking = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
+            var user = TestData.GetTestUser();
             await context.Events.AddAsync(ev);
+            await context.Users.AddAsync(user);
             await context.SaveChangesAsync();
+            var id = ev.Id;
+            var booking = TestData.GetTestBooking(ev, user, _dateTimeProvider.GetUtcNow());
             await context.Bookings.AddAsync(booking);
             await context.SaveChangesAsync();
 
@@ -177,6 +181,47 @@ namespace EventApi.IntegrationTest
             var changedEvent = await ctx.Events.FirstOrDefaultAsync(o => o.Id == ev.Id);
             changedEvent.Should().NotBeNull();
             changedEvent.Title.Should().Be(title);
+        }
+
+        [Fact]
+        public async Task GetEventWithBlocking_ReturnsBlockedEvent()
+        {
+            // Arrange
+            var events = TestData.GetTestEvents();
+            var id1 = events[0].Id;
+            var id2 = events[1].Id;
+            await using var ctx = _fixture.Context;
+            await ctx.Events.AddRangeAsync(events);
+            await ctx.SaveChangesAsync();
+
+            var ctx1 = _fixture.Context;
+            var transactionService1 = new TransactionService(ctx1);
+            var rep1 = new EventRepository(ctx1, _logger);
+            await using var tr1 = await transactionService1.BeginTransactionAsync(CancellationToken.None);
+
+            var ctx2 = _fixture.Context;
+            var transactionService2 = new TransactionService(ctx2);
+            var rep2 = new EventRepository(ctx2, _logger);
+            await using var tr2 = await transactionService2.BeginTransactionAsync(CancellationToken.None);
+                        
+            // Act
+            var res1 = await rep1.GetEventWithBlockingAsync(id1, CancellationToken.None);
+            var res2 = await rep2.GetByIdAsync(id1);
+            Func<Task<Event?>> act = async () => await rep2.GetEventWithBlockingAsync(id1, CancellationToken.None);
+
+            // Assert
+            res1.Should().BeEquivalentTo(events[0]);
+            res2.Should().BeEquivalentTo(events[0]);
+            await act.Should().ThrowAsync<DbOperationWithBlockingRowException>();
+            await tr1.RollbackAsync();
+            await tr2.RollbackAsync();
+
+            var ctx3 = _fixture.Context;            
+            var transactionService3 = new TransactionService(ctx3);
+            var rep3 = new EventRepository(ctx3, _logger);
+            await using var tr3 = await transactionService3.BeginTransactionAsync(CancellationToken.None);
+            var res3 = await rep3.GetEventWithBlockingAsync(id1, CancellationToken.None);
+            res3.Should().BeEquivalentTo(events[0]);
         }
 
         [Fact]

@@ -1,4 +1,5 @@
-﻿using EventManagement.Application.Interfaces.Services;
+﻿using EventManagement.Application.Interfaces;
+using EventManagement.Application.Interfaces.Services;
 using EventManagement.Infrastructure.Data;
 
 namespace EventManagement.Infrastructure.Services.TransactionService;

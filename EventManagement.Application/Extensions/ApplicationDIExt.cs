@@ -2,32 +2,60 @@
 using EventManagement.Application.Common;
 using EventManagement.Application.Common.AppSettings;
 using EventManagement.Application.Common.Exceptions;
-using EventManagement.Application.Interfaces;
 using EventManagement.Application.Interfaces.Services;
+using EventManagement.Application.Interfaces.Services.BookingServices;
+using EventManagement.Application.Interfaces.Services.EventServices;
 using EventManagement.Application.Services;
 using EventManagement.Application.Services.BookingServices;
 using EventManagement.Application.Services.EventServices;
+using EventManagement.Application.Services.UserService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Retry;
+using Polly.Timeout;
 
 namespace EventManagement.Application.Extensions;
 
+/// <summary>
+/// Регистратор сервисов для application слоя
+/// </summary>
 public static class ApplicationDIExt
 {
+    /// <summary>
+    /// Зарегистрировать сервисы
+    /// </summary>
+    /// <param name="services">Коллекция сервисов</param>
+    /// <param name="configuration">Конфигурация</param>
+    /// <returns>Коллекция сервисов</returns>
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
     {
-        var retrySettings = new RetrySettings();
-        configuration.GetSection("RetrySettings").Bind(retrySettings);
         services.Configure<BookingHandlerSettings>(configuration.GetSection("BookingHandlerSettings"));
-        services.AddResiliencePipeline(Consts.CreateBookingRetry, builder =>
+        services.Configure<BookingSettings>(configuration.GetSection("BookingSettings"));
+        
+        var bbsSettigs = new BackgroundBookingServiceRepeaterSettigs();
+        configuration.GetSection("BackgroundBookingServiceRepeaterSettigs").Bind(bbsSettigs);        
+        services.AddResiliencePipeline(Consts.BackgroundBookingServiceRepeater, builder =>
         {
             builder.AddRetry(new RetryStrategyOptions()
             {
                 ShouldHandle = new PredicateBuilder().Handle<DbOperationWithBlockingRowException>(),
-                MaxRetryAttempts = retrySettings.MaxRetryAttempts,
-                Delay = TimeSpan.FromMilliseconds(retrySettings.Delay),
+                MaxRetryAttempts = bbsSettigs.MaxRetryAttempts,
+                Delay = TimeSpan.FromMilliseconds(bbsSettigs.Delay),
+                BackoffType = DelayBackoffType.Constant
+            });
+        });
+
+        var cbSettings = new BookingServiceRepeaterSettings();
+        configuration.GetSection("BookingServiceRepeaterSettings").Bind(cbSettings);
+        services.AddResiliencePipeline(Consts.BookingServiceRepeater, builder =>
+        {
+            builder.AddTimeout(new TimeoutStrategyOptions() { Timeout = TimeSpan.FromMilliseconds(cbSettings.Timeout) });
+            builder.AddRetry(new RetryStrategyOptions()
+            {
+                ShouldHandle = new PredicateBuilder().Handle<DbOperationWithBlockingRowException>(),
+                MaxRetryAttempts = cbSettings.MaxRetryAttempts,
+                Delay = TimeSpan.FromMilliseconds(cbSettings.Delay),
                 BackoffType = DelayBackoffType.Constant
             });
         });
@@ -36,6 +64,8 @@ public static class ApplicationDIExt
         services.AddScoped<IBookingService, BookingService>();        
         services.AddScoped<IBackgroundBookingService, BackgroundBookingService>();        
         services.AddHostedService<BookingHandlerService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IBookingValidator, BookingValidator>();
 
         return services;
     }

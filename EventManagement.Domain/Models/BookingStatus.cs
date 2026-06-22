@@ -9,12 +9,7 @@ public enum BookingStatus
     /// Брони создана, ожидает обработки
     /// </summary>
     Pending,
-
-    /// <summary>
-    /// В обработке
-    /// </summary>
-    Processing,
-
+        
     /// <summary>
     /// Бронь подтверждена
     /// </summary>
@@ -23,5 +18,11 @@ public enum BookingStatus
     /// <summary>
     /// бронь отклонена
     /// </summary>
-    Rejected
+    Rejected,
+
+    /// <summary>
+    /// Бронь отменена
+    /// </summary>
+    Cancelled
+
 }

@@ -49,17 +49,24 @@ namespace EventManagement.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("status");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
                     b.HasKey("Id")
                         .HasName("pk_bookings");
 
                     b.HasIndex("EventId")
                         .HasDatabaseName("ix_bookings_event_id");
 
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_bookings_user_id");
+
                     b.ToTable("bookings", null, t =>
                         {
                             t.HasCheckConstraint("chk_bookings_seats_count", "seats_count > 0");
 
-                            t.HasCheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected', 'Processing')");
+                            t.HasCheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected', 'Cancelled')");
                         });
                 });
 
@@ -120,6 +127,46 @@ namespace EventManagement.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("EventManagement.Domain.Models.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Login")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("login");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("password");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("role");
+
+                    b.HasKey("Id")
+                        .HasName("pk_users");
+
+                    b.HasIndex("Login")
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_login");
+
+                    b.ToTable("users", null, t =>
+                        {
+                            t.HasCheckConstraint("chk_users_loginLen", "LENGTH(login) >= 3");
+
+                            t.HasCheckConstraint("chk_users_passwordLen", "LENGTH(password) > 0");
+
+                            t.HasCheckConstraint("chk_users_role", "role IN('User', 'Admin')");
+                        });
+                });
+
             modelBuilder.Entity("EventManagement.Domain.Models.Booking", b =>
                 {
                     b.HasOne("EventManagement.Domain.Models.Event", "Event")
@@ -129,10 +176,24 @@ namespace EventManagement.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_bookings_events_event_id");
 
+                    b.HasOne("EventManagement.Domain.Models.User", "User")
+                        .WithMany("Bookings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_bookings_users_user_id");
+
                     b.Navigation("Event");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EventManagement.Domain.Models.Event", b =>
+                {
+                    b.Navigation("Bookings");
+                });
+
+            modelBuilder.Entity("EventManagement.Domain.Models.User", b =>
                 {
                     b.Navigation("Bookings");
                 });

@@ -11,6 +11,7 @@ namespace EventManagement.Infrastructure.Services;
 /// </summary>
 /// <typeparam name="T">Тип сущности</typeparam>
 /// <param name="context">Контекст базы данных</param>
+/// <param name="logger">Логгер</param>
 public class BaseRepository<T>(AppDbContext context, ILogger<BaseRepository<T>> logger) : IBaseRepository<T> where T : class
 {
     /// <summary>
@@ -18,6 +19,9 @@ public class BaseRepository<T>(AppDbContext context, ILogger<BaseRepository<T>> 
     /// </summary>
     protected readonly AppDbContext _context = context;
 
+    /// <summary>
+    /// Логгер
+    /// </summary>
     protected readonly ILogger<BaseRepository<T>> _logger = logger;
 
     /// <inheritdoc/>    

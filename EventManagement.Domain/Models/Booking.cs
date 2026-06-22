@@ -12,15 +12,17 @@ public class Booking
     /// </summary>
     /// <param name="status">Статус брони</param>    
     /// <param name="eventId">id  события</param>
+    /// <param name="userId">id  пользователя</param>
     /// <param name="seatsCount">количество мест в брони</param>
     /// <param name="createdAt">Дата создания брони</param>
     [SetsRequiredMembers]
-    public Booking(BookingStatus status, Guid eventId, int seatsCount, DateTimeOffset createdAt)
+    public Booking(BookingStatus status, Guid eventId, Guid userId, int seatsCount, DateTimeOffset createdAt)
     {
         if (seatsCount <= 0)
             throw new ArgumentException("Количество бронируемых мест должно быть больше 0");
         Id = Guid.NewGuid();
         EventId = eventId;
+        UserId = userId;
         Status = status;
         CreatedAt = createdAt;
         SeatsCount = seatsCount;
@@ -31,14 +33,15 @@ public class Booking
     /// </summary>
     /// <param name="status">Статус брони</param>    
     /// <param name="ev">событие</param>
+    /// <param name="user">пользователь</param>
     /// <param name="seatsCount">количество мест в брони</param>
     /// <param name="createdAt">Дата создания брони</param>
     [SetsRequiredMembers]
-    public Booking(BookingStatus status, Event ev, int seatsCount, DateTimeOffset createdAt) : this(status, ev.Id, seatsCount, createdAt)
+    public Booking(BookingStatus status, Event ev, User user, int seatsCount, DateTimeOffset createdAt) : this(status, ev.Id, user.Id, seatsCount, createdAt)
     {
-        Event = ev;        
+        Event = ev;
+        User = user;
     }
-
     private Booking() { }
 
     /// <summary>
@@ -75,6 +78,16 @@ public class Booking
     /// Событие
     /// </summary>
     public Event? Event { get; init; }
+
+    /// <summary>
+    /// Идентификатор пользователя
+    /// </summary>
+    public required Guid UserId { get; set; }
+
+    /// <summary>
+    /// Пользователь
+    /// </summary>
+    public User? User { get; set; }
     
     /// <summary>
     /// Подтвердить бронирование
@@ -85,6 +98,15 @@ public class Booking
         ProcessedAt = dateTime;
     }
 
+    /// <summary>
+    /// Отменить бронирование
+    /// </summary>
+    /// <param name="dateTime">Дата</param>
+    public void Cancel(DateTimeOffset dateTime)
+    {
+        Status = BookingStatus.Cancelled;
+        ProcessedAt = dateTime;
+    }
     /// <summary>
     /// Отклонить бронирование
     /// </summary>

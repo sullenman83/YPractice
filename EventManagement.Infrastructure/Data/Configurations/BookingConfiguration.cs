@@ -17,7 +17,7 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
     public void Configure(EntityTypeBuilder<Booking> builder)
     {
         builder.ToTable("bookings")            
-            .ToTable(t => t.HasCheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected', 'Processing')"))
+            .ToTable(t => t.HasCheckConstraint("chk_bookings_status", "status IN('Pending', 'Confirmed', 'Rejected', 'Cancelled')"))
             .ToTable(t => t.HasCheckConstraint("chk_bookings_seats_count", "seats_count > 0"))
             .HasKey(b => b.Id);
 
@@ -43,5 +43,9 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.HasOne(b => b.Event)
             .WithMany(e => e.Bookings)
             .HasForeignKey(b => b.EventId);
+
+        builder.HasOne(b => b.User)
+            .WithMany(b => b.Bookings)
+            .HasForeignKey(b => b.UserId);
     }
 }

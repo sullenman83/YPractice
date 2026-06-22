@@ -1,6 +1,7 @@
 ﻿using EventManagement.Application.Common.Exceptions;
 using EventManagement.Application.Interfaces.Repositories;
 using EventManagement.Domain.Models;
+using EventManagement.Infrastructure.Common;
 using EventManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -13,8 +14,6 @@ namespace EventManagement.Infrastructure.Services.BookingServices;
 /// </summary>
 public class BookingRepository(AppDbContext context, ILogger<BaseRepository<Booking>> logger) : BaseRepository<Booking>(context, logger), IBookingRepository<Booking>
 {
-    private const string LockRowError = "55P03";    
-
     ///<inheritdoc/>
     public async Task<IReadOnlyList<Booking>> GetPendingBookingsAsync(CancellationToken token)
     {
@@ -47,6 +46,7 @@ JOIN events e ON e.id = b.event_id
 WHERE b.id = {id}
 FOR UPDATE NOWAIT")
                 .Include(o => o.Event)
+                .Include(o => o.User)
                 .FirstOrDefaultAsync(token);
 
             return result;
@@ -57,10 +57,21 @@ FOR UPDATE NOWAIT")
             _logger.LogDebug(ex, message);
             
             if (ex.InnerException != null && ex.InnerException is PostgresException pex)
-                if ( pex.SqlState == LockRowError)
+                if ( pex.SqlState == DbErrorCodes.LockRowError)
                     throw new DbOperationWithBlockingRowException(message);
 
             throw new DbOperationException(message, ex);
         }
+    }
+
+    ///<inheritdoc/>
+    public async Task<List<Booking>> GetActiveUserBookingAsync(Guid userId, CancellationToken token = default)
+    {
+        var bookings = _context.Bookings
+            .Where(o => o.UserId == userId);
+
+        return await bookings.Where(o => o.Status == BookingStatus.Pending 
+            || o.Status == BookingStatus.Confirmed)
+            .ToListAsync();
     }
 }

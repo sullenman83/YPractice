@@ -1,8 +1,5 @@
 ﻿using EventManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Testcontainers.PostgreSql;
 
 namespace EventApi.IntegrationTest;
@@ -16,6 +13,7 @@ public class DatabaseFixture : IAsyncLifetime
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(_container.GetConnectionString())
+            .UseSnakeCaseNamingConvention()
             .Options;
             return new AppDbContext(options);
         }
@@ -35,6 +33,7 @@ public class DatabaseFixture : IAsyncLifetime
         await _container.StartAsync();
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(_container.GetConnectionString())
+            .UseSnakeCaseNamingConvention()
             .Options;
         using var context = new AppDbContext(options);
         await context.Database.EnsureDeletedAsync();
@@ -50,7 +49,7 @@ public class DatabaseFixture : IAsyncLifetime
     {
         await using var context = Context;
         await context.Database.ExecuteSqlRawAsync(
-"TRUNCATE TABLE bookings, events CASCADE"
+"TRUNCATE TABLE bookings, users, events CASCADE"
         );
     }
 }

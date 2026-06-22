@@ -38,14 +38,14 @@ public class BookingHandlerServiceTest : IClassFixture<DatabaseFixture>, IAsyncL
             options.PollingInterval = 1000;
         });
         _pipelineProvider = new Mock<ResiliencePipelineProvider<string>>();
-        _pipelineProvider.Setup(p => p.GetPipeline(Consts.CreateBookingRetry))
+        _pipelineProvider.Setup(p => p.GetPipeline(Consts.BackgroundBookingServiceRepeater))
             .Returns(ResiliencePipeline.Empty);
         serviceCollection.AddLogging(builder => builder.AddDebug());
         serviceCollection.AddScoped<IDateTimeProvider, DateTimeProvider>();
         serviceCollection.AddScoped<IBookingRepository<Booking>, BookingRepository>();
         serviceCollection.AddScoped<IBackgroundBookingService, BackgroundBookingService>();
         serviceCollection.AddScoped<ITransactionService, TransactionService>();
-        serviceCollection.AddScoped<ResiliencePipelineProvider<string>>(provider => _pipelineProvider.Object);
+        serviceCollection.AddScoped(provider => _pipelineProvider.Object);
         serviceCollection.AddScoped(provider =>
         {
             return _fixture.Context;
@@ -59,10 +59,12 @@ public class BookingHandlerServiceTest : IClassFixture<DatabaseFixture>, IAsyncL
     {
         // Arrange
         var ev = TestData.GetTestEvent();
+        var user = TestData.GetTestUser();
         await using var context = _fixture.Context;
         await context.Events.AddAsync(ev);
+        await context.Users.AddAsync(user);
         await context.SaveChangesAsync();
-        var booking = TestData.GetTestBooking(ev, _dateTimeProvider.GetUtcNow());
+        var booking = TestData.GetTestBooking(ev, user, _dateTimeProvider.GetUtcNow());
         await context.Bookings.AddAsync(booking);
         await context.SaveChangesAsync();
 
@@ -84,10 +86,12 @@ public class BookingHandlerServiceTest : IClassFixture<DatabaseFixture>, IAsyncL
         // Arrange
         var seatsCount = 2;
         var ev = TestData.GetTestEvent(seatsCount);
+        var user = TestData.GetTestUser();
         await using var context = _fixture.Context;
         await context.Events.AddAsync(ev);
+        await context.Users.AddAsync(user);
         await context.SaveChangesAsync();
-        var booking = new Booking(BookingStatus.Pending, ev.Id, seatsCount, _dateTimeProvider.GetUtcNow());
+        var booking = new Booking(BookingStatus.Pending, ev.Id, user.Id, seatsCount, _dateTimeProvider.GetUtcNow());
         var dateTimeProvider = new Mock<IDateTimeProvider>();
         dateTimeProvider.Setup(o => o.GetUtcNow()).Returns(_dateTimeProvider.GetUtcNow().AddMinutes(1));        
         await context.Bookings.AddAsync(booking);

@@ -10,6 +10,9 @@ namespace EventManagement.Infrastructure.Data;
 public class AppDbContext : DbContext
 {
 
+    /// <summary>
+    /// Конструктор
+    /// </summary>
     public AppDbContext() { }
 
     /// <summary>
@@ -30,6 +33,11 @@ public class AppDbContext : DbContext
     /// Коллекция бронирований
     /// </summary>
     public DbSet<Booking> Bookings => Set<Booking>();
+
+    /// <summary>
+    /// Коллекция пользователей
+    /// </summary>
+    public DbSet<User> Users => Set<User>();
 
     /// <summary>
     /// Создание модели
