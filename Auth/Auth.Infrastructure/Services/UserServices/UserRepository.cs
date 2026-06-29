@@ -1,11 +1,11 @@
-﻿using EventManagement.Application.Common.Exceptions;
+﻿using Auth.Infrastructure.Data;
+using EventManagement.Application.Common.Exceptions;
 using EventManagement.Application.Interfaces.Repositories;
 using EventManagement.Domain.Models;
-using EventManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace EventManagement.Infrastructure.Services.UserServices;
+namespace Auth.Infrastructure.Services.UserServices;
 
 
 /// <summary>

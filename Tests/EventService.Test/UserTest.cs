@@ -78,7 +78,7 @@ public class UserTest
         var login = "user";
         var passsword = "password";
         
-        _mockUserRepository.Setup(o => o.GetUserByLoginAsync(It.IsAny<string>())).Throws<InvalidCredentialsException>();
+        _mockUserRepository.Setup(o => o.GetUserByLoginAsync(It.IsAny<string>())).ReturnsAsync((string login, CancellationToken token) => null);
         
         var userService = new UserService(_mockUserRepository.Object, _mockPasswordHasher.Object, _mockTokenGenerator.Object, _logger);
 
@@ -100,7 +100,7 @@ public class UserTest
         var user = new User(login, passsword, UserRole.User);
 
         _mockUserRepository.Setup(o => o.GetUserByLoginAsync(It.IsAny<string>())).ReturnsAsync(user);
-        _mockPasswordHasher.Setup(o => o.VerifyPassword(It.IsAny<string>(), It.IsAny<string>())).Throws<InvalidCredentialsException>();
+        _mockPasswordHasher.Setup(o => o.VerifyPassword(It.IsAny<string>(), It.IsAny<string>())).Returns((string login, string password) => false);
         
 
         var userService = new UserService(_mockUserRepository.Object, _mockPasswordHasher.Object, _mockTokenGenerator.Object, _logger);

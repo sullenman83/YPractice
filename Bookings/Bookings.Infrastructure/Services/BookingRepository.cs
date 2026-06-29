@@ -1,13 +1,13 @@
-﻿using EventManagement.Application.Common.Exceptions;
+﻿using Bookings.Infrastructure.Data;
+using EventManagement.Application.Common.Exceptions;
 using EventManagement.Application.Interfaces.Repositories;
 using EventManagement.Domain.Models;
 using EventManagement.Infrastructure.Common;
-using EventManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 
-namespace EventManagement.Infrastructure.Services.BookingServices;
+namespace Bookings.Infrastructure.Services;
 
 /// <summary>
 /// Класс хранения заявок на бронь

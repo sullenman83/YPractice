@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
-namespace EventManagement.Infrastructure.Data;
+namespace Events.Infrastructure.Data;
 
 /// <summary>
 /// Контекст базы данных
