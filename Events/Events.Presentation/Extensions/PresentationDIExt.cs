@@ -1,5 +1,5 @@
-﻿using EventManagement.Application.Common.AppSettings;
-using EventManagement.Infrastructure.Common;
+﻿using CommonServiceCollectionExtensions;
+using EventManagement.Application.Common.AppSettings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;

@@ -1,7 +1,9 @@
 ﻿
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.Security;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace CommonMiddleware;
@@ -43,7 +45,7 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
             return;
         }
 
-        var statusCode = GetStatusCode(ex);
+        var statusCode = GetStatusCode(ex) ?? StatusCodes.Status500InternalServerError;
 
         httpContext.Response.StatusCode = statusCode;
         httpContext.Response.ContentType = "application/json";
