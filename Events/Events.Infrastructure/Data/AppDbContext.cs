@@ -1,6 +1,5 @@
-﻿using EventManagement.Domain.Models;
+﻿using Events.Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace Events.Infrastructure.Data;
 
@@ -9,7 +8,6 @@ namespace Events.Infrastructure.Data;
 /// </summary>
 public class AppDbContext : DbContext
 {
-
     /// <summary>
     /// Конструктор
     /// </summary>
@@ -28,16 +26,6 @@ public class AppDbContext : DbContext
     /// Коллекция событий`
     /// </summary>
     public DbSet<Event> Events => Set<Event>();
-
-    /// <summary>
-    /// Коллекция бронирований
-    /// </summary>
-    public DbSet<Booking> Bookings => Set<Booking>();
-
-    /// <summary>
-    /// Коллекция пользователей
-    /// </summary>
-    public DbSet<User> Users => Set<User>();
 
     /// <summary>
     /// Создание модели

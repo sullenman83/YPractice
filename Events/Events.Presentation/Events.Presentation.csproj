@@ -7,12 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.4" />
+    <ProjectReference Include="..\..\Common\CommonMiddleware\CommonMiddleware.csproj" />
+    <ProjectReference Include="..\..\Common\CommonServiceCollectionExtensions\CommonServiceCollectionExtensions.csproj" />
+    <ProjectReference Include="..\Events.Application\Events.Application.csproj" />
+    <ProjectReference Include="..\Events.Infrastructure\Events.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Events.Application\Events.Application.csproj" />
-    <ProjectReference Include="..\Events.Infrastructure\Events.Infrastructure.csproj" />
+    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>

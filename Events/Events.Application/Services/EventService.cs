@@ -9,10 +9,10 @@ namespace Events.Application.Services;
 /// <summary>
 /// Сервис для работы с событиями
 /// </summary>
-public class EventService(IEventValidator eventValidator, IEventRepository<Event> eventRepository) : IEventService
+public class EventService(IEventValidator eventValidator, IEventRepository eventRepository) : IEventService
 {
     private readonly IEventValidator _eventValidator = eventValidator;
-    private readonly IEventRepository<Event> _eventRepository = eventRepository;
+    private readonly IEventRepository _eventRepository = eventRepository;
 
     /// <summary>
     /// Создать событие

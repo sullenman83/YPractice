@@ -1,4 +1,4 @@
-﻿using EventManagement.Domain.Models;
+﻿using Events.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -45,12 +45,7 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
 
         builder.Property(p => p.AvailableSeats)
             .IsRequired();
-
-        builder.HasMany(e => e.Bookings)
-            .WithOne(b => b.Event)
-            .HasForeignKey(k => k.EventId)
-            .OnDelete(DeleteBehavior.Cascade);
-
+        
         builder.HasIndex(e => e.Title);
         builder.HasIndex(e => e.StartAt);
         builder.HasIndex(e => e.EndAt);

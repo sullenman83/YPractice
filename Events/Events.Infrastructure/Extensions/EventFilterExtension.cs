@@ -1,5 +1,5 @@
-﻿using EventManagement.Domain.Models;
-using Events.Application.Models.FilterModels;
+﻿using Events.Application.Models.FilterModels;
+using Events.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Events.Infrastructure.Extensions;

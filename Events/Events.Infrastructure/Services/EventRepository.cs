@@ -1,10 +1,10 @@
 ﻿using EventManagement.Application.Common.Exceptions;
-using EventManagement.Application.Interfaces.Repositories;
-using EventManagement.Application.Models.Events;
-using EventManagement.Application.Models.Events.Extensions;
-using EventManagement.Domain.Models;
-using EventManagement.Infrastructure.Common;
+using Events.Application.Interfaces;
+using Events.Application.Models;
+using Events.Application.Models.Extensions;
 using Events.Application.Models.FilterModels;
+using Events.Domain.Models;
+using Events.Infrastructure.Common;
 using Events.Infrastructure.Data;
 using Events.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -16,8 +16,109 @@ namespace Events.Infrastructure.Services;
 /// <summary>
 /// Хранилище данных
 /// </summary>
-public class EventRepository(AppDbContext context, ILogger<BaseRepository<Event>> logger) : BaseRepository<Event>(context, logger), IEventRepository<Event>
+public class EventRepository(AppDbContext context, ILogger<EventRepository> logger): IEventRepository
 {
+    private readonly AppDbContext _context = context;
+    private readonly ILogger<EventRepository> _logger = logger;
+
+    public async Task<Event> AddAsync(Event ev, CancellationToken token = default)
+    {
+        try
+        {
+            await _context.Events.AddAsync(ev, token);
+            await _context.SaveChangesAsync(token);
+
+            return ev;
+        }
+        catch (Exception ex)
+        {
+            var message = "Ошибка добавления события в БД";
+            _logger.LogDebug(message, ex);
+            throw new DbOperationException(message);
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken token = default)
+    {
+        try
+        {
+            var ev = await _context.Events.FirstOrDefaultAsync(o => o.Id == id, token);
+            if (ev == null)
+                return false;
+            _context.Remove(ev);
+            await _context.SaveChangesAsync(token);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            var message = $"Ошибка удаления события {id} из БД";
+            _logger.LogDebug(message, ex);
+            throw new DbOperationException(message);
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<Event?> GetByIdAsync(Guid id, CancellationToken token = default)
+    {
+        try
+        {
+            return await _context.Events.FirstOrDefaultAsync(o => o.Id == id, token);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Ошибка получения события по Id = {id}";
+            _logger.LogDebug(message, ex);
+            throw new DbOperationException(message);
+        }
+    }
+
+    ///// <inheritdoc/>
+    //public async Task<IReadOnlyList<Event>> GetAllAsync(CancellationToken token = default)
+    //{
+    //    try
+    //    {
+    //        return await _context.Events.ToListAsync(token);
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        var message = "Ошибка чтения событий.";
+    //        _logger.LogDebug(message, ex);
+    //        throw new DbOperationException(message);
+    //    }
+    //}
+
+    ///// <inheritdoc/>
+    //public async Task<int> GetCountAsync(CancellationToken token = default)
+    //{
+    //    try
+    //    {
+    //        return await _context.Events.CountAsync(token);
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        var message = "Ошибка получения количества событий.";
+    //        _logger.LogDebug(message, ex);
+    //        throw new DbOperationException(message);
+    //    }
+    //}
+
+    /// <inheritdoc/>
+    public async Task SaveChangesAsync(CancellationToken token = default)
+    {
+        try
+        {
+            await _context.SaveChangesAsync(token);
+        }
+        catch (Exception ex)
+        {
+            var message = "Ошибка сохранения.";
+            _logger.LogDebug(message, ex);
+            throw new DbOperationException(message);
+        }
+    }
+
     ///<inheritdoc/>
     public async Task<PaginatedResultDTO> GetEventsByFilterAsync(EventFilterRequestDTO filter, CancellationToken token)
     {
