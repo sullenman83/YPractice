@@ -16,8 +16,8 @@
     <Project Path="Common/CommonServiceCollectionExtensions/CommonServiceCollectionExtensions.csproj" Id="68be25aa-d129-46c9-a534-0ff022b3d50b" />
   </Folder>
   <Folder Name="/Common/DateTimeProvider/">
-    <Project Path="Common/DateTimeProvider/DateTimeProvider.Abstractions/DateTimeProvider.Abstractions.csproj" Id="9e7c24f4-6d47-4481-ae2a-c10b588f5a27" />
-    <Project Path="Common/DateTimeProvider/DateTimeProvider.Core/DateTimeProvider.Core.csproj" Id="a8a350a7-0878-4cff-bffe-e4712280c816" />
+    <Project Path="Common/DateTimeProvider/DateTimeProvider.Abstractions/DateTimeMamager.Abstractions.csproj" Id="9e7c24f4-6d47-4481-ae2a-c10b588f5a27" />
+    <Project Path="Common/DateTimeProvider/DateTimeProvider.Core/DateTimeManager.Core.csproj" Id="a8a350a7-0878-4cff-bffe-e4712280c816" />
   </Folder>
   <Folder Name="/Events/">
     <Project Path="Events/Events.Application/Events.Application.csproj" Id="ff8f7547-d562-41ba-ae97-0d4637e78b22" />

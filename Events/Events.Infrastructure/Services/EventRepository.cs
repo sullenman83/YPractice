@@ -1,5 +1,5 @@
-﻿using EventManagement.Application.Common.Exceptions;
-using Events.Application.Interfaces;
+﻿using Events.Application.Interfaces;
+using Events.Application;
 using Events.Application.Models;
 using Events.Application.Models.Extensions;
 using Events.Application.Models.FilterModels;
@@ -10,6 +10,7 @@ using Events.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using Events.Application.Exceptions;
 
 namespace Events.Infrastructure.Services;
 
@@ -21,6 +22,7 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
     private readonly AppDbContext _context = context;
     private readonly ILogger<EventRepository> _logger = logger;
 
+    /// <inheritdoc/>
     public async Task<Event> AddAsync(Event ev, CancellationToken token = default)
     {
         try

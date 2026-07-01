@@ -1,4 +1,4 @@
-﻿using EventManagement.Domain.Models;
+﻿using Auth.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
@@ -23,16 +23,6 @@ public class AppDbContext : DbContext
     {
 
     }
-
-    /// <summary>
-    /// Коллекция событий`
-    /// </summary>
-    public DbSet<Event> Events => Set<Event>();
-
-    /// <summary>
-    /// Коллекция бронирований
-    /// </summary>
-    public DbSet<Booking> Bookings => Set<Booking>();
 
     /// <summary>
     /// Коллекция пользователей

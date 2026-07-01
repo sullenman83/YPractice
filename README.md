@@ -298,3 +298,19 @@ dotnet run --project EventManagement.Presentation\EventManagement.Presentation.c
 
 ## Запуск осуществляется из директории репозитория командой 
 dotnet test
+
+
+
+
+
+events 
+
+dotnet ef migrations add Initial --project Events.Infrastructure.csproj --startup-project ..\Events.Presentation\Events.Presentation.csproj
+
+dotnet ef database update --project Events.Infrastructure.csproj --startup-project ..\Events.Presentation\Events.Presentation.csproj
+
+
+auth
+dotnet ef migrations add Initial --project Auth.Infrastructure.csproj --startup-project ..\Auth.Presentation\Auth.Presentation.csproj
+
+dotnet ef database update --project Auth.Infrastructure.csproj --startup-project ..\Auth.Presentation\Auth.Presentation.csproj

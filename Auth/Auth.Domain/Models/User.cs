@@ -46,9 +46,4 @@ public class User
     /// Роль пользователя
     /// </summary>
     public required UserRole Role { get; init; }
-
-    /// <summary>
-    /// Список бронирований
-    /// </summary>
-    public List<Booking>? Bookings{ get; set; }
 }

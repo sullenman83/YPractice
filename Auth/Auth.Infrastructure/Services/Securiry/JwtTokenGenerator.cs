@@ -1,7 +1,7 @@
 ﻿using Auth.Application.Interfaces.Security;
 using Auth.Application.Models;
 using Auth.Infrastructure.Common;
-using EventManagement.Application.Interfaces;
+using DateTimeManager.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;

@@ -1,4 +1,5 @@
-﻿using EventManagement.Domain.Models;
+﻿
+using Auth.Domain.Models;
 
 namespace Auth.Application.Models.UserModels.Extensions;
 

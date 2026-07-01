@@ -1,4 +1,4 @@
-﻿using EventManagement.Application.Interfaces;
+﻿using Auth.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 

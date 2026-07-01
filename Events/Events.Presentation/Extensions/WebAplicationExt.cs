@@ -1,7 +1,7 @@
 ﻿using Events.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventManagement.Presentation.Extensions;
+namespace Events.Presentation.Extensions;
 
 /// <summary>
 /// расширение для WebAplication

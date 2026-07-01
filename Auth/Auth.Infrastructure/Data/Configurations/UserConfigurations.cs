@@ -1,9 +1,6 @@
-﻿using EventManagement.Domain.Models;
+﻿using Auth.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Auth.Infrastructure.Data.Configurations;
 
@@ -34,10 +31,5 @@ internal class UserConfigurations : IEntityTypeConfiguration<User>
 
         builder.HasIndex(x => x.Login)
             .IsUnique();
-
-        builder.HasMany(o => o.Bookings)
-            .WithOne(o => o.User)
-            .HasForeignKey(o => o.UserId);
-
     }
 }

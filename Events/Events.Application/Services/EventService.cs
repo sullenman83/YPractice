@@ -1,4 +1,5 @@
-﻿using Events.Application.Interfaces;
+﻿using Events.Application.Exceptions;
+using Events.Application.Interfaces;
 using Events.Application.Models;
 using Events.Application.Models.Extensions;
 using Events.Application.Models.FilterModels;

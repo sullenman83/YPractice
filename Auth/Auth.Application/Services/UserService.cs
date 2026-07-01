@@ -1,12 +1,11 @@
-﻿using Auth.Application.Interfaces.Security;
+﻿using Auth.Application.Interfaces.Repositories;
+using Auth.Application.Interfaces.Security;
+using Auth.Application.Interfaces.Services;
+using Auth.Application.Models;
 using Auth.Application.Models.UserModels;
 using Auth.Application.Models.UserModels.Extensions;
-using EventManagement.Application.Common.Exceptions;
-using EventManagement.Application.Interfaces.Repositories;
-using EventManagement.Application.Interfaces.Services;
-using EventManagement.Application.Models;
-using EventManagement.Domain.Exceptions;
-using EventManagement.Domain.Models;
+using Auth.Domain.Exceptions;
+using Auth.Domain.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Auth.Application.Services;

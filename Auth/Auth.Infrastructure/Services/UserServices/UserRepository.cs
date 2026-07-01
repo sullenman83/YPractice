@@ -1,7 +1,7 @@
-﻿using Auth.Infrastructure.Data;
-using EventManagement.Application.Common.Exceptions;
-using EventManagement.Application.Interfaces.Repositories;
-using EventManagement.Domain.Models;
+﻿using Auth.Application.Exceptions;
+using Auth.Application.Interfaces.Repositories;
+using Auth.Domain.Models;
+using Auth.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -20,7 +20,7 @@ public class UserRepository(AppDbContext context, ILogger<UserRepository> logger
 
     ///<inheritdoc/>
     ///<exception cref="DbOperationException">Ошибка при работе с базой данных</exception>
-    public async Task<User> AddUserAsync(User user, CancellationToken token)
+    public async Task<User> AddUserAsync(User user, CancellationToken token = default)
     {
         try
         {
@@ -39,7 +39,7 @@ public class UserRepository(AppDbContext context, ILogger<UserRepository> logger
 
     ///<inheritdoc/>
     ///<exception cref="DbOperationException">Ошибка при работе с базой данных</exception>
-    public async Task<User?> GetUserByLoginAsync(string login, CancellationToken token)
+    public async Task<User?> GetUserByLoginAsync(string login, CancellationToken token= default)
     {
         try
         {
@@ -51,5 +51,5 @@ public class UserRepository(AppDbContext context, ILogger<UserRepository> logger
             _logger.LogDebug(message, ex);
             throw new DbOperationException(message);
         }
-    }
+    }    
 }

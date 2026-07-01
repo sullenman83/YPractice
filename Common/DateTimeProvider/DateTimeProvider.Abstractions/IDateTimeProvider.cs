@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DateTimeProvider.Abstractions
+namespace DateTimeManager.Abstractions
 {
     public interface IDateTimeProvider
     {

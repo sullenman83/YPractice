@@ -1,6 +1,6 @@
-﻿using EventManagement.Presentation.Middleware;
+﻿using Events.Presentation.Middleware;
 
-namespace EventManagement.Presentation.Extensions.Middleware;
+namespace Events.Presentation.Extensions.Middleware;
 
 /// <summary>
 /// Расширение для добавления промежуточного по в конвеер
@@ -14,6 +14,6 @@ public static class GlobalExceptionHandlingMiddlewareExtensions
     /// <returns>экземпляр IapplicationBuilder</returns>
     public static IApplicationBuilder UseGlobalExceptionHandling(this IApplicationBuilder builder)
     {
-        return builder.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+        return builder.UseMiddleware<EventGlobalExceptionHandlingMiddleware>();
     }
 }

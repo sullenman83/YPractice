@@ -46,7 +46,6 @@ public static  class InfrastructureDIExt
             });
         }
         services.AddScoped<IEventRepository, EventRepository>();
-        //services.AddScoped<IDateTimeProvider, DateTimeProvider>();
         
         return services;
     }

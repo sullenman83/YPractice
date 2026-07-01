@@ -1,4 +1,5 @@
 ﻿using CommonMiddleware;
+using Events.Domain.Exceptions;
 
 namespace Events.Presentation.Middleware;
 
@@ -9,7 +10,17 @@ public class EventGlobalExceptionHandlingMiddleware: GlobalExceptionHandlingMidd
 
     protected override int? GetStatusCode(Exception ex)
     {
-        if (var res = base.GetStatusCode(ex) == null)
+        var code = base.GetStatusCode(ex);
+        if (code != null)
+            return code;
 
+        return ex switch
+        {
+            NoAvailableSeatsException nae => StatusCodes.Status409Conflict,
+            EventValidationException eve => StatusCodes.Status400BadRequest,
+            NotFoundException nfe => StatusCodes.Status404NotFound,
+
+            _ => StatusCodes.Status500InternalServerError
+        };
     }
 }

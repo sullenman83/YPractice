@@ -1,4 +1,4 @@
-﻿using EventManagement.Domain.Models;
+﻿using Auth.Domain.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace Auth.Application.Models.UserModels;
