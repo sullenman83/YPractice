@@ -1,8 +1,8 @@
-﻿using Bookings.Application.Interfaces.BookingServices;
-using EventManagement.Application.Common.AppSettings;
-using EventManagement.Application.Interfaces;
-using EventManagement.Domain.Exceptions;
-using EventManagement.Domain.Models;
+﻿using Bookings.Application.AppSettings;
+using Bookings.Application.Exceptions;
+using Bookings.Application.Interfaces.BookingServices;
+using Bookings.Domain.Models;
+using DateTimeManager.Abstractions;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;

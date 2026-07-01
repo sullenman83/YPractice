@@ -1,13 +1,11 @@
-﻿using Bookings.Application.Interfaces;
+﻿using Bookings.Application.Common;
+using Bookings.Application.Interfaces;
 using Bookings.Application.Interfaces.BookingServices;
 using Bookings.Application.Models;
 using Bookings.Application.Models.Extensions;
-using EventManagement.Application.Common;
-using EventManagement.Application.Common.Exceptions;
-using EventManagement.Application.Interfaces;
-using EventManagement.Application.Interfaces.Services;
-using EventManagement.Domain.Exceptions;
-using EventManagement.Domain.Models;
+using Bookings.Domain.Exceptions;
+using Bookings.Domain.Models;
+using DateTimeManager.Abstractions;
 using Polly;
 using Polly.Registry;
 
@@ -16,17 +14,14 @@ namespace Bookings.Application.Services;
 /// <summary>
 /// Сервис для работы с заявками бронирования событий
 /// </summary>
-public class BookingService(IBookingRepository<Booking> bookingRepository
-    , IEventRepository<Event> eventRepoository
-    , ITransactionService transactionService
+public class BookingService(IBookingRepository<Booking> bookingRepository    
+    //, ITransactionService transactionService
     , IDateTimeProvider dateTimeProvider
     , IBookingValidator bookingValidator
     , ICurrentUserService currentUserService
     , ResiliencePipelineProvider<string> pipelineProvider) :IBookingService
 {
-    private readonly IBookingRepository<Booking> _bookingRepository = bookingRepository;
-    private readonly IEventRepository<Event> _eventRepository = eventRepoository;
-    private readonly ITransactionService _transactionService = transactionService;
+    private readonly IBookingRepository<Booking> _bookingRepository = bookingRepository;    
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
     private readonly IBookingValidator _bookingValidator = bookingValidator;
     private readonly ICurrentUserService _currentUserService = currentUserService;
@@ -41,29 +36,30 @@ public class BookingService(IBookingRepository<Booking> bookingRepository
     /// <exception cref="PastEventBookingException">Событие уже началось</exception>
     public async Task<BookingResponseDTO> CreateBookingAsync(Guid eventId, Guid userId, int seatsCount, CancellationToken token)
     {
-        token.ThrowIfCancellationRequested();
+        return null;
+        //token.ThrowIfCancellationRequested();
 
-        await ValidateBookingAsync(eventId, userId, token);
+        //await ValidateBookingAsync(eventId, userId, token);
 
-        var booking = new Booking(BookingStatus.Pending, eventId, userId, seatsCount, _dateTimeProvider.GetUtcNow());
-        return await _resiliencePipeline.ExecuteAsync(async token =>
-        {
-            await using var tr = await _transactionService.BeginTransactionAsync(token);
+        //var booking = new Booking(BookingStatus.Pending, eventId, userId, seatsCount, _dateTimeProvider.GetUtcNow());
+        //return await _resiliencePipeline.ExecuteAsync(async token =>
+        //{
+        //    await using var tr = await _transactionService.BeginTransactionAsync(token);
 
-            var ev = await _eventRepository.GetEventWithBlockingAsync(eventId, token);
-            if (ev == null)
-                throw new NotFoundException($"Событие с id {eventId} не найдено в базе данных.");
+        //    var ev = await _eventRepository.GetEventWithBlockingAsync(eventId, token);
+        //    if (ev == null)
+        //        throw new NotFoundException($"Событие с id {eventId} не найдено в базе данных.");
 
-            if (!ev.TryReserveSeats(seatsCount))
-                throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
+        //    if (!ev.TryReserveSeats(seatsCount))
+        //        throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
 
 
-            await _bookingRepository.AddAsync(booking, token);
-            await _eventRepository.SaveChangesAsync(token);
-            await tr.CommitAsync();
+        //    await _bookingRepository.AddAsync(booking, token);
+        //    await _eventRepository.SaveChangesAsync(token);
+        //    await tr.CommitAsync();
 
-            return booking.ToResponse();
-        });
+        //    return booking.ToResponse();
+        //});
     }
 
     ///<inheritdoc/>

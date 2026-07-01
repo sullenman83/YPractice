@@ -1,11 +1,12 @@
-﻿using EventManagement.Domain.Models;
+﻿using Bookings.Domain.Models;
+
 
 namespace Bookings.Application.Interfaces;
 
 /// <summary>
 /// Интерфейс хранилища бронирований событий
 /// </summary>
-public interface IBookingRepository<T> :IBaseRepository<T>
+public interface IBookingRepository<T>
 {
     /// <summary>
     /// Получить брони в обработке

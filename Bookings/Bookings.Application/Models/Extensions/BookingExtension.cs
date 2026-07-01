@@ -1,4 +1,4 @@
-﻿using EventManagement.Domain.Models;
+﻿using Bookings.Domain.Models;
 
 namespace Bookings.Application.Models.Extensions;
 

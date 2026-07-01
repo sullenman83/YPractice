@@ -1,9 +1,5 @@
 ﻿using Bookings.Application.Interfaces;
-using EventManagement.Application.Common;
-using EventManagement.Application.Interfaces;
-using EventManagement.Application.Interfaces.Services;
-using EventManagement.Domain.Exceptions;
-using EventManagement.Domain.Models;
+using Bookings.Domain.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -14,61 +10,61 @@ namespace Bookings.Application.Services;
 /// <summary>
 /// Сервис обработки событий
 /// </summary>
-public class BackgroundBookingService(IServiceScopeFactory serviceFactory, 
-    ILogger<BackgroundBookingService> logger,
-    ResiliencePipelineProvider<string> pipelineProvider
-    ) : IBackgroundBookingService
-{
-    private readonly IServiceScopeFactory _serviceFactory = serviceFactory;
-    private readonly ILogger<BackgroundBookingService> _logger = logger;
-    private readonly ResiliencePipeline _pipeline = pipelineProvider.GetPipeline(Consts.BackgroundBookingServiceRepeater);
+//public class BackgroundBookingService(IServiceScopeFactory serviceFactory, 
+//    ILogger<BackgroundBookingService> logger,
+//    ResiliencePipelineProvider<string> pipelineProvider
+//    ) : IBackgroundBookingService
+//{
+//    private readonly IServiceScopeFactory _serviceFactory = serviceFactory;
+//    private readonly ILogger<BackgroundBookingService> _logger = logger;
+//    private readonly ResiliencePipeline _pipeline = pipelineProvider.GetPipeline(Consts.BackgroundBookingServiceRepeater);
 
-    /// <inheritdoc/>
-    public async Task ConfirmBookingAsync(Guid id, CancellationToken token)
-    {
-        await _pipeline.ExecuteAsync(async token =>
-        {
-            await using var scope = _serviceFactory.CreateAsyncScope();
-            var repository = scope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
-            var transactionService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
-            var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
+//    /// <inheritdoc/>
+//    public async Task ConfirmBookingAsync(Guid id, CancellationToken token)
+//    {
+//        await _pipeline.ExecuteAsync(async token =>
+//        {
+//            await using var scope = _serviceFactory.CreateAsyncScope();
+//            var repository = scope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
+//            var transactionService = scope.ServiceProvider.GetRequiredService<ITransa`ctionService>();
+//            var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
 
-            await using var transaction = await transactionService.BeginTransactionAsync(token);
+//            await using var transaction = await transactionService.BeginTransactionAsync(token);
 
-            var booking = await repository.GetBookingWithBlockingAsync(id, token);
+//            var booking = await repository.GetBookingWithBlockingAsync(id, token);
 
-            if (booking == null)
-                throw new NotFoundException($"Не найдено бронирование с id {id}");
-            if (booking.Event == null)
-                throw new InvalidOperationException("Непредвиденная ошибка при получении бронирования. Не найдено событие.");
+//            if (booking == null)
+//                throw new NotFoundException($"Не найдено бронирование с id {id}");
+//            if (booking.Event == null)
+//                throw new InvalidOperationException("Непредвиденная ошибка при получении бронирования. Не найдено событие.");
                         
-            booking.Confirm(dateTimeProvider.GetUtcNow());
+//            booking.Confirm(dateTimeProvider.GetUtcNow());
             
-            await repository.SaveChangesAsync(token);
-            await transaction.CommitAsync(token);
-        });
-    }
+//            await repository.SaveChangesAsync(token);
+//            await transaction.CommitAsync(token);
+//        });
+//    }
 
-    /// <inheritdoc/>
-    public async Task RejectBookingAsync(Guid id, CancellationToken token)
-    {
-        await using var scope = _serviceFactory.CreateAsyncScope();
-        var repository = scope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
-        var transactionService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
-        var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();        
-        await using var tr = await transactionService.BeginTransactionAsync(token);
+//    /// <inheritdoc/>
+//    public async Task RejectBookingAsync(Guid id, CancellationToken token)
+//    {
+//        await using var scope = _serviceFactory.CreateAsyncScope();
+//        var repository = scope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
+//        var transactionService = scope.ServiceProvider.GetRequiredService<ITransactionService>();
+//        var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();        
+//        await using var tr = await transactionService.BeginTransactionAsync(token);
         
-        var booking = await repository.GetBookingWithBlockingAsync(id, token);
+//        var booking = await repository.GetBookingWithBlockingAsync(id, token);
 
-        if (booking != null)
-        {
-            if (booking.Event == null)
-                throw new InvalidOperationException("Непредвиденная ошибка при получении бронирования. Не найдено событие.");
+//        if (booking != null)
+//        {
+//            if (booking.Event == null)
+//                throw new InvalidOperationException("Непредвиденная ошибка при получении бронирования. Не найдено событие.");
 
-            booking.Reject(dateTimeProvider.GetUtcNow());
-            booking.Event.ReleaseSeats(booking.SeatsCount);           
-            await repository.SaveChangesAsync(token);
-            await tr.CommitAsync(token);
-        }
-    }
-}
+//            booking.Reject(dateTimeProvider.GetUtcNow());
+//            booking.Event.ReleaseSeats(booking.SeatsCount);           
+//            await repository.SaveChangesAsync(token);
+//            await tr.CommitAsync(token);
+//        }
+//    }
+//}

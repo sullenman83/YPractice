@@ -1,9 +1,7 @@
-﻿using Bookings.Application.Interfaces;
-using EventManagement.Application.Common.AppSettings;
-using EventManagement.Application.Common.Exceptions;
-using EventManagement.Application.Interfaces;
-using EventManagement.Application.Interfaces.Services;
-using EventManagement.Domain.Models;
+﻿using Bookings.Application.AppSettings;
+using Bookings.Application.Interfaces;
+using Bookings.Domain.Models;
+using DateTimeManager.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -61,28 +59,28 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
 
     private async Task ProcessBookingAsync(Guid id, CancellationToken stoppingToken)
     {        
-        try
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(_bookingHandlerSettings.ProcessingDelay), stoppingToken);
+        //try
+        //{
+        //    await Task.Delay(TimeSpan.FromMilliseconds(_bookingHandlerSettings.ProcessingDelay), stoppingToken);
 
-            await using var scope =  _serviceFactory.CreateAsyncScope();
-            var service = scope.ServiceProvider.GetRequiredService<IBackgroundBookingService>();
-            var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
-            await service.ConfirmBookingAsync(id, stoppingToken);
+        //    await using var scope =  _serviceFactory.CreateAsyncScope();
+        //    var service = scope.ServiceProvider.GetRequiredService<IBackgroundBookingService>();
+        //    var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
+        //    await service.ConfirmBookingAsync(id, stoppingToken);
 
-            _logger.LogInformation($"Бронирование с id {id} обработано в {dateTimeProvider.GetUtcNow()}.");
-        }
-        catch(DbOperationWithBlockingRowException)
-        {
-            throw;
-        }
-        catch
-        {
-            await using var scope = _serviceFactory.CreateAsyncScope();
-            var service = scope.ServiceProvider.GetRequiredService<IBackgroundBookingService>();
-            await service.RejectBookingAsync(id, stoppingToken);
+        //    _logger.LogInformation($"Бронирование с id {id} обработано в {dateTimeProvider.GetUtcNow()}.");
+        //}
+        //catch(DbOperationWithBlockingRowException)
+        //{
+        //    throw;
+        //}
+        //catch
+        //{
+        //    await using var scope = _serviceFactory.CreateAsyncScope();
+        //    var service = scope.ServiceProvider.GetRequiredService<IBackgroundBookingService>();
+        //    await service.RejectBookingAsync(id, stoppingToken);
                 
-            throw;
-        }        
+        //    throw;
+        //}        
     }
 }
