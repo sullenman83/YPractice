@@ -1,4 +1,5 @@
 ﻿using Events.Application.Models;
+using Events.Domain.Exceptions;
 
 namespace Events.Application.Interfaces;
 

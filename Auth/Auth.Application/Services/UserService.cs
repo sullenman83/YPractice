@@ -1,4 +1,5 @@
-﻿using Auth.Application.Interfaces.Repositories;
+﻿using Auth.Application.Exceptions;
+using Auth.Application.Interfaces.Repositories;
 using Auth.Application.Interfaces.Security;
 using Auth.Application.Interfaces.Services;
 using Auth.Application.Models;

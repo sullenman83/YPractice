@@ -1,25 +1,25 @@
 ﻿namespace Bookings.Application.Exceptions;
 
 /// <summary>
-/// Класс исключение для генерации в случае превышения лимита активных броней
+/// Класс исключение для генерации при возникновении ошибок операций БД 
 /// </summary>
-public class ActiveBookingLimitException: Exception
+public class DbOperationException : Exception
 {
     /// <summary>
     /// Конструктор
     /// </summary>
-    public ActiveBookingLimitException() : base() { }
+    public DbOperationException() : base() { }
 
     /// <summary>
     /// Конструктор
     /// </summary>
     /// <param name="message">Сообщение об ошибке</param>
-    public ActiveBookingLimitException(string message) : base(message) { }
+    public DbOperationException(string message) : base(message) { }
 
     /// <summary>
     /// Конструктор
     /// </summary>
     /// <param name="message">Сообщение об ошибке</param>
     /// <param name="inner">Обеъкт исключения</param>
-    public ActiveBookingLimitException(string message, Exception inner) : base(message, inner) { }
+    public DbOperationException(string message, Exception inner) : base(message, inner) { }
 }

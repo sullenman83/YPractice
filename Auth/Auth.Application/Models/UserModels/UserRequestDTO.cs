@@ -1,5 +1,6 @@
 ﻿using Auth.Domain.Models;
 using System.ComponentModel.DataAnnotations;
+using UserRooles;
 
 namespace Auth.Application.Models.UserModels;
 

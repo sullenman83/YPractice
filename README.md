@@ -314,3 +314,9 @@ auth
 dotnet ef migrations add Initial --project Auth.Infrastructure.csproj --startup-project ..\Auth.Presentation\Auth.Presentation.csproj
 
 dotnet ef database update --project Auth.Infrastructure.csproj --startup-project ..\Auth.Presentation\Auth.Presentation.csproj
+
+bookings
+
+dotnet ef migrations add Initial --project Bookings.Infrastructure.csproj --startup-project ..\Bookings.Presentation\Bookings.Presentation.csproj
+
+dotnet ef database update --project Bookings.Infrastructure.csproj --startup-project ..\Bookings.Presentation\Bookings.Presentation.csproj

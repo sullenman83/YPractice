@@ -1,4 +1,5 @@
 ﻿using Bookings.Domain.Models;
+using Microsoft.Extensions.Logging;
 
 
 namespace Bookings.Application.Interfaces;
@@ -6,8 +7,24 @@ namespace Bookings.Application.Interfaces;
 /// <summary>
 /// Интерфейс хранилища бронирований событий
 /// </summary>
-public interface IBookingRepository<T>
+public interface IBookingRepository
 {
+    /// <summary>
+    /// Получить бронирование по id
+    /// </summary>
+    /// <param name="id">id бронирования</param>
+    /// <param name="token">токен отмены</param>
+    /// <returns>Бронирование</returns>
+    Task<Booking?> GetByIdAsync(Guid id, CancellationToken token = default);
+
+    /// <summary>
+    /// Добавить бронироние
+    /// </summary>
+    /// <param name="booking">Бронирование</param>
+    /// <param name="token">токен отмены</param>
+    /// <returns>Сохраненное бронирование</returns>
+    Task<Booking> AddAsync(Booking booking, CancellationToken token = default);
+
     /// <summary>
     /// Получить брони в обработке
     /// </summary>
@@ -31,4 +48,10 @@ public interface IBookingRepository<T>
     /// <param name="token">Токен отмены</param>
     /// <returns>Список бронирований</returns>
     Task<List<Booking>> GetActiveUserBookingAsync(Guid userId, CancellationToken token = default);
+
+    /// <summary>
+    /// Сохранить данные
+    /// </summary>
+    /// <param name="token">токен отмены</param>
+    Task SaveChangesAsync(CancellationToken token = default);
 }

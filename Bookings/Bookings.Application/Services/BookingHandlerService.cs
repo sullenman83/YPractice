@@ -33,7 +33,7 @@ public class BookingHandlerService(ILogger<BackgroundService> logger, IServiceSc
             try
             {
                 await using var scope = _serviceFactory.CreateAsyncScope();                
-                var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository<Booking>>();
+                var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
                 var ids = (await bookingRepository.GetPendingBookingsAsync(stoppingToken))
                     .Select(o => o.Id)
                     .ToList();               

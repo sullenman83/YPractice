@@ -1,4 +1,4 @@
-﻿namespace Auth.Domain.Models;
+﻿namespace UserRooles;
 
 /// <summary>
 /// Перечисление с ролями пользователя

@@ -83,7 +83,7 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
             ValidationException ve => StatusCodes.Status400BadRequest,            
             IOException io => StatusCodes.Status500InternalServerError,            
             SecurityException se => StatusCodes.Status401Unauthorized,
-
+            OperationCanceledException oce => StatusCodes.Status499ClientClosedRequest,
             //NoAvailableSeatsException nae => StatusCodes.Status409Conflict,
             //EventValidationException eve => StatusCodes.Status400BadRequest,
             //NotFoundException nfe => StatusCodes.Status404NotFound,

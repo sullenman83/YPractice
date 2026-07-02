@@ -11,7 +11,6 @@ namespace Events.Presentation.Controllers;
 /// Контроллер с API для работы с событиями
 /// </summary>
 /// <param name="eventService">Сервис для работы с событиями</param>
-/// <param name="bookingService">Сервис бронирования событий</param>
 [Authorize (AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 [ApiController]
 [Route("[controller]")]

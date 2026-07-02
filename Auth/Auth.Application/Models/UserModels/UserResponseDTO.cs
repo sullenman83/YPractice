@@ -1,4 +1,5 @@
 ﻿using Auth.Domain.Models;
+using UserRooles;
 
 namespace Auth.Application.Models.UserModels;
 

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using UserRooles;
 
 namespace Auth.Domain.Models;
 

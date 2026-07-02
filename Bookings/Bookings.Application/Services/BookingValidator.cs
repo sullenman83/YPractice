@@ -1,6 +1,7 @@
 ﻿using Bookings.Application.AppSettings;
 using Bookings.Application.Exceptions;
 using Bookings.Application.Interfaces.BookingServices;
+using Bookings.Domain.Exceptions;
 using Bookings.Domain.Models;
 using DateTimeManager.Abstractions;
 using Microsoft.Extensions.Options;

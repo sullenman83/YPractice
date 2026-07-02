@@ -5,11 +5,14 @@ using CommonMiddleware;
 
 namespace Auth.Presentation.Middleware;
 
+///<inheritdoc/>
 public class AuthGlobalExceptionHandlingMiddleware: GlobalExceptionHandlingMiddleware
 {
+    ///<inheritdoc/>
     public AuthGlobalExceptionHandlingMiddleware(RequestDelegate next, ILogger<AuthGlobalExceptionHandlingMiddleware> logger) : base(next, logger)
     { }
 
+    ///<inheritdoc/>
     protected override int? GetStatusCode(Exception ex)
     {
         var code = base.GetStatusCode(ex);

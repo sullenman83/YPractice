@@ -1,6 +1,5 @@
-﻿using EventManagement.Domain.Models;
+﻿using Bookings.Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace Bookings.Infrastructure.Data;
 
@@ -23,21 +22,11 @@ public class AppDbContext : DbContext
     {
 
     }
-
-    /// <summary>
-    /// Коллекция событий`
-    /// </summary>
-    public DbSet<Event> Events => Set<Event>();
-
+    
     /// <summary>
     /// Коллекция бронирований
     /// </summary>
     public DbSet<Booking> Bookings => Set<Booking>();
-
-    /// <summary>
-    /// Коллекция пользователей
-    /// </summary>
-    public DbSet<User> Users => Set<User>();
 
     /// <summary>
     /// Создание модели

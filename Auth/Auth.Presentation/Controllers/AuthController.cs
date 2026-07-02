@@ -3,6 +3,7 @@ using Auth.Application.Models.UserModels;
 using Auth.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using UserRooles;
 
 namespace Auth.Presentation.Controllers;
 

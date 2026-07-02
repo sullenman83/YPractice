@@ -1,4 +1,4 @@
-﻿using EventManagement.Domain.Models;
+﻿using Bookings.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -40,12 +40,7 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.Property(p => p.EventId)
             .IsRequired();
 
-        builder.HasOne(b => b.Event)
-            .WithMany(e => e.Bookings)
-            .HasForeignKey(b => b.EventId);
-
-        builder.HasOne(b => b.User)
-            .WithMany(b => b.Bookings)
-            .HasForeignKey(b => b.UserId);
+        builder.Property(p => p.UserId)
+            .IsRequired();
     }
 }
