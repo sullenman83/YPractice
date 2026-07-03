@@ -1,6 +1,6 @@
 ﻿namespace Contracts;
 
-public record EventSeatReserved
+public record EventSeatsNotReserved
 (
     Guid MessageId,
 
@@ -8,5 +8,7 @@ public record EventSeatReserved
 
     Guid EventId,
 
-    Guid UserId
+    Guid UserId,
+
+    string Reason
 );

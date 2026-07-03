@@ -19,14 +19,14 @@ public class EventCreationDTO
     public string? Description { get; set; }
 
     /// <summary>
-    /// Дата и время начала события. Формат времени yyyy-MM-ddThh:mm:ssZ
+    /// Дата и время начала события.
     /// </summary>
     /// <example>2026-05-15T12:03:24Z</example>
     [Required]
     public required DateTimeOffset? StartAt { get; set; }
 
     /// <summary>
-    /// Дата и время окончания события. Формат времени yyyy-MM-ddThh:mm:ssZ
+    /// Дата и время окончания события.
     /// </summary>
     /// <example>2026-05-16T12:03:24Z</example>
     [Required]

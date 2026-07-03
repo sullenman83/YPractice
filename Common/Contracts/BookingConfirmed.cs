@@ -5,12 +5,14 @@
 /// Сообщение о создании бронирования
 /// </summary>
 public record BookingConfirmed
-{
-    public Guid BookingId { get; set; }
+(
+    Guid MessageId,
 
-    public Guid EventId { get; set; }
+    Guid BookingId,
 
-    public DateTimeOffset OccuredOn { get; set; }
+    Guid EventId,
 
-    public bool IdProcessed {  get; set; }
-}
+    Guid UserId,
+
+    int SeatsCount
+);

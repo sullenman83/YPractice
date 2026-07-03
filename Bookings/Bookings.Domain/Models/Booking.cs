@@ -46,12 +46,12 @@ public class Booking
     public required int SeatsCount { get; init; }
 
     /// <summary>
-    /// Дата и время создания брони. Формат времени dd.MM.yyyy hh:mm:ssZ
+    /// Дата и время создания брони.
     /// </summary>
     public required DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
-    /// Дата и время обработки брони. Формат времени dd.MM.yyyy hh:mm:ssZ
+    /// Дата и время обработки брони.
     /// </summary>
     public DateTimeOffset? ProcessedAt { get; set; }
         

@@ -23,7 +23,7 @@ public static class ApplicationDIExt
     /// <returns>Коллекция сервисов</returns>
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<BookingHandlerSettings>(configuration.GetSection("BookingHandlerSettings"));
+        services.Configure<BookingProdicerSettings>(configuration.GetSection("BookingHandlerSettings"));
         services.Configure<BookingSettings>(configuration.GetSection("BookingSettings"));
 
         var bbsSettigs = new BackgroundBookingServiceRepeaterSettigs();

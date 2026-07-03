@@ -3,7 +3,7 @@
 /// <summary>
 /// Настройки для фонового сервиса обработки бронирований
 /// </summary>
-public class BookingHandlerSettings
+public class BookingProdicerSettings
 {
     /// <summary>
     /// Продолжительность эмитации обращения к внешнему сервису 
