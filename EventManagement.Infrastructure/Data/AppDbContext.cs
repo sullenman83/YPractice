@@ -25,7 +25,7 @@ public class AppDbContext : DbContext
     }
 
     /// <summary>
-    /// Коллекция событий
+    /// Коллекция событий`
     /// </summary>
     public DbSet<Event> Events => Set<Event>();
 
