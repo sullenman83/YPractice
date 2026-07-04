@@ -1,5 +1,4 @@
-﻿
-namespace Bookings.Application.Models;
+﻿namespace Bookings.Application.Models.Messages;
 
 /// <summary>
 /// Тип для хранения событий в таблице Inbox

@@ -2,6 +2,7 @@
 using Bookings.Application.Interfaces.Repositories;
 using Bookings.Infrastructure.Data;
 using Bookings.Infrastructure.Services.BookingRepository;
+using Bookings.Infrastructure.Services.MessageRepositories;
 using Bookings.Infrastructure.Services.UserServices;
 using DateTimeManager.Abstractions;
 using DateTimeManager.Core;
@@ -9,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TransactionManager.Abstractions;
+using TransactionManager.Core;
 
 namespace Bookings.Infrastructure.Extensions;
 
@@ -52,7 +55,10 @@ public static  class InfrastructureDIExt
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IDateTimeProvider, DateTimeProvider>();
-        
+        services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
+        services.AddScoped<IInboxMessageRepository, InboxMessageRepository>();
+        services.AddScoped<ITransactionService, TransactionService>();
+
         return services;
     }
 }

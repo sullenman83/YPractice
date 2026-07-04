@@ -23,8 +23,11 @@ public static class ApplicationDIExt
     /// <returns>Коллекция сервисов</returns>
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<OutboxMessageSettings>(configuration.GetSection(nameof(OutboxMessageSettings)));
+
         services.Configure<BookingProdicerSettings>(configuration.GetSection("BookingHandlerSettings"));
         services.Configure<BookingSettings>(configuration.GetSection("BookingSettings"));
+
 
         var bbsSettigs = new BackgroundBookingServiceRepeaterSettigs();
         configuration.GetSection("BackgroundBookingServiceRepeaterSettigs").Bind(bbsSettigs);

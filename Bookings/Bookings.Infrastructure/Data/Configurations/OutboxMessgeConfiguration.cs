@@ -1,4 +1,4 @@
-﻿using Bookings.Application.Models;
+﻿using Bookings.Application.Models.Messages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,11 +17,6 @@ public class OutboxMessgeConfiguration : IEntityTypeConfiguration<OutboxMessage>
     /// <exception cref="NotImplementedException"></exception>
     public void Configure(EntityTypeBuilder<OutboxMessage> builder)
     {
-        builder.HasKey(k => k.MessageId);
-
-        builder.Property(p => p.MessageId)
-            .ValueGeneratedNever();
-
         builder.Property(p => p.MessageType)
             .IsRequired();
 
@@ -37,6 +32,6 @@ public class OutboxMessgeConfiguration : IEntityTypeConfiguration<OutboxMessage>
         builder.Property(p => p.RetryCount)
             .IsRequired();
              
-        builder.HasIndex(i => new { i.OccuredOn, i.Processed});
+        builder.HasIndex(i => new { i.Processed, i.OccuredOn});
     }
 }

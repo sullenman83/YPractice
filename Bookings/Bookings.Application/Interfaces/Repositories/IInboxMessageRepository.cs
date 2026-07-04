@@ -1,4 +1,4 @@
-﻿using Bookings.Application.Models;
+﻿using Bookings.Application.Models.Messages;
 
 namespace Bookings.Application.Interfaces.Repositories;
 

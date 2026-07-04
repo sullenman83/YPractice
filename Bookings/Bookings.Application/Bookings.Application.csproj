@@ -13,7 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Common\DateTimeProvider\DateTimeProvider.Abstractions\DateTimeMamager.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Common\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\..\Common\DateTimeProvider\DateTimeProvider.Abstractions\DateTimeManager.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Common\TransactionManager\TransactionManager.Abstractions\TransactionManager.Abstractions.csproj" />
     <ProjectReference Include="..\..\Common\UserRooles\UserRooles.csproj" />
     <ProjectReference Include="..\Bookings.Domain\Bookings.Domain.csproj" />
   </ItemGroup>

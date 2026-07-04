@@ -1,4 +1,4 @@
-﻿using Bookings.Application.Models;
+﻿using Bookings.Application.Models.Messages;
 using Bookings.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 

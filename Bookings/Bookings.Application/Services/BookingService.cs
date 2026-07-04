@@ -1,33 +1,44 @@
-﻿using Bookings.Application.Common;
+﻿using Bookings.Application.AppSettings;
+using Bookings.Application.Common;
 using Bookings.Application.Exceptions;
 using Bookings.Application.Interfaces;
 using Bookings.Application.Interfaces.BookingServices;
 using Bookings.Application.Interfaces.Repositories;
 using Bookings.Application.Models;
 using Bookings.Application.Models.Extensions;
+using Bookings.Application.Models.Messages;
 using Bookings.Domain.Exceptions;
 using Bookings.Domain.Models;
+using Contracts;
 using DateTimeManager.Abstractions;
+using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Registry;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using TransactionManager.Abstractions;
 
 namespace Bookings.Application.Services;
 
 /// <summary>
 /// Сервис для работы с заявками бронирования событий
 /// </summary>
-public class BookingService(IBookingRepository bookingRepository    
-    //, ITransactionService transactionService
+public class BookingService(IBookingRepository bookingRepository        
     , IDateTimeProvider dateTimeProvider
     , IBookingValidator bookingValidator
-    , ICurrentUserService currentUserService
-    , ResiliencePipelineProvider<string> pipelineProvider) :IBookingService
+    , IOutboxMessageRepository outboxMEssageRepository
+    , ITransactionService transactionService
+    , IOptions<OutboxMessageSettings> options
+    , ICurrentUserService currentUserService):IBookingService
 {
     private readonly IBookingRepository _bookingRepository = bookingRepository;    
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
     private readonly IBookingValidator _bookingValidator = bookingValidator;
     private readonly ICurrentUserService _currentUserService = currentUserService;
-    private readonly ResiliencePipeline _resiliencePipeline = pipelineProvider.GetPipeline(Consts.BookingServiceRepeater);
+    private readonly IOutboxMessageRepository _outboxMessageRepository = outboxMEssageRepository;
+    private readonly ITransactionService _transactionService = transactionService;
+    private readonly OutboxMessageSettings _outboxMessageSettings = options.Value ?? throw new ArgumentNullException("Не заданы настройки исходящих сообщений.");
 
     ///<inheritdoc/>
     /// <exception cref="DbOperationException">Ошибка операций с БД.</exception>
@@ -37,30 +48,22 @@ public class BookingService(IBookingRepository bookingRepository
     /// <exception cref="PastEventBookingException">Событие уже началось</exception>
     public async Task<BookingResponseDTO> CreateBookingAsync(Guid eventId, Guid userId, int seatsCount, CancellationToken token)
     {
-        return null;
-        //token.ThrowIfCancellationRequested();
+        token.ThrowIfCancellationRequested();
 
-        //await ValidateBookingAsync(eventId, userId, token);
+        await ValidateBookingAsync(eventId, userId, token);
 
-        //var booking = new Booking(BookingStatus.Pending, eventId, userId, seatsCount, _dateTimeProvider.GetUtcNow());
-        //return await _resiliencePipeline.ExecuteAsync(async token =>
-        //{
-        //    await using var tr = await _transactionService.BeginTransactionAsync(token);
+        var booking = new Booking(BookingStatus.Pending, eventId, userId, seatsCount, _dateTimeProvider.GetUtcNow());        
+        var message = new BookingConfirmed(Guid.NewGuid(), booking.Id, eventId, userId, seatsCount);
+        var payload = JsonSerializer.Serialize(message);
+        var outboxMessage = new OutboxMessage(_outboxMessageSettings.CreateBooking, _dateTimeProvider.GetUtcNow(), payload, 0, false);
 
-        //    var ev = await _eventRepository.GetEventWithBlockingAsync(eventId, token);
-        //    if (ev == null)
-        //        throw new NotFoundException($"Событие с id {eventId} не найдено в базе данных.");
+        await using var tr = await _transactionService.BeginTransactionAsync(token);
+        await _bookingRepository.AddAsync(booking, token);
+        await _outboxMessageRepository.AddAsync(outboxMessage, token);
+        await tr.CommitAsync();
 
-        //    if (!ev.TryReserveSeats(seatsCount))
-        //        throw new NoAvailableSeatsException("Нет доступных метс для бронирования");
-
-
-        //    await _bookingRepository.AddAsync(booking, token);
-        //    await _eventRepository.SaveChangesAsync(token);
-        //    await tr.CommitAsync();
-
-        //    return booking.ToResponse();
-        //});
+        return booking.ToResponse();
+        
     }
 
     ///<inheritdoc/>

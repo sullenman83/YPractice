@@ -1,6 +1,6 @@
 ﻿using Bookings.Application.Exceptions;
 using Bookings.Application.Interfaces.Repositories;
-using Bookings.Application.Models;
+using Bookings.Application.Models.Messages;
 using Bookings.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
