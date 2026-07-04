@@ -1,6 +1,7 @@
 ﻿using Bookings.Application.Interfaces;
+using Bookings.Application.Interfaces.Repositories;
 using Bookings.Infrastructure.Data;
-using Bookings.Infrastructure.Services.BookingServices;
+using Bookings.Infrastructure.Services.BookingRepository;
 using Bookings.Infrastructure.Services.UserServices;
 using DateTimeManager.Abstractions;
 using DateTimeManager.Core;

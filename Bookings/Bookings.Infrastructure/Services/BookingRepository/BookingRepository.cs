@@ -1,11 +1,11 @@
 ﻿using Bookings.Application.Exceptions;
-using Bookings.Application.Interfaces;
+using Bookings.Application.Interfaces.Repositories;
 using Bookings.Domain.Models;
 using Bookings.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Bookings.Infrastructure.Services.BookingServices;
+namespace Bookings.Infrastructure.Services.BookingRepository;
 
 /// <summary>
 /// Класс хранения заявок на бронь

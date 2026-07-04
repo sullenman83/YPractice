@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 
 
-namespace Bookings.Application.Interfaces;
+namespace Bookings.Application.Interfaces.Repositories;
 
 /// <summary>
 /// Интерфейс хранилища бронирований событий

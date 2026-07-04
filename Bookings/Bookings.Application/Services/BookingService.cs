@@ -2,6 +2,7 @@
 using Bookings.Application.Exceptions;
 using Bookings.Application.Interfaces;
 using Bookings.Application.Interfaces.BookingServices;
+using Bookings.Application.Interfaces.Repositories;
 using Bookings.Application.Models;
 using Bookings.Application.Models.Extensions;
 using Bookings.Domain.Exceptions;
