@@ -19,7 +19,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using TransactionManager.Abstractions;
 
-namespace Bookings.Application.Services;
+namespace Bookings.Application.Services.BookingServices;
 
 /// <summary>
 /// Сервис для работы с заявками бронирования событий

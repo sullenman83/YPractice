@@ -8,16 +8,17 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 
-namespace Bookings.Application.Services;
+namespace Bookings.Application.Services.BackgrounServices;
 
 /// <summary>
 /// Фоновый сервис для отправки сообщений в Kafka
 /// </summary>
-public class BookingProducesService: BackgroundService
+public class BackgroundOutboxMessageService: BackgroundService
 {
     private readonly ILogger<BackgroundService> _logger;
     private readonly IServiceScopeFactory _serviceFactory;
-    private readonly BookingProdicerSettings _bookingProducerSettings;
+    private readonly BookingProducerSettings _bookingProducerSettings;
+    
 
     /// <summary>
     /// Конструктор
@@ -25,13 +26,11 @@ public class BookingProducesService: BackgroundService
     /// <param name="logger">Логер</param>
     /// <param name="serviceFactory">Scope фабрика сервисов</param>
     /// <param name="bookingHandlerSettings">Настройки сервиса</param>
-    public BookingProducesService(ILogger<BackgroundService> logger, IServiceScopeFactory serviceFactory, IOptions<BookingProdicerSettings> bookingHandlerSettings)
+    public BackgroundOutboxMessageService(ILogger<BackgroundService> logger, IServiceScopeFactory serviceFactory, IOptions<BookingProducerSettings> bookingHandlerSettings)
     {
         _logger = logger;
         _serviceFactory = serviceFactory;
         _bookingProducerSettings = bookingHandlerSettings.Value;
-
-
     }
 
     /// <summary>

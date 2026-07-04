@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Bookings.Application.Services;
+namespace Bookings.Application.Services.BookingServices;
 
 /// <summary>
 /// Валидатор бронирований

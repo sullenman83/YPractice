@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Registry;
 
-namespace Bookings.Application.Services;
+namespace Bookings.Application.Services.BackgrounServices;
 
 /// <summary>
 /// Сервис обработки событий

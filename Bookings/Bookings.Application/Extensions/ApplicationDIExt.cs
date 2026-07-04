@@ -1,7 +1,7 @@
 ﻿using Bookings.Application.AppSettings;
 using Bookings.Application.Common;
 using Bookings.Application.Interfaces.BookingServices;
-using Bookings.Application.Services;
+using Bookings.Application.Services.BookingServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
@@ -25,7 +25,7 @@ public static class ApplicationDIExt
     {
         services.Configure<OutboxMessageSettings>(configuration.GetSection(nameof(OutboxMessageSettings)));
 
-        services.Configure<BookingProdicerSettings>(configuration.GetSection("BookingHandlerSettings"));
+        services.Configure<BookingProducerSettings>(configuration.GetSection("BookingHandlerSettings"));
         services.Configure<BookingSettings>(configuration.GetSection("BookingSettings"));
 
 

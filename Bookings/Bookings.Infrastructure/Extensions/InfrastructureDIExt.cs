@@ -1,4 +1,5 @@
-﻿using Bookings.Application.Interfaces;
+﻿using Bookings.Application.AppSettings;
+using Bookings.Application.Interfaces;
 using Bookings.Application.Interfaces.Repositories;
 using Bookings.Infrastructure.Data;
 using Bookings.Infrastructure.Services.BookingRepository;
@@ -33,6 +34,8 @@ public static  class InfrastructureDIExt
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Не задана строка подключения к базе даных");
 
+        services.Configure<BookingProducerSettings>(configuration.GetSection(nameof(BookingProducerSettings)));
+
         if (env.IsDevelopment())
         {
             services.AddDbContext<AppDbContext>(options =>
@@ -58,6 +61,7 @@ public static  class InfrastructureDIExt
         services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
         services.AddScoped<IInboxMessageRepository, InboxMessageRepository>();
         services.AddScoped<ITransactionService, TransactionService>();
+        services.AddSingleton<IBookingProduсer, IBookingProduсer>();
 
         return services;
     }
