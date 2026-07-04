@@ -1,9 +1,8 @@
-﻿using Bookings.Application.Interfaces;
+﻿using Bookings.Application.Exceptions;
+using Bookings.Application.Interfaces;
 using Bookings.Infrastructure.Settings;
 using Confluent.Kafka;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.Extensions.Options;
-
 
 namespace Bookings.Infrastructure.Services.Producers;
 
@@ -48,6 +47,13 @@ public class BookingProducer: IDisposable, IBookingProduсer
     ///<inheritdoc/>
     public async Task Produce(string topic, string key, string value)
     {
-        await _producer.ProduceAsync(topic, new Message<string, string> { Key = key, Value = value });
+        try
+        {
+            await _producer.ProduceAsync(topic, new Message<string, string> { Key = key, Value = value });
+        }
+        catch(ProduceException<Null, string> ex)
+        {
+            throw new BookingProducerException($"Ошибка отправки сообщения в Kafka: {ex.Error.Reason}");
+        }
     }
 }
