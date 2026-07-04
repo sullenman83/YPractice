@@ -6,13 +6,13 @@
 /// </summary>
 public record BookingConfirmed
 (
-    Guid MessageId,
-
     Guid BookingId,
 
     Guid EventId,
 
     Guid UserId,
 
-    int SeatsCount
+    int SeatsCount,
+
+    DateTimeOffset ConfirmDate
 );

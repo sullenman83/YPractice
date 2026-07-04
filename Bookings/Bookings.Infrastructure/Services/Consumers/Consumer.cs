@@ -1,8 +1,6 @@
-﻿
+﻿using Bookings.Application.Interfaces;
 
-using Bookings.Application.Interfaces;
-
-namespace Bookings.Application.Services;
+namespace Bookings.Infrastructure.Services.Consumers;
 
 public class Consumer : IConsumer
 {

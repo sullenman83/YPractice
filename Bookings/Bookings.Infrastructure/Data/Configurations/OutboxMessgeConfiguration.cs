@@ -17,6 +17,9 @@ public class OutboxMessgeConfiguration : IEntityTypeConfiguration<OutboxMessage>
     /// <exception cref="NotImplementedException"></exception>
     public void Configure(EntityTypeBuilder<OutboxMessage> builder)
     {
+        builder.Property(p => p.Key)
+            .IsRequired();
+
         builder.Property(p => p.MessageType)
             .IsRequired();
 

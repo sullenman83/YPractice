@@ -28,17 +28,17 @@ public class BookingService(IBookingRepository bookingRepository
     , IDateTimeProvider dateTimeProvider
     , IBookingValidator bookingValidator
     , IOutboxMessageRepository outboxMEssageRepository
-    , ITransactionService transactionService
-    , IOptions<OutboxMessageSettings> options
+    , ITransactionService transactionService 
     , ICurrentUserService currentUserService):IBookingService
 {
+    private const string _createBookingMessageType = "BookingConfirmed";
+    private const string _cancelBookingMessageType = "BookingCancelled";
     private readonly IBookingRepository _bookingRepository = bookingRepository;    
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
     private readonly IBookingValidator _bookingValidator = bookingValidator;
     private readonly ICurrentUserService _currentUserService = currentUserService;
     private readonly IOutboxMessageRepository _outboxMessageRepository = outboxMEssageRepository;
     private readonly ITransactionService _transactionService = transactionService;
-    private readonly OutboxMessageSettings _outboxMessageSettings = options.Value ?? throw new ArgumentNullException("Не заданы настройки исходящих сообщений.");
 
     ///<inheritdoc/>
     /// <exception cref="DbOperationException">Ошибка операций с БД.</exception>
@@ -53,17 +53,16 @@ public class BookingService(IBookingRepository bookingRepository
         await ValidateBookingAsync(eventId, userId, token);
 
         var booking = new Booking(BookingStatus.Pending, eventId, userId, seatsCount, _dateTimeProvider.GetUtcNow());        
-        var message = new BookingConfirmed(Guid.NewGuid(), booking.Id, eventId, userId, seatsCount);
+        var message = new BookingConfirmed(booking.Id, eventId, userId, seatsCount, _dateTimeProvider.GetUtcNow());
         var payload = JsonSerializer.Serialize(message);
-        var outboxMessage = new OutboxMessage(_outboxMessageSettings.CreateBooking, _dateTimeProvider.GetUtcNow(), payload, 0, false);
+        var outboxMessage = new OutboxMessage(eventId, _createBookingMessageType, _dateTimeProvider.GetUtcNow(), payload, 0, false);
 
         await using var tr = await _transactionService.BeginTransactionAsync(token);
         await _bookingRepository.AddAsync(booking, token);
         await _outboxMessageRepository.AddAsync(outboxMessage, token);
         await tr.CommitAsync();
 
-        return booking.ToResponse();
-        
+        return booking.ToResponse();        
     }
 
     ///<inheritdoc/>

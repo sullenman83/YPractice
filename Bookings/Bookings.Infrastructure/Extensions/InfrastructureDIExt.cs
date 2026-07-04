@@ -5,6 +5,7 @@ using Bookings.Infrastructure.Data;
 using Bookings.Infrastructure.Services.BookingRepository;
 using Bookings.Infrastructure.Services.MessageRepositories;
 using Bookings.Infrastructure.Services.UserServices;
+using Bookings.Infrastructure.Settings;
 using DateTimeManager.Abstractions;
 using DateTimeManager.Core;
 using Microsoft.EntityFrameworkCore;

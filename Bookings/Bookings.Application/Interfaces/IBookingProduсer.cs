@@ -16,5 +16,5 @@ public interface IBookingProduсer
     /// <param name="key">Ключ для определения партиции</param>
     /// <param name="value">сообщение</param>
     /// <returns></returns>
-    Task Produce(string topic, string key, string value);
+    Task ProduceAsync(string topic, string key, string value);
 }

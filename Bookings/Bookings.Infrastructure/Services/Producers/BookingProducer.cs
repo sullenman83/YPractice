@@ -45,7 +45,7 @@ public class BookingProducer: IDisposable, IBookingProduсer
     }
 
     ///<inheritdoc/>
-    public async Task Produce(string topic, string key, string value)
+    public async Task ProduceAsync(string topic, string key, string value)
     {
         try
         {

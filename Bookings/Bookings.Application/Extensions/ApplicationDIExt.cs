@@ -22,10 +22,8 @@ public static class ApplicationDIExt
     /// <param name="configuration">Конфигурация</param>
     /// <returns>Коллекция сервисов</returns>
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.Configure<OutboxMessageSettings>(configuration.GetSection(nameof(OutboxMessageSettings)));
-
-        services.Configure<BookingProducerSettings>(configuration.GetSection("BookingHandlerSettings"));
+    {        
+        services.Configure<BackgroundProducerServiceSettings>(configuration.GetSection("BackgroundProducerServiceSettings"));
         services.Configure<BookingSettings>(configuration.GetSection("BookingSettings"));
 
 

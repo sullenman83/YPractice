@@ -2,6 +2,7 @@
 using Bookings.Application.Interfaces.Repositories;
 using Bookings.Domain.Models;
 using Bookings.Infrastructure.Data;
+using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -103,12 +104,21 @@ public class BookingRepository(AppDbContext context, ILogger<BookingRepository> 
     ///<inheritdoc/>
     public async Task<List<Booking>> GetActiveUserBookingAsync(Guid userId, CancellationToken token = default)
     {
-        var bookings = _context.Bookings
-            .Where(o => o.UserId == userId);
+        try
+        {
+            var bookings = _context.Bookings
+                .Where(o => o.UserId == userId);
 
-        return await bookings.Where(o => o.Status == BookingStatus.Pending 
-            || o.Status == BookingStatus.Confirmed)
-            .ToListAsync(token);
+            return await bookings.Where(o => o.Status == BookingStatus.Pending
+                || o.Status == BookingStatus.Confirmed)
+                .ToListAsync(token);
+        }        
+        catch (Exception ex)
+        {
+            var message = "Ошибка чтения активных бронирований.";
+            _logger.LogDebug(ex, message);
+            throw new DbOperationException(message);
+}
     }
 
     /// <inheritdoc/>
