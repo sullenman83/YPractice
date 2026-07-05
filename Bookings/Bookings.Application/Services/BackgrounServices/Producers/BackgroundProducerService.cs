@@ -2,16 +2,11 @@
 using Bookings.Application.Exceptions;
 using Bookings.Application.Interfaces;
 using Bookings.Application.Interfaces.Repositories;
-using Bookings.Domain.Models;
-using DateTimeManager.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Linq.Expressions;
 
-
-namespace Bookings.Application.Services.BackgrounServices;
+namespace Bookings.Application.Services.BackgrounServices.Producers;
 
 /// <summary>
 /// Фоновый сервис для отправки сообщений в Kafka

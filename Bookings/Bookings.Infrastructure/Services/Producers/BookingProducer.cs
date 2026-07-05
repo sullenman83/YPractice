@@ -37,11 +37,8 @@ public class BookingProducer: IDisposable, IBookingProduсer
     /// </summary>
     public void Dispose()
     {
-        if (_producer == null)
-            return;
-
-        _producer.Flush(TimeSpan.FromSeconds(10));
-        _producer.Dispose();
+        _producer?.Flush(TimeSpan.FromSeconds(10));
+        _producer?.Dispose();
     }
 
     ///<inheritdoc/>
