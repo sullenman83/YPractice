@@ -1,5 +1,4 @@
-﻿
-namespace EventManagement.Application.Common.Exceptions;
+﻿namespace Events.Application.Common.Exceptions;
 
 /// <summary>
 /// Класс исключение для генерации при возникновении ошибок операций БД 

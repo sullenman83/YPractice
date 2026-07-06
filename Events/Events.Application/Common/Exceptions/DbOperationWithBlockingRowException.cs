@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Application.Common.Exceptions;
+﻿namespace Events.Application.Common.Exceptions;
 
 
 /// <summary>

@@ -3,16 +3,10 @@
 /// <summary>
 /// Коньюмер для приёма сообщений об удачнос списание мест в событии
 /// </summary>
-public interface IEventSeatsReservedConsumer
+public interface IEventSeatsReservedConsumer: IDisposable
 {
     /// <summary>
     /// Получить сообщение
     /// </summary>
-    /// <param name="token">Токен отмены</param>
-    Task ConsumeAsync(CancellationToken token = default);
-
-    /// <summary>
-    /// 
-    /// </summary>
-    void Close();
+    Task Consume();
 }

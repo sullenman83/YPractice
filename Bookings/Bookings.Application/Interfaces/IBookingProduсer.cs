@@ -7,7 +7,7 @@ namespace Bookings.Application.Interfaces;
 /// <summary>
 /// продюсер для отправки сообщений в брокер сообшений
 /// </summary>
-public interface IBookingProduсer
+public interface IBookingProduсer: IDisposable
 {
     /// <summary>
     /// Опубликовать сообщение

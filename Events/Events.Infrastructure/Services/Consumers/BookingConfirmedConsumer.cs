@@ -1,26 +1,18 @@
-﻿using Bookings.Application.Interfaces.Consumers;
-using Bookings.Infrastructure.Settings.ConsumersSettings;
-using Confluent.Kafka;
+﻿using Confluent.Kafka;
+using Contracts;
+using Events.Application.Interfaces.Consumers;
+using Events.Infrastructure.Settings.ConsumerSettings;
 using Microsoft.Extensions.Options;
 
-namespace Bookings.Infrastructure.Services.Consumers;
+namespace Events.Infrastructure.Services.Consumers;
 
-/// <summary>
-/// Консьюмер
-/// </summary>
-public class EventSeatsReservedConsumer : IEventSeatsReservedConsumer
+internal class BookingConfirmedConsumer : IBookingConfirmedConsumer
 {
-    private readonly IConsumer<string, string> _consumer;    
+    private readonly IConsumer<string, string> _consumer;
 
-    /// <summary>
-    /// Конструктор
-    /// </summary>
-    /// <param name="options">Настройки консьюмера</param>
-    /// <exception cref="ArgumentNullException">Не заданы настройки</exception>
-    public EventSeatsReservedConsumer(IOptions<EventSeatsReservedConsumerSettings> options)
+    public BookingConfirmedConsumer(IOptions<BookingConfirmedConsumerSettings> options)
     {
         var settings = options.Value ?? throw new ArgumentNullException("Не заданы настройки консьюмера 'EventSeatsReservedConsumer'");
-
         if (string.IsNullOrEmpty(settings.BootstrapServers)
             || string.IsNullOrEmpty(settings.GroupId)
             || string.IsNullOrEmpty(settings.Topic))
@@ -39,15 +31,18 @@ public class EventSeatsReservedConsumer : IEventSeatsReservedConsumer
         _consumer.Subscribe(settings.Topic);
     }
 
-    public Task Consume()
+    public void Consume(Action<BookingConfirmed> messageHandler, CancellationToken token)
     {
-        _consumer.Consume();
-        return Task.CompletedTask;
-    }
+        try
+        {
+            _consumer.Consume()
+        }
+        catch (Exception ex) 
+        {
+        }
+        
+    } 
 
-    /// <summary>
-    /// Очистить ресурсы
-    /// </summary>
     public void Dispose()
     {
         _consumer?.Close();

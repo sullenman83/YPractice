@@ -2,10 +2,11 @@
 using Bookings.Application.Interfaces;
 using Bookings.Application.Interfaces.Repositories;
 using Bookings.Infrastructure.Data;
-using Bookings.Infrastructure.Services.BookingRepository;
-using Bookings.Infrastructure.Services.MessageRepositories;
+using Bookings.Infrastructure.Services.Repositories.BookingRepository;
+using Bookings.Infrastructure.Services.Repositories.MessageRepositories;
 using Bookings.Infrastructure.Services.UserServices;
 using Bookings.Infrastructure.Settings;
+using Bookings.Infrastructure.Settings.ConsumersSettings;
 using DateTimeManager.Abstractions;
 using DateTimeManager.Core;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,9 @@ public static  class InfrastructureDIExt
             ?? throw new InvalidOperationException("Не задана строка подключения к базе даных");
 
         services.Configure<BookingProducerSettings>(configuration.GetSection(nameof(BookingProducerSettings)));
+        services.Configure<EventSeatsReservedConsumerSettings>(configuration.GetSection(nameof(EventSeatsReservedConsumerSettings)));
+        services.Configure<EventSeatsNotReservedConsumerSettings>(configuration.GetSection(nameof(EventSeatsNotReservedConsumerSettings)));
+        services.Configure<BookingConfirmedConsumerSettings>(configuration.GetSection(nameof(BookingConfirmedConsumerSettings)));
 
         if (env.IsDevelopment())
         {

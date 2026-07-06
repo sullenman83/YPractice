@@ -1,5 +1,4 @@
-﻿using Events.Application.Interfaces;
-using Events.Application;
+﻿using Events.Application;
 using Events.Application.Models;
 using Events.Application.Models.Extensions;
 using Events.Application.Models.FilterModels;
@@ -11,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using Events.Application.Exceptions;
+using Events.Application.Interfaces.Repositories;
 
 namespace Events.Infrastructure.Services;
 

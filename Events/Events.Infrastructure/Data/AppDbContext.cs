@@ -1,4 +1,5 @@
-﻿using Events.Domain.Models;
+﻿using Events.Application.Models.Messages;
+using Events.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Events.Infrastructure.Data;
@@ -26,6 +27,11 @@ public class AppDbContext : DbContext
     /// Коллекция событий`
     /// </summary>
     public DbSet<Event> Events => Set<Event>();
+
+    /// <summary>
+    /// Исходящие сообщения
+    /// </summary>
+    public DbSet<InboxMessage> InboxMessages => Set<InboxMessage>();
 
     /// <summary>
     /// Создание модели

@@ -2,7 +2,7 @@
 using Events.Application.Models.FilterModels;
 using Events.Domain.Models;
 
-namespace Events.Application.Interfaces;
+namespace Events.Application.Interfaces.Repositories;
 
 /// <summary>
 /// Хранилище данных

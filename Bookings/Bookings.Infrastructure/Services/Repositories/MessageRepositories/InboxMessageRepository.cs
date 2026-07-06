@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Bookings.Infrastructure.Services.MessageRepositories;
+namespace Bookings.Infrastructure.Services.Repositories.MessageRepositories;
 
 /// <summary>
 /// Репозиторий входящих сообщений

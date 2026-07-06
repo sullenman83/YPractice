@@ -18,7 +18,6 @@ public class BackgroundProducerService: BackgroundService
     private readonly BackgroundProducerServiceSettings _settings;
     private readonly IOutboxMessageRepository _repository;
 
-
     /// <summary>
     /// Конструктор
     /// </summary>
@@ -44,6 +43,8 @@ public class BackgroundProducerService: BackgroundService
     /// <returns>Пустая задача</returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        stoppingToken.Register(() => _bookingProducer.Dispose());
+
         _logger.LogInformation("Фоновый сервис BookingProducer запущен.");
 
         while (!stoppingToken.IsCancellationRequested)

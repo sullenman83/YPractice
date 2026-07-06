@@ -6,7 +6,7 @@ using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Bookings.Infrastructure.Services.BookingRepository;
+namespace Bookings.Infrastructure.Services.Repositories.BookingRepository;
 
 /// <summary>
 /// Класс хранения заявок на бронь

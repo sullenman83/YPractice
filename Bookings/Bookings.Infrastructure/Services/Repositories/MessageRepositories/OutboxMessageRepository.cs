@@ -1,5 +1,4 @@
-﻿
-using Bookings.Application.Exceptions;
+﻿using Bookings.Application.Exceptions;
 using Bookings.Application.Interfaces.Repositories;
 using Bookings.Application.Models.Messages;
 using Bookings.Domain.Models;
@@ -7,7 +6,7 @@ using Bookings.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Bookings.Infrastructure.Services.MessageRepositories;
+namespace Bookings.Infrastructure.Services.Repositories.MessageRepositories;
 
 /// <summary>
 /// Репозиторий исходящих сообщений

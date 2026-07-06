@@ -57,3 +57,4 @@ public class EventSeatsReservedConsumerBackgroundService : BackgroundService
 
         _logger.LogInformation("Фоновый сервис обработки бронирований остановлен.");
     }
+}
