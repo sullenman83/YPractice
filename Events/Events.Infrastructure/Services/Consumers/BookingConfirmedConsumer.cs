@@ -1,8 +1,10 @@
 ﻿using Confluent.Kafka;
 using Contracts;
+using Events.Application.Exceptions;
 using Events.Application.Interfaces.Consumers;
 using Events.Infrastructure.Settings.ConsumerSettings;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace Events.Infrastructure.Services.Consumers;
 
@@ -31,16 +33,35 @@ internal class BookingConfirmedConsumer : IBookingConfirmedConsumer
         _consumer.Subscribe(settings.Topic);
     }
 
+    ///<inheritdoc/>
     public void Consume(Action<BookingConfirmed> messageHandler, CancellationToken token)
     {
         try
         {
-            _consumer.Consume()
+            var result = _consumer.Consume(token);
+            if (result == null)
+            {
+                return;
+            }
+
+            var bookingConfirmed = JsonSerializer.Deserialize<BookingConfirmed>(result.Message.Value);
+            if (bookingConfirmed == null)
+                throw new InvalidOperationException("Ошибка при десериализации ссобщения Kafka.");
+
+            messageHandler(bookingConfirmed);
+
+            _consumer.StoreOffset(result);
+            _consumer.Commit();
         }
-        catch (Exception ex) 
+        catch (ConsumeException ex) 
         {
-        }
-        
+            if(ex.Error.IsFatal)
+            {
+                //ToDo: тут надо как-то перебилдить консьюмер
+            }
+
+            throw new ConsumerException($"Ошибка получения сообщения из Kafka: {ex.Error.Reason}");
+        }        
     } 
 
     public void Dispose()

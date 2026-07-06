@@ -1,6 +1,16 @@
-﻿namespace Events.Application.Interfaces.Consumers;
+﻿using Contracts;
 
+namespace Events.Application.Interfaces.Consumers;
+
+/// <summary>
+/// Интерфейс получения и обработки сообщений BookingConfirmed 
+/// </summary>
 public interface IBookingConfirmedConsumer: IDisposable
 {
-    void Consume();
+    /// <summary>
+    /// Получить сообщение BookingConfirm и обработать его
+    /// </summary>
+    /// <param name="messageHandler">Обработчик сообщения</param>
+    /// <param name="token">токен отмены</param>
+    void Consume(Action<BookingConfirmed> messageHandler, CancellationToken token);
 }
