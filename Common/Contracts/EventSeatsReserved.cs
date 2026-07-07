@@ -1,6 +1,6 @@
 ﻿namespace Contracts;
 
-public record EventSeatReserved
+public record EventSeatsReserved
 (
     Guid MessageId,
 

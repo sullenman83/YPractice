@@ -13,5 +13,5 @@ public interface IEventSeatsReservedHandler
     /// Обработать сообщение 
     /// </summary>
     /// <param name="message">Сообщение</param>
-    Task HandleMessage(EventSeatReserved message);
+    Task HandleMessage(EventSeatsReserved message);
 }

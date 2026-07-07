@@ -6,6 +6,8 @@
 /// </summary>
 public record BookingConfirmed
 (
+    Guid MessageId,
+
     Guid BookingId,
 
     Guid EventId,

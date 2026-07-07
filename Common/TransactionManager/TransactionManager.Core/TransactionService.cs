@@ -8,9 +8,9 @@ namespace TransactionManager.Core;
 /// <summary>
 /// Сервис управления транзакциями
 /// </summary>
-public class TransactionService(DbContext context) : ITransactionService
+public class TransactionService<TContext>(TContext context) : ITransactionService where TContext : DbContext
 {
-    private readonly DbContext _appDbContext = context;
+    private readonly TContext _appDbContext = context;
 
     /// <inheritdoc/>
     public async Task<ITransaction> BeginTransactionAsync(CancellationToken token)

@@ -2,8 +2,15 @@
 
 namespace Events.Application.Interfaces.MessageHandlers;
 
-
+/// <summary>
+/// Интерфейс обработки сообщения BookingConfirmed
+/// </summary>
 public interface IBookingConfirmedHandler
 {
-    Task HandleMessage(BookingConfirmed message);
+    /// <summary>
+    /// Обработать сообщение
+    /// </summary>
+    /// <param name="message">Сообщение</param>
+    /// <param name="token">токен отмены</param>    
+    Task HandleMessage(BookingConfirmed message, CancellationToken token);
 }

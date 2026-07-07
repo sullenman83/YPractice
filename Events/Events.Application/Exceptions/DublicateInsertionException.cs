@@ -1,25 +1,25 @@
-﻿namespace Events.Application.Common.Exceptions;
+﻿namespace Events.Application.Exceptions;
 
 /// <summary>
-/// Класс исключение для генерации при возникновении ошибок операций БД 
+/// Исключение для ошибок вставки дубликата в таблицу
 /// </summary>
-public class DbOperationException : Exception
+public class DublicateInsertionException : Exception
 {
     /// <summary>
     /// Конструктор
     /// </summary>
-    public DbOperationException() : base() { }
+    public DublicateInsertionException() : base() { }
 
     /// <summary>
     /// Конструктор
     /// </summary>
     /// <param name="message">Сообщение об ошибке</param>
-    public DbOperationException(string message) : base(message) { }
+    public DublicateInsertionException(string message) : base(message) { }
 
     /// <summary>
     /// Конструктор
     /// </summary>
     /// <param name="message">Сообщение об ошибке</param>
     /// <param name="inner">Обеъкт исключения</param>
-    public DbOperationException(string message, Exception inner) : base(message, inner) { }
+    public DublicateInsertionException(string message, Exception inner) : base(message, inner) { }
 }

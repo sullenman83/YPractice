@@ -1,8 +1,10 @@
-﻿using Events.Application.Common.Exceptions;
-using Events.Application.Interfaces.Repositories;
+﻿using Events.Application.Interfaces.Repositories;
 using Events.Application.Models.Messages;
 using Events.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Events.Application.Exceptions;
+using Npgsql;
 
 namespace Events.Infrastructure.Services;
 
@@ -25,6 +27,10 @@ public class InboxMessageRepository(AppDbContext context, ILogger<InboxMessageRe
             await _context.SaveChangesAsync(token);
 
             return message;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation})
+        {
+            throw new DublicateInsertionException("Попытка вставить дубликат записи.");
         }
         catch (Exception ex)
         {

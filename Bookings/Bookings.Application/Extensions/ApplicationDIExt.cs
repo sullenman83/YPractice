@@ -1,6 +1,7 @@
 ﻿using Bookings.Application.AppSettings;
 using Bookings.Application.Common;
 using Bookings.Application.Interfaces.BookingServices;
+using Bookings.Application.Services.BackgrounServices.Producers;
 using Bookings.Application.Services.BookingServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,7 +57,8 @@ public static class ApplicationDIExt
 
         services.AddScoped<IBookingService, BookingService>();
         services.AddScoped<IBookingValidator, BookingValidator>();
-        
+        services.AddHostedService<BackgroundProducerService>();
+
         return services;
     }
 }

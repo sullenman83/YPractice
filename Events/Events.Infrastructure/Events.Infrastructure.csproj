@@ -20,6 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\DateTimeProvider\DateTimeProvider.Core\DateTimeManager.Core.csproj" />
+    <ProjectReference Include="..\..\Common\TransactionManager\TransactionManager.Core\TransactionManager.Core.csproj" />
     <ProjectReference Include="..\Events.Application\Events.Application.csproj" />
     <ProjectReference Include="..\Events.Domain\Events.Domain.csproj" />
   </ItemGroup>

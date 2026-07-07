@@ -1,10 +1,18 @@
-﻿using Events.Application.Interfaces.Repositories;
+﻿using DateTimeManager.Abstractions;
+using DateTimeManager.Core;
+using Events.Application.Interfaces.Consumers;
+using Events.Application.Interfaces.Repositories;
 using Events.Infrastructure.Data;
+using Events.Infrastructure.Data.Configurations;
 using Events.Infrastructure.Services;
+using Events.Infrastructure.Services.Consumers;
+using Events.Infrastructure.Settings.ConsumerSettings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TransactionManager.Abstractions;
+using TransactionManager.Core;
 
 namespace Events.Infrastructure.Extensions;
 
@@ -26,6 +34,8 @@ public static  class InfrastructureDIExt
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Не задана строка подключения к базе даных");
 
+        services.Configure<BookingConfirmedConsumerSettings>(configuration.GetSection(nameof(BookingConfirmedConsumerSettings)));
+
         if (env.IsDevelopment())
         {
             services.AddDbContext<AppDbContext>(options =>
@@ -46,7 +56,12 @@ public static  class InfrastructureDIExt
             });
         }
         services.AddScoped<IEventRepository, EventRepository>();
-        
+        services.AddSingleton<IBookingConfirmedConsumer, BookingConfirmedConsumer>();        
+        services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+        services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
+        services.AddScoped<IInboxMessageRepository, InboxMessageRepository>();
+        services.AddScoped<ITransactionService, TransactionService<AppDbContext>>();
+
         return services;
     }
 }

@@ -22,6 +22,53 @@ namespace Bookings.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Bookings.Application.Models.Messages.InboxMessage", b =>
+                {
+                    b.Property<Guid>("MessageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("message_id");
+
+                    b.HasKey("MessageId")
+                        .HasName("pk_inbox_messages");
+
+                    b.ToTable("inbox_messages", (string)null);
+                });
+
+            modelBuilder.Entity("Bookings.Application.Models.Messages.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Key")
+                        .HasColumnType("uuid")
+                        .HasColumnName("key");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("message_type");
+
+                    b.Property<DateTimeOffset>("OccuredOn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occured_on");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload");
+
+                    b.Property<bool>("Processed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("processed");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("retry_count");
+
+                    b.HasIndex("Processed", "OccuredOn")
+                        .HasDatabaseName("ix_outbox_messages_processed_occured_on");
+
+                    b.ToTable("outbox_messages", (string)null);
+                });
+
             modelBuilder.Entity("Bookings.Domain.Models.Booking", b =>
                 {
                     b.Property<Guid>("Id")

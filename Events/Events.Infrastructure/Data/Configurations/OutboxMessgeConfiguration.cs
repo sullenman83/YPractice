@@ -1,8 +1,8 @@
-﻿using Bookings.Application.Models.Messages;
+﻿using Events.Application.Models.Messages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Bookings.Infrastructure.Data.Configurations;
+namespace Events.Infrastructure.Data.Configurations;
 
 
 /// <summary>

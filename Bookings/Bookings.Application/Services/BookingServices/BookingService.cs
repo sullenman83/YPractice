@@ -53,7 +53,7 @@ public class BookingService(IBookingRepository bookingRepository
         await ValidateBookingAsync(eventId, userId, token);
 
         var booking = new Booking(BookingStatus.Pending, eventId, userId, seatsCount, _dateTimeProvider.GetUtcNow());        
-        var message = new BookingConfirmed(booking.Id, eventId, userId, seatsCount, _dateTimeProvider.GetUtcNow());
+        var message = new BookingConfirmed(Guid.NewGuid(), booking.Id, eventId, userId, seatsCount, _dateTimeProvider.GetUtcNow());
         var payload = JsonSerializer.Serialize(message);
         var outboxMessage = new OutboxMessage(eventId, _createBookingMessageType, _dateTimeProvider.GetUtcNow(), payload, 0, false);
 

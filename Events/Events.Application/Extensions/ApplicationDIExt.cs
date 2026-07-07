@@ -1,7 +1,10 @@
 ﻿using Events.Application.Interfaces;
 using Events.Application.Services;
+using Events.Application.Services.BackgroundServices;
+using Events.Application.Services.MessageHandlers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Events.Application.Interfaces.MessageHandlers;
 
 namespace Events.Application.Extensions;
 
@@ -50,6 +53,8 @@ public static class ApplicationDIExt
 
         services.AddScoped<IEventValidator, EventValidator>();
         services.AddScoped<IEventService, EventService>();
+        services.AddScoped<IBookingConfirmedHandler, BookingConfirmedHandler>();
+        services.AddHostedService<BookingConfirmedConsumerBackgroundService>();
         
         return services;
     }

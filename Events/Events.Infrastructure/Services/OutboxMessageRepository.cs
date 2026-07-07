@@ -1,10 +1,11 @@
-﻿using Events.Application.Common.Exceptions;
+﻿using Events.Application.Exceptions;
 using Events.Application.Interfaces.Repositories;
 using Events.Application.Models.Messages;
+using Events.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Events.Infrastructure.Data.Configurations;
+namespace Events.Infrastructure.Services;
 
 /// <summary>
 /// Репозиторий исходящих сообщений

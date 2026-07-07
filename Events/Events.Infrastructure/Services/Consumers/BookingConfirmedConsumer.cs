@@ -14,11 +14,11 @@ internal class BookingConfirmedConsumer : IBookingConfirmedConsumer
 
     public BookingConfirmedConsumer(IOptions<BookingConfirmedConsumerSettings> options)
     {
-        var settings = options.Value ?? throw new ArgumentNullException("Не заданы настройки консьюмера 'EventSeatsReservedConsumer'");
+        var settings = options.Value ?? throw new ArgumentNullException("Не заданы настройки консьюмера 'BookingConfirmedConsumer'");
         if (string.IsNullOrEmpty(settings.BootstrapServers)
             || string.IsNullOrEmpty(settings.GroupId)
             || string.IsNullOrEmpty(settings.Topic))
-            throw new ArgumentNullException("Неверно заданы настройки консьюмера 'EventSeatsReservedConsumer'");
+            throw new ArgumentNullException("Неверно заданы настройки консьюмера 'BookingConfirmedConsumer'");
 
         var cfg = new ConsumerConfig()
         {
@@ -34,7 +34,7 @@ internal class BookingConfirmedConsumer : IBookingConfirmedConsumer
     }
 
     ///<inheritdoc/>
-    public void Consume(Action<BookingConfirmed> messageHandler, CancellationToken token)
+    public void Consume(Func<BookingConfirmed, CancellationToken, Task> messageHandler, CancellationToken token)
     {
         try
         {
@@ -48,7 +48,7 @@ internal class BookingConfirmedConsumer : IBookingConfirmedConsumer
             if (bookingConfirmed == null)
                 throw new InvalidOperationException("Ошибка при десериализации ссобщения Kafka.");
 
-            messageHandler(bookingConfirmed);
+            messageHandler(bookingConfirmed, token);
 
             _consumer.StoreOffset(result);
             _consumer.Commit();
