@@ -1,6 +1,4 @@
-﻿using Bookings.Application.AppSettings;
-using Bookings.Application.Common;
-using Bookings.Application.Exceptions;
+﻿using Bookings.Application.Exceptions;
 using Bookings.Application.Interfaces;
 using Bookings.Application.Interfaces.BookingServices;
 using Bookings.Application.Interfaces.Repositories;
@@ -11,34 +9,22 @@ using Bookings.Domain.Exceptions;
 using Bookings.Domain.Models;
 using Contracts;
 using DateTimeManager.Abstractions;
-using Microsoft.Extensions.Options;
-using Polly;
-using Polly.Registry;
-using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using TransactionManager.Abstractions;
 
 namespace Bookings.Application.Services.BookingServices;
 
 /// <summary>
 /// Сервис для работы с заявками бронирования событий
 /// </summary>
-public class BookingService(IBookingRepository bookingRepository        
+public class BookingService(IBookingRepository bookingRepository
     , IDateTimeProvider dateTimeProvider
     , IBookingValidator bookingValidator
-    , IOutboxMessageRepository outboxMEssageRepository
-    , ITransactionService transactionService 
     , ICurrentUserService currentUserService):IBookingService
-{
-    private const string _createBookingMessageType = "BookingConfirmed";
-    private const string _cancelBookingMessageType = "BookingCancelled";
+{    
     private readonly IBookingRepository _bookingRepository = bookingRepository;    
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
     private readonly IBookingValidator _bookingValidator = bookingValidator;
-    private readonly ICurrentUserService _currentUserService = currentUserService;
-    private readonly IOutboxMessageRepository _outboxMessageRepository = outboxMEssageRepository;
-    private readonly ITransactionService _transactionService = transactionService;
+    private readonly ICurrentUserService _currentUserService = currentUserService;    
 
     ///<inheritdoc/>
     /// <exception cref="DbOperationException">Ошибка операций с БД.</exception>
@@ -52,16 +38,9 @@ public class BookingService(IBookingRepository bookingRepository
 
         await ValidateBookingAsync(eventId, userId, token);
 
-        var booking = new Booking(BookingStatus.Pending, eventId, userId, seatsCount, _dateTimeProvider.GetUtcNow());        
-        var message = new BookingConfirmed(Guid.NewGuid(), booking.Id, eventId, userId, seatsCount, _dateTimeProvider.GetUtcNow());
-        var payload = JsonSerializer.Serialize(message);
-        var outboxMessage = new OutboxMessage(eventId, _createBookingMessageType, _dateTimeProvider.GetUtcNow(), payload, 0, false);
-
-        await using var tr = await _transactionService.BeginTransactionAsync(token);
+        var booking = new Booking(BookingStatus.Pending, eventId, userId, seatsCount, _dateTimeProvider.GetUtcNow());                        
         await _bookingRepository.AddAsync(booking, token);
-        await _outboxMessageRepository.AddAsync(outboxMessage, token);
-        await tr.CommitAsync();
-
+        
         return booking.ToResponse();        
     }
 
