@@ -68,5 +68,5 @@ public interface IEventRepository
     /// <param name="token">Токен отмены</param>
     /// <returns>Событие</returns>
     /// <exception cref="InvalidOperationException"></exception>
-    Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token = default);
+    //Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token = default);
 }

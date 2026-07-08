@@ -9,9 +9,9 @@ namespace Events.Application.Services.BackgroundServices;
 /// <summary>
 /// Фоновый сервис для обработки сообщений  BookingConfirmed 
 /// </summary>
-public class BookingConfirmedConsumerBackgroundService : BackgroundService
+public class BookingConfirmedConsumerService : BackgroundService
 {
-    private readonly ILogger<BookingConfirmedConsumerBackgroundService> _logger;
+    private readonly ILogger<BookingConfirmedConsumerService> _logger;
     private readonly IServiceScopeFactory _factory;
     private readonly IBookingConfirmedConsumer _consumer;
 
@@ -21,7 +21,7 @@ public class BookingConfirmedConsumerBackgroundService : BackgroundService
     /// <param name="logger">Логер</param>
     /// <param name="consumer">Консьюмер</param>
     /// <param name="factory">фабрика сервисов</param>
-    public BookingConfirmedConsumerBackgroundService(ILogger<BookingConfirmedConsumerBackgroundService> logger,
+    public BookingConfirmedConsumerService(ILogger<BookingConfirmedConsumerService> logger,
         IServiceScopeFactory factory,
         IBookingConfirmedConsumer consumer)
     {

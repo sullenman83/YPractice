@@ -156,28 +156,28 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
     }
 
     ///<inheritdoc/>
-    public async Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token)
-    {
-        if (_context.Database.CurrentTransaction == null)
-            throw new InvalidOperationException("Транзакция не открыта.");
-        try
-        {
-            var result = await _context.Events.FromSql(
-    $@"SELECT * FROM events WHERE id = {id} FOR UPDATE NOWAIT")
-                .FirstOrDefaultAsync(token);
+    //public async Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token)
+    //{
+    //    if (_context.Database.CurrentTransaction == null)
+    //        throw new InvalidOperationException("Транзакция не открыта.");
+    //    try
+    //    {
+    //        var result = await _context.Events.FromSql(
+    //$@"SELECT * FROM events WHERE id = {id} FOR UPDATE NOWAIT")
+    //            .FirstOrDefaultAsync(token);
 
-            return result;
-        }
-        catch (Exception ex)
-        {
-            var message = "Ошибка плучения собыия с блокировкой";
-            _logger.LogDebug(ex, message);
+    //        return result;
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        var message = "Ошибка плучения собыия с блокировкой";
+    //        _logger.LogDebug(ex, message);
 
-            if (ex.InnerException != null && ex.InnerException is PostgresException pex)
-                if (pex.SqlState == DbErrorCodes.LockRowError)
-                    throw new DbOperationWithBlockingRowException(message);
+    //        if (ex.InnerException != null && ex.InnerException is PostgresException pex)
+    //            if (pex.SqlState == DbErrorCodes.LockRowError)
+    //                throw new DbOperationWithBlockingRowException(message);
 
-            throw new DbOperationException(message, ex);
-        }
-    }
+    //        throw new DbOperationException(message, ex);
+    //    }
+    //}
 }

@@ -54,7 +54,7 @@ public static class ApplicationDIExt
         services.AddScoped<IEventValidator, EventValidator>();
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IBookingConfirmedHandler, BookingConfirmedHandler>();
-        services.AddHostedService<BookingConfirmedConsumerBackgroundService>();
+        services.AddHostedService<BookingConfirmedConsumerService>();
         
         return services;
     }

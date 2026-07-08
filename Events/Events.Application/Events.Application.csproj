@@ -18,8 +18,4 @@
     <ProjectReference Include="..\Events.Domain\Events.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Common\" />
-  </ItemGroup>
-
 </Project>

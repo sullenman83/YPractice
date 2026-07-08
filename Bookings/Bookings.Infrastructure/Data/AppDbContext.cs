@@ -34,11 +34,7 @@ public class AppDbContext : DbContext
     /// </summary>
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
-    /// <summary>
-    /// Исходящие сообщения
-    /// </summary>
-    public DbSet<InboxMessage> InboxMessages => Set<InboxMessage>();
-
+    
     /// <summary>
     /// Создание модели
     /// </summary>

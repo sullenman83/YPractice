@@ -1,6 +1,4 @@
 ﻿using Bookings.Domain.Models;
-using Microsoft.Extensions.Logging;
-
 
 namespace Bookings.Application.Interfaces.Repositories;
 
