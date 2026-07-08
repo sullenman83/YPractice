@@ -5,7 +5,6 @@ using Bookings.Infrastructure.Services.Repositories.BookingRepository;
 using Bookings.Infrastructure.Services.Repositories.MessageRepositories;
 using Bookings.Infrastructure.Services.UserServices;
 using Bookings.Infrastructure.Settings;
-using Bookings.Infrastructure.Settings.ConsumersSettings;
 using DateTimeManager.Abstractions;
 using DateTimeManager.Core;
 using Microsoft.EntityFrameworkCore;
@@ -37,10 +36,7 @@ public static  class InfrastructureDIExt
             ?? throw new InvalidOperationException("Не задана строка подключения к базе даных");
 
         services.Configure<BookingProducerSettings>(configuration.GetSection(nameof(BookingProducerSettings)));
-        services.Configure<EventSeatsReservedConsumerSettings>(configuration.GetSection(nameof(EventSeatsReservedConsumerSettings)));
-        services.Configure<EventSeatsNotReservedConsumerSettings>(configuration.GetSection(nameof(EventSeatsNotReservedConsumerSettings)));
-        services.Configure<BookingConfirmedConsumerSettings>(configuration.GetSection(nameof(BookingConfirmedConsumerSettings)));
-
+        
         if (env.IsDevelopment())
         {
             services.AddDbContext<AppDbContext>(options =>
@@ -64,7 +60,6 @@ public static  class InfrastructureDIExt
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IDateTimeProvider, DateTimeProvider>();
         services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
-        services.AddScoped<IInboxMessageRepository, InboxMessageRepository>();
         services.AddScoped<ITransactionService, TransactionService<AppDbContext>>();
         services.AddSingleton<IBookingProduсer, BookingProducer>();
 

@@ -27,34 +27,6 @@ public static class ApplicationDIExt
         services.Configure<BackgroundProducerServiceSettings>(configuration.GetSection("BackgroundProducerServiceSettings"));
         services.Configure<BookingSettings>(configuration.GetSection("BookingSettings"));
 
-
-        var bbsSettigs = new BackgroundBookingServiceRepeaterSettigs();
-        configuration.GetSection("BackgroundBookingServiceRepeaterSettigs").Bind(bbsSettigs);
-        services.AddResiliencePipeline(Consts.BackgroundBookingServiceRepeater, builder =>
-        {
-            builder.AddRetry(new RetryStrategyOptions()
-            {
-                //ShouldHandle = new PredicateBuilder().Handle<DbOperationWithBlockingRowException>(),
-                MaxRetryAttempts = bbsSettigs.MaxRetryAttempts,
-                Delay = TimeSpan.FromMilliseconds(bbsSettigs.Delay),
-                BackoffType = DelayBackoffType.Constant
-            });
-        });
-
-        var cbSettings = new BookingServiceRepeaterSettings();
-        configuration.GetSection("BookingServiceRepeaterSettings").Bind(cbSettings);
-        services.AddResiliencePipeline(Consts.BookingServiceRepeater, builder =>
-        {
-            builder.AddTimeout(new TimeoutStrategyOptions() { Timeout = TimeSpan.FromMilliseconds(cbSettings.Timeout) });
-            builder.AddRetry(new RetryStrategyOptions()
-            {
-               // ShouldHandle = new PredicateBuilder().Handle<DbOperationWithBlockingRowException>(),
-                MaxRetryAttempts = cbSettings.MaxRetryAttempts,
-                Delay = TimeSpan.FromMilliseconds(cbSettings.Delay),
-                BackoffType = DelayBackoffType.Constant
-            });
-        });
-
         services.AddScoped<IBookingService, BookingService>();
         services.AddScoped<IBookingValidator, BookingValidator>();
         services.AddHostedService<BackgroundProducerService>();
