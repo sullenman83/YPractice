@@ -33,7 +33,7 @@ public class BookingConfirmedConsumerService : BackgroundService
     ///<inheritdoc/>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Фоновый сервис BookingConfirmedConsumerBackgroundService запущен.");
+        _logger.LogInformation("Фоновый сервис BookingConfirmedConsumerService запущен.");
 
         stoppingToken.Register(() => _consumer.Dispose());
 
@@ -54,6 +54,6 @@ public class BookingConfirmedConsumerService : BackgroundService
                 _logger.LogError(ex, "Ошибка при бронировании события.");
             }
         }
-        _logger.LogInformation("Фоновый сервис BookingConfirmedConsumerBackgroundService остановлен.");
+        _logger.LogInformation("Фоновый сервис BookingConfirmedConsumerService остановлен.");
     }
 }

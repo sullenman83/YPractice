@@ -61,12 +61,12 @@ public interface IEventRepository
     /// <returns>Список событий</returns>
     Task<PaginatedResultDTO> GetEventsByFilterAsync(EventFilterRequestDTO filter, CancellationToken token = default);
 
-    /// <summary>
-    /// Вернуть событие с мягкой блокировкой
-    /// </summary>
-    /// <param name="id">Идентификатор события</param>
-    /// <param name="token">Токен отмены</param>
-    /// <returns>Событие</returns>
-    /// <exception cref="InvalidOperationException"></exception>
+    ///// <summary>
+    ///// Вернуть событие с мягкой блокировкой
+    ///// </summary>
+    ///// <param name="id">Идентификатор события</param>
+    ///// <param name="token">Токен отмены</param>
+    ///// <returns>Событие</returns>
+    ///// <exception cref="InvalidOperationException"></exception>
     //Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token = default);
 }

@@ -3,7 +3,6 @@ using DateTimeManager.Core;
 using Events.Application.Interfaces.Consumers;
 using Events.Application.Interfaces.Repositories;
 using Events.Infrastructure.Data;
-using Events.Infrastructure.Data.Configurations;
 using Events.Infrastructure.Services;
 using Events.Infrastructure.Services.Consumers;
 using Events.Infrastructure.Settings.ConsumerSettings;
@@ -58,7 +57,6 @@ public static  class InfrastructureDIExt
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddSingleton<IBookingConfirmedConsumer, BookingConfirmedConsumer>();        
         services.AddScoped<IDateTimeProvider, DateTimeProvider>();
-        services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
         services.AddScoped<IInboxMessageRepository, InboxMessageRepository>();
         services.AddScoped<ITransactionService, TransactionService<AppDbContext>>();
 

@@ -5,7 +5,7 @@ using Events.Application.Interfaces.MessageHandlers;
 using Events.Application.Interfaces.Repositories;
 using Events.Application.Models.Messages;
 using Events.Domain.Exceptions;
-using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using TransactionManager.Abstractions;
 
 namespace Events.Application.Services.MessageHandlers;
@@ -16,19 +16,20 @@ namespace Events.Application.Services.MessageHandlers;
 /// <param name="eventRepository">Репозиторий событий</param>
 /// <param name="inboxRepository">inbox репозиторий</param>
 /// <param name="transactionService">сервис транзакций</param>
-/// <param name="outboxRepository">репозиторий outbox</param>
 /// <param name="dateTimeProvider">Провайдер времени</param>
+/// <param name="logger">Логер</param>
 public class BookingConfirmedHandler(IEventRepository eventRepository, 
     IInboxMessageRepository inboxRepository,
     ITransactionService transactionService,
-    IOutboxMessageRepository outboxRepository,
-    IDateTimeProvider dateTimeProvider) : IBookingConfirmedHandler
+    IDateTimeProvider dateTimeProvider,
+    ILogger<BookingConfirmedHandler> logger) 
+    : IBookingConfirmedHandler
 {
     private readonly IEventRepository _eventRepository = eventRepository;
-    private readonly IOutboxMessageRepository _outboxMessageRepository = outboxRepository;
     private readonly IInboxMessageRepository _inboxMessageRepository = inboxRepository;
     private readonly ITransactionService _transactionService = transactionService;
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
+    private readonly ILogger<BookingConfirmedHandler> _logger = logger;
 
     ///<inheritdoc/>
     public async Task HandleMessage(BookingConfirmed message, CancellationToken token)
@@ -44,11 +45,7 @@ public class BookingConfirmedHandler(IEventRepository eventRepository,
                 throw new NoAvailableSeatsException("Недостаточно мест для бронирования.");
             await _eventRepository.SaveChangesAsync();
 
-            await _inboxMessageRepository.AddAsync(new InboxMessage(message.MessageId));
-
-            var m = new EventSeatsReserved(Guid.NewGuid(), message.BookingId, message.EventId, message.UserId);
-            var payload = JsonSerializer.Serialize(m);
-            await _outboxMessageRepository.AddAsync(new OutboxMessage(message.EventId, nameof(EventSeatsReserved), _dateTimeProvider.GetUtcNow(), payload, 0, false), token);
+            await _inboxMessageRepository.AddAsync(new InboxMessage(message.MessageId));            
             await tr.CommitAsync();
         }
         catch(DublicateInsertionException)
@@ -57,12 +54,10 @@ public class BookingConfirmedHandler(IEventRepository eventRepository,
         }
         catch(Exception ex)
         {
-            await using var tr = await _transactionService.BeginTransactionAsync();
-            await _inboxMessageRepository.AddAsync(new InboxMessage(message.MessageId));
-            var m = new EventSeatsNotReserved(Guid.NewGuid(), message.BookingId, message.EventId, message.UserId, ex.Message);
-            var payload = JsonSerializer.Serialize(m);
-            await _outboxMessageRepository.AddAsync(new OutboxMessage(message.EventId, nameof(EventSeatsReserved), _dateTimeProvider.GetUtcNow(), payload, 0, false), token);
-            await tr.CommitAsync(token);
+            _logger.LogError($"Не удалось зарезервировать места для брони '{message.BookingId}' на событие {message.EventId} по причине {ex.Message}");
+            
+            //ToDo: Тут по хорошему надо было создать outbox сообщение и переправить его в топик проблемных событий (для которых не удалось списать места) и bookings
+            // отловить их и отменить бронирование, но на все времени не хватило            
         }
     }
 }
