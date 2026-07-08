@@ -67,39 +67,39 @@ public class BookingRepository(AppDbContext context, ILogger<BookingRepository> 
     }    
 
     ///<inheritdoc/>
-    public async Task<Booking?> GetBookingWithBlockingAsync(Guid id, CancellationToken token)
-    {
-        //        if (_context.Database.CurrentTransaction == null)
-        //            throw new InvalidOperationException("Транзакция не открыта.");
+    //public async Task<Booking?> GetBookingWithBlockingAsync(Guid id, CancellationToken token)
+    //{
+    //    //        if (_context.Database.CurrentTransaction == null)
+    //    //            throw new InvalidOperationException("Транзакция не открыта.");
 
-        //        try
-        //        {
-        //            var result = await _context.Bookings.FromSql(
-        //    $@"SELECT b.*    
-        //FROM bookings b 
-        //JOIN events e ON e.id = b.event_id
-        //WHERE b.id = {id}
-        //FOR UPDATE NOWAIT")
-        //                .Include(o => o.Event)
-        //                .Include(o => o.User)
-        //                .FirstOrDefaultAsync(token);
+    //    //        try
+    //    //        {
+    //    //            var result = await _context.Bookings.FromSql(
+    //    //    $@"SELECT b.*    
+    //    //FROM bookings b 
+    //    //JOIN events e ON e.id = b.event_id
+    //    //WHERE b.id = {id}
+    //    //FOR UPDATE NOWAIT")
+    //    //                .Include(o => o.Event)
+    //    //                .Include(o => o.User)
+    //    //                .FirstOrDefaultAsync(token);
 
-        //            return result;
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            var message = "Ошибка плучения собыия с блокировкой";
-        //            _logger.LogDebug(ex, message);
+    //    //            return result;
+    //    //        }
+    //    //        catch (Exception ex)
+    //    //        {
+    //    //            var message = "Ошибка плучения собыия с блокировкой";
+    //    //            _logger.LogDebug(ex, message);
 
-        //            if (ex.InnerException != null && ex.InnerException is PostgresException pex)
-        //                if ( pex.SqlState == DbErrorCodes.LockRowError)
-        //                    throw new DbOperationWithBlockingRowException(message);
+    //    //            if (ex.InnerException != null && ex.InnerException is PostgresException pex)
+    //    //                if ( pex.SqlState == DbErrorCodes.LockRowError)
+    //    //                    throw new DbOperationWithBlockingRowException(message);
 
-        //            throw new DbOperationException(message, ex);
-        //        }
+    //    //            throw new DbOperationException(message, ex);
+    //    //        }
 
-        return null;
-    }
+    //    return null;
+    //}
 
     ///<inheritdoc/>
     public async Task<List<Booking>> GetActiveUserBookingAsync(Guid userId, CancellationToken token = default)

@@ -1,4 +1,5 @@
-﻿using Bookings.Application.Exceptions;
+﻿using Bookings.Application.Common;
+using Bookings.Application.Exceptions;
 using Bookings.Application.Interfaces;
 using Bookings.Application.Interfaces.BookingServices;
 using Bookings.Application.Interfaces.Repositories;
@@ -10,6 +11,8 @@ using Bookings.Domain.Models;
 using Contracts;
 using DateTimeManager.Abstractions;
 using System.Text.Json;
+using TransactionManager.Abstractions;
+using UserRooles;
 
 namespace Bookings.Application.Services.BookingServices;
 
@@ -19,12 +22,18 @@ namespace Bookings.Application.Services.BookingServices;
 public class BookingService(IBookingRepository bookingRepository
     , IDateTimeProvider dateTimeProvider
     , IBookingValidator bookingValidator
-    , ICurrentUserService currentUserService):IBookingService
+    , ICurrentUserService currentUserService
+    , ITransactionService transactionService
+    , IOutboxMessageRepository outboxRepository
+    ): IBookingService
+
 {    
     private readonly IBookingRepository _bookingRepository = bookingRepository;    
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
     private readonly IBookingValidator _bookingValidator = bookingValidator;
     private readonly ICurrentUserService _currentUserService = currentUserService;    
+    private readonly ITransactionService _transactionService = transactionService;
+    private readonly IOutboxMessageRepository _outboxRepository = outboxRepository;
 
     ///<inheritdoc/>
     /// <exception cref="DbOperationException">Ошибка операций с БД.</exception>
@@ -66,37 +75,36 @@ public class BookingService(IBookingRepository bookingRepository
     public async Task CancelBookingAsync(Guid id, Guid userId, CancellationToken token = default)
     {
         token.ThrowIfCancellationRequested();
+                
+        var booking = await _bookingRepository.GetByIdAsync(id, token);
+        if (booking == null)
+            throw new NotFoundException($"Бронирование с id {id} не найдено в базе данных.");
 
-        //await _resiliencePipeline.ExecuteAsync(async token =>
-        //{
-        //    //await using var tr = await _transactionService.BeginTransactionAsync(token);
-        //    var booking = await _bookingRepository.GetBookingWithBlockingAsync(id, token);
-        //    if (booking == null)
-        //        throw new NotFoundException($"Бронирование с id {id} не найдено в базе данных.");
-        //    if (booking.Event == null)
-        //        throw new InvalidOperationException("Непредвиденная ошибка при получении бронирования. Не найдено событие.");
-        //    if (booking.User == null)
-        //        throw new InvalidOperationException("Непредвиденная ошибка при получении бронирования. Не найден пользователь.");
+        if (booking.Status == BookingStatus.Cancelled
+            || booking.Status == BookingStatus.Rejected)
+        {
+            return;
+        }
 
-        //    if (booking.Status == BookingStatus.Cancelled
-        //        || booking.Status == BookingStatus.Rejected)
-        //    {
-        //        return;
-        //    }
+        if (booking.UserId != userId && !_currentUserService.IsInRole(UserRole.Admin.ToString()))
+            throw new NoRightsException("Недостаточно прав для удаления бронирования");
 
-        //    //if (booking.User.Id != userId && !_currentUserService.IsInRole(UserRole.Admin.ToString()))
-        //    //    throw new NoRightsException("Недостаточно прав для удаления бронирования");
+        var message = new BookingCancelled(booking.Id, booking.EventId, booking.UserId, booking.SeatsCount, _dateTimeProvider.GetUtcNow());
+        var payload = JsonSerializer.Serialize(booking);
+        var outboxMessage = new OutboxMessage(booking.EventId, MessageTypeConsts.BookingCancelled, _dateTimeProvider.GetUtcNow(), payload, 0, false);
 
-        //    booking.Cancel(_dateTimeProvider.GetUtcNow());
-        //    booking.Event.ReleaseSeats(booking.SeatsCount);
-        //    await _bookingRepository.SaveChangesAsync();
-        //    //await tr.CommitAsync();
-        //});
+        await using var tr = await _transactionService.BeginTransactionAsync(token);
+        booking.Cancel(_dateTimeProvider.GetUtcNow());
+        await _outboxRepository.AddAsync(outboxMessage, token);
+        await _bookingRepository.SaveChangesAsync();
+        await tr.CommitAsync();        
     }
     
     private async Task ValidateBookingAsync(Guid eventId, Guid userId, CancellationToken token)
     {
         var bookings = await _bookingRepository.GetActiveUserBookingAsync(userId, token);
+        
+        //ToDO: проверка на дату передет в events consumer
         //var ev = await _eventRepository.GetByIdAsync(eventId);
         //if (ev == null)
         //    throw new NotFoundException($"Не найдено событие с id {eventId}");
