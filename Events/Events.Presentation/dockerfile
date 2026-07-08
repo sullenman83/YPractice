@@ -1,0 +1,37 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS base
+WORKDIR /app
+EXPOSE 8080
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Копируем файлы проектов с сохранением структуры
+COPY ["YPractice.slnx", "./"]
+COPY ["Events/Events.Presentation/Events.Presentation.csproj", "src/Events/Events.Presentation/"]
+COPY ["Events/Events.Application/Events.Application.csproj", "src/Events/Events.Application/"]
+COPY ["Events/Events.Domain/Events.Domain.csproj", "src/Events/Events.Domain/"]
+COPY ["Events/Events.Infrastructure/Events.Infrastructure.csproj", "src/Events/Events.Infrastructure/"]
+
+COPY ["Common/CommonMiddleware/CommonMiddleware.csproj", "src/Common/CommonMiddleware/"]
+COPY ["Common/CommonServiceCollectionExtensions/CommonServiceCollectionExtensions.csproj", "src/Common/CommonServiceCollectionExtensions/"]
+COPY ["Common/Contracts/Contracts.csproj", "src/Common/Contracts/"]
+
+COPY ["Common/DateTimeProvider/DateTimeProvider.Abstractions/DateTimeManager.Abstractions.csproj", "src/Common/DateTimeProvider/DateTimeProvider.Abstractions/"]
+COPY ["Common/DateTimeProvider/DateTimeProvider.Core/DateTimeManager.Core.csproj", "src/Common/DateTimeProvider/DateTimeProvider.Core/"]
+
+COPY ["Common/TransactionManager/TransactionManager.Abstractions/TransactionManager.Abstractions.csproj", "src/Common/TransactionManager/TransactionManager.Abstractions/"]
+COPY ["Common/TransactionManager/TransactionManager.Core/TransactionManager.Core.csproj", "src/Common/TransactionManager/TransactionManager.Core/"]
+
+COPY ["Common/UserRooles/UserRooles.csproj", "src/Common/UserRooles/"]
+
+
+RUN dotnet restore "src/Events/Events.Presentation/Events.Presentation.csproj"
+COPY . .
+
+WORKDIR "/src/Events/Events.Presentation"
+RUN dotnet publish "Events.Presentation.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "Events.Presentation.dll"]
