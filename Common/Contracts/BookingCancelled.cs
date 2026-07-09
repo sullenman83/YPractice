@@ -6,6 +6,8 @@ namespace Contracts;
 /// </summary>
 public record BookingCancelled
 (
+    Guid MessageId,
+
     Guid BookingId,
 
     Guid EventId,

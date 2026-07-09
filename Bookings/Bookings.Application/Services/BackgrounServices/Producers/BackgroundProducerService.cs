@@ -2,6 +2,7 @@
 using Bookings.Application.Exceptions;
 using Bookings.Application.Interfaces;
 using Bookings.Application.Interfaces.Repositories;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -15,8 +16,8 @@ public class BackgroundProducerService: BackgroundService
 {
     private readonly ILogger<BackgroundProducerService> _logger;
     private readonly IBookingProduсer _bookingProducer;
-    private readonly BackgroundProducerServiceSettings _settings;
-    private readonly IOutboxMessageRepository _repository;
+    private readonly BackgroundProducerServiceSettings _settings;    
+    private readonly IServiceScopeFactory _factory;
 
     /// <summary>
     /// Конструктор
@@ -24,16 +25,16 @@ public class BackgroundProducerService: BackgroundService
     /// <param name="logger">Логер</param>
     /// <param name="options">Натсройки сервиса</param>    
     /// <param name="bookingProducer">Продюсер</param>    
-    /// <param name="repository">Репозиторий сообщений outbox</param>    
+    /// <param name="factory">файбрика сервисов</param>    
     public BackgroundProducerService(ILogger<BackgroundProducerService> logger
         , IOptions<BackgroundProducerServiceSettings> options
         , IBookingProduсer bookingProducer
-        , IOutboxMessageRepository repository)
+        ,IServiceScopeFactory factory)
     {
-        _logger = logger;        
+        _logger = logger;
+        _factory = factory;
         _settings = options.Value ?? throw new ArgumentNullException("Не заданы настройки для фонового сервиса отправки сообщений в Kafka.");
-        _bookingProducer = bookingProducer;
-        _repository = repository;
+        _bookingProducer = bookingProducer;        
     }
 
     /// <summary>
@@ -51,7 +52,10 @@ public class BackgroundProducerService: BackgroundService
         {
             try
             {
-                var messages = await _repository.GetUnprocessed(stoppingToken);
+                using var scope = _factory.CreateScope();
+                var repository = scope.ServiceProvider.GetRequiredService<IOutboxMessageRepository>();
+
+                var messages = await repository.GetUnprocessed(stoppingToken);
 
                 foreach (var m in messages)
                 {
@@ -61,19 +65,19 @@ public class BackgroundProducerService: BackgroundService
                         {
                             //ToDO: тут что-то надо сделать с этим сообщением. Оменить бронь и удалить сообщений или поместить сообщения в отдельный топик
                             _logger.LogCritical($"Достигнуто максимальное количество повторных отправлений смообщения {m.MessageType}, {m.OccuredOn}, {m.Payload}");
-                            break;
+                            continue;
                         }
 
                         var topic = _settings.Topics[m.MessageType];
-                        await _bookingProducer.ProduceAsync(topic, m.Key.ToString(), m.Payload);
+                        await _bookingProducer.ProduceAsync(topic, m.Key.ToString(), m.Payload, stoppingToken);
                         m.Processed = true;
-                        await _repository.SaveChangesAsync();
+                        await repository.SaveChangesAsync(stoppingToken);
                     }
                     catch (BookingProducerException ex)
                     {
                         _logger.LogError(ex.Message);                        
                         m.RetryCount = m.RetryCount + 1;
-                        await _repository.SaveChangesAsync();
+                        await repository.SaveChangesAsync(stoppingToken);
                         break;
                     }
                 }

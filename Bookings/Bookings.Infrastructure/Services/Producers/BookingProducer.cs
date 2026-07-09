@@ -42,11 +42,11 @@ public class BookingProducer: IDisposable, IBookingProduсer
     }
 
     ///<inheritdoc/>
-    public async Task ProduceAsync(string topic, string key, string value)
+    public async Task ProduceAsync(string topic, string key, string value, CancellationToken token)
     {
         try
         {
-            await _producer.ProduceAsync(topic, new Message<string, string> { Key = key, Value = value });
+            await _producer.ProduceAsync(topic, new Message<string, string> { Key = key, Value = value }, token);
         }
         catch(ProduceException<Null, string> ex)
         {

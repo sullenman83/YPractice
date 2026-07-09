@@ -12,10 +12,4 @@ public interface IBookingValidator
     /// </summary>
     /// <param name="bookings">Список бронирований для события</param>
     void ValidateActiveBooking(IReadOnlyCollection<Booking> bookings);
-
-    /// <summary>
-    /// Проверить, что событие еще не началось
-    /// </summary>
-    /// <param name="startDate">Дата начала события</param>
-    void ValidateEventDate(DateTimeOffset startDate);
 }

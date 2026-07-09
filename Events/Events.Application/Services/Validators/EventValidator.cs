@@ -2,7 +2,7 @@
 using Events.Application.Models;
 using Events.Domain.Exceptions;
 
-namespace Events.Application.Services;
+namespace Events.Application.Services.Validators;
 
 /// <summary>
 /// Класс валидации событий
@@ -32,12 +32,6 @@ public class EventValidator : IEventValidator
     private void ValidateDate(DateTimeOffset? startAt, DateTimeOffset? endAt)
     {
         if (endAt < startAt)
-            throw new EventValidationException("Событие содержит некорректные данные. Дата окончания меньше даты начала.");
-
-        if (startAt.HasValue && (startAt.Value.Microsecond != 0 || startAt.Value.Millisecond != 0))
-            throw new EventValidationException("Неверный формат даты начала события. Значение микросекунд и миллисекунд должны быть 0");
-
-        if (endAt.HasValue && (endAt.Value.Microsecond != 0 || endAt.Value.Millisecond != 0))
-            throw new EventValidationException("Неверный формат даты окончания события. Значение микросекунд и миллисекунд должны быть 0");
+            throw new EventValidationException("Событие содержит некорректные данные. Дата окончания меньше даты начала.");       
     }
 }

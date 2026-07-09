@@ -31,29 +31,22 @@ services:
         bookings-db:
             condition: service_healthy # Ждем, пока СУБД полностью поднимется и начнет принимать соединения  
       
-          
+  
   kafka:
-    image: confluentinc/cp-kafka:7.6.1
-    container_name: eventapi-kafka    
+    image: confluentinc/cp-kafka:7.6.0
     ports:
-      # Внешний listener для подключения с хоста (например, из dotnet run локально).
       - "9092:9092"
-    environment:      
+    environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-      # Два listener'а: INTERNAL — для сервисов внутри сети Docker, EXTERNAL — для хоста.
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_CLUSTER_ID: '4L62ydgTyQN6usAxgznBNA' 
-    healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:29092 --list || exit 1"]
-      interval: 10s
-      timeout: 10s
-      retries: 15
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
  
   # ─────────────────────────── Базы данных (по одной на сервис) ───────────────────────────
   users-db:

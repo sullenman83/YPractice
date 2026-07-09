@@ -89,7 +89,7 @@ public class BookingService(IBookingRepository bookingRepository
         if (booking.UserId != userId && !_currentUserService.IsInRole(UserRole.Admin.ToString()))
             throw new NoRightsException("Недостаточно прав для удаления бронирования");
 
-        var message = new BookingCancelled(booking.Id, booking.EventId, booking.UserId, booking.SeatsCount, _dateTimeProvider.GetUtcNow());
+        var message = new BookingCancelled(Guid.NewGuid(), booking.Id, booking.EventId, booking.UserId, booking.SeatsCount, _dateTimeProvider.GetUtcNow());
         var payload = JsonSerializer.Serialize(booking);
         var outboxMessage = new OutboxMessage(booking.EventId, MessageTypeConsts.BookingCancelled, _dateTimeProvider.GetUtcNow(), payload, 0, false);
 
@@ -103,13 +103,8 @@ public class BookingService(IBookingRepository bookingRepository
     private async Task ValidateBookingAsync(Guid eventId, Guid userId, CancellationToken token)
     {
         var bookings = await _bookingRepository.GetActiveUserBookingAsync(userId, token);
-        
-        //ToDO: проверка на дату передет в events consumer
-        //var ev = await _eventRepository.GetByIdAsync(eventId);
-        //if (ev == null)
-        //    throw new NotFoundException($"Не найдено событие с id {eventId}");
-
+                
         _bookingValidator.ValidateActiveBooking(bookings);
-        //_bookingValidator.ValidateEventDate(ev.StartAt);
+        
     }
 }

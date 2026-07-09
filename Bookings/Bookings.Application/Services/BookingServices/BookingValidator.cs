@@ -35,12 +35,5 @@ public class BookingValidator : IBookingValidator
     {
         if (bookings.Count >= _bookingSettings.MaxActiveBookingCount)
             throw new ActiveBookingLimitException($"Превышено максимальное количество бронирований ({_bookingSettings.MaxActiveBookingCount})");
-    }
-
-    ///<inheritdoc/>
-    public void ValidateEventDate(DateTimeOffset startDate)
-    {
-        if (startDate <= _dateTimeProvider.GetUtcNow())
-            throw new PastEventBookingException("Нельзя забронировать событие, которое уже началось");
-    }
+    }    
 }

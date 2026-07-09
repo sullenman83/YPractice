@@ -26,7 +26,9 @@ internal class BookingConfirmedConsumer : IBookingConfirmedConsumer
             GroupId = settings.GroupId,
             AutoOffsetReset = AutoOffsetReset.Earliest,
             EnableAutoCommit = false,
-            EnableAutoOffsetStore = false
+            EnableAutoOffsetStore = false,
+            AllowAutoCreateTopics = true
+
         };
 
         _consumer = new ConsumerBuilder<string, string>(cfg).Build();

@@ -15,6 +15,7 @@ public interface IBookingProduсer: IDisposable
     /// <param name="topic">Название топика</param>
     /// <param name="key">Ключ для определения партиции</param>
     /// <param name="value">сообщение</param>
+    /// <param name="token">токен отмены</param>
     /// <returns></returns>
-    Task ProduceAsync(string topic, string key, string value);
+    Task ProduceAsync(string topic, string key, string value, CancellationToken token = default);
 }
