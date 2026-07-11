@@ -31,10 +31,14 @@
     <Project Path="Events/Events.Infrastructure/Events.Infrastructure.csproj" Id="eb7f762a-295b-446a-b98f-646c45282c58" />
     <Project Path="Events/Events.Presentation/Events.Presentation.csproj" Id="52d32672-547c-46e9-ba27-c1f7eb4bf6d9" />
   </Folder>
-  <Folder Name="/Tests/">
+  <Folder Name="/OldTests/">
     <Project Path="Tests/EventApi.IntegrationTest/EventApi.IntegrationTest.csproj" />
     <Project Path="Tests/EventService.Test/UnitTests.csproj" />
     <Project Path="Tests/TestData/TestData.csproj" />
+  </Folder>
+  <Folder Name="/Test/">
+    <Project Path="Auth.Test/Auth.UnitTest.csproj" Id="9077800e-c2fe-4024-b249-a7894412983f" />
+    <Project Path="Bookings.Test/Bookings.Test.csproj" Id="52c7fe4c-b5d7-4018-9754-d250e1997d07" />
   </Folder>
   <Project Path="EventManagement.Application/EventManagement.Application.csproj" Id="0fed859a-08c5-46d0-81dd-6f191b7b8011" />
   <Project Path="EventManagement.Domain/EventManagement.Domain.csproj" Id="3f791b3b-5fec-4c02-8219-306191cf1068" />

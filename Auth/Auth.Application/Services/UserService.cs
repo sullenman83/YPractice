@@ -19,7 +19,6 @@ public class UserService : IUserService
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _tokenGenerator;
-    private readonly ILogger<UserService> _logger;
     
     /// <summary>
     /// Конструктор
@@ -28,12 +27,11 @@ public class UserService : IUserService
     /// <param name="passwordHasher">объект для работы с паролями</param>
     /// <param name="tokenGenerator">Генератор токенов</param>
     /// <param name="logger">Логгер</param>
-    public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtTokenGenerator tokenGenerator, ILogger<UserService> logger)
+    public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtTokenGenerator tokenGenerator)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _tokenGenerator = tokenGenerator;
-        _logger = logger;
     }
 
     ///<inheritdoc/>
