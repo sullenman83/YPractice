@@ -20,7 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\CommonServiceCollectionExtensions\CommonServiceCollectionExtensions.csproj" />
     <ProjectReference Include="..\..\Common\DateTimeProvider\DateTimeProvider.Core\DateTimeManager.Core.csproj" />
+    <ProjectReference Include="..\..\EventManagement.Infrastructure\EventManagement.Infrastructure.csproj" />
     <ProjectReference Include="..\Auth.Application\Auth.Application.csproj" />
     <ProjectReference Include="..\Auth.Domain\Auth.Domain.csproj" />
   </ItemGroup>

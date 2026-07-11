@@ -90,8 +90,8 @@ public class BookingService(IBookingRepository bookingRepository
             throw new NoRightsException("Недостаточно прав для удаления бронирования");
 
         var message = new BookingCancelled(Guid.NewGuid(), booking.Id, booking.EventId, booking.UserId, booking.SeatsCount, _dateTimeProvider.GetUtcNow());
-        var payload = JsonSerializer.Serialize(booking);
-        var outboxMessage = new OutboxMessage(booking.EventId, MessageTypeConsts.BookingCancelled, _dateTimeProvider.GetUtcNow(), payload, 0, false);
+        var payload = JsonSerializer.Serialize(message);
+        var outboxMessage = new OutboxMessage(Guid.NewGuid(), booking.EventId, MessageTypeConsts.BookingCancelled, _dateTimeProvider.GetUtcNow(), payload, 0, false);
 
         await using var tr = await _transactionService.BeginTransactionAsync(token);
         booking.Cancel(_dateTimeProvider.GetUtcNow());

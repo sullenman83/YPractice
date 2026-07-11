@@ -33,7 +33,7 @@ public class BookingCancelledHandler(IEventRepository eventRepository,
     private readonly ILogger<BookingConfirmedHandler> _logger = logger;
     
     ///<inheritdoc/>
-    public async Task HandleMessage(BookingCancelled message, CancellationToken token)
+    public async Task HandleMessageAsync(BookingCancelled message, CancellationToken token)
     {
         try
         {
@@ -49,8 +49,9 @@ public class BookingCancelledHandler(IEventRepository eventRepository,
             await _inboxMessageRepository.AddAsync(new InboxMessage(message.MessageId));
             await tr.CommitAsync();
         }
-        catch (DublicateInsertionException)
+        catch (DublicateInsertionException ex)
         {
+            _logger.LogInformation(ex.Message);
             return;
         }
         catch (Exception ex)

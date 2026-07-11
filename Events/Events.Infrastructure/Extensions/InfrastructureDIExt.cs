@@ -34,6 +34,7 @@ public static  class InfrastructureDIExt
             ?? throw new InvalidOperationException("Не задана строка подключения к базе даных");
 
         services.Configure<BookingConfirmedConsumerSettings>(configuration.GetSection(nameof(BookingConfirmedConsumerSettings)));
+        services.Configure<BookingCancelledConsumerSettings>(configuration.GetSection(nameof(BookingCancelledConsumerSettings)));
 
         if (env.IsDevelopment())
         {
@@ -55,10 +56,12 @@ public static  class InfrastructureDIExt
             });
         }
         services.AddScoped<IEventRepository, EventRepository>();
-        services.AddSingleton<IBookingConfirmedConsumer, BookingConfirmedConsumer>();        
+        services.AddSingleton<IBookingConfirmedConsumer, BookingConfirmedConsumer>();
+        services.AddSingleton<IBookingCancelledConsumer, BookingCancelledConsumer>();
         services.AddScoped<IDateTimeProvider, DateTimeProvider>();
         services.AddScoped<IInboxMessageRepository, InboxMessageRepository>();
         services.AddScoped<ITransactionService, TransactionService<AppDbContext>>();
+
 
         return services;
     }

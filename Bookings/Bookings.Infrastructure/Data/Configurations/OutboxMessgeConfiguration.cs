@@ -17,7 +17,7 @@ public class OutboxMessgeConfiguration : IEntityTypeConfiguration<OutboxMessage>
     /// <exception cref="NotImplementedException"></exception>
     public void Configure(EntityTypeBuilder<OutboxMessage> builder)
     {
-        builder.HasNoKey();
+        builder.HasKey(k => k.Id);
 
         builder.Property(p => p.Key)
             .IsRequired();

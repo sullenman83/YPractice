@@ -4,21 +4,22 @@ using Events.Application.Exceptions;
 using Events.Application.Interfaces.Consumers;
 using Events.Infrastructure.Settings.ConsumerSettings;
 using Microsoft.Extensions.Options;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace Events.Infrastructure.Services.Consumers;
 
-internal class BookingConfirmedConsumer : IBookingConfirmedConsumer
+internal class BookingCancelledConsumer : IBookingCancelledConsumer
 {
     private readonly IConsumer<string, string> _consumer;
 
-    public BookingConfirmedConsumer(IOptions<BookingConfirmedConsumerSettings> options)
+    public BookingCancelledConsumer(IOptions<BookingCancelledConsumerSettings> options)
     {
-        var settings = options.Value ?? throw new ArgumentNullException("Не заданы настройки консьюмера 'BookingConfirmedConsumer'");
+        var settings = options.Value ?? throw new ArgumentNullException("Не заданы настройки консьюмера 'BookingCancelledConsumer'");
         if (string.IsNullOrEmpty(settings.BootstrapServers)
             || string.IsNullOrEmpty(settings.GroupId)
             || string.IsNullOrEmpty(settings.Topic))
-            throw new ArgumentNullException("Неверно заданы настройки консьюмера 'BookingConfirmedConsumer'");
+            throw new ArgumentNullException("Неверно заданы настройки консьюмера 'BookingCancelledConsumer'");
 
         var cfg = new ConsumerConfig()
         {
@@ -28,15 +29,13 @@ internal class BookingConfirmedConsumer : IBookingConfirmedConsumer
             EnableAutoCommit = false,
             EnableAutoOffsetStore = false,
             AllowAutoCreateTopics = true
-
         };
 
         _consumer = new ConsumerBuilder<string, string>(cfg).Build();
         _consumer.Subscribe(settings.Topic);
     }
 
-    ///<inheritdoc/>
-    public async Task ConsumeAsync(Func<BookingConfirmed, CancellationToken, Task> messageHandler, CancellationToken token)
+    public async Task ConsumeAsync(Func<BookingCancelled, CancellationToken, Task> messageHandler, CancellationToken token)
     {
         try
         {
@@ -46,25 +45,25 @@ internal class BookingConfirmedConsumer : IBookingConfirmedConsumer
                 return;
             }
 
-            var bookingConfirmed = JsonSerializer.Deserialize<BookingConfirmed>(result.Message.Value);
-            if (bookingConfirmed == null)
+            var bookingCancelled = JsonSerializer.Deserialize<BookingCancelled>(result.Message.Value);
+            if (bookingCancelled == null)
                 throw new InvalidOperationException("Ошибка при десериализации ссобщения Kafka.");
 
-            await messageHandler(bookingConfirmed, token);
+            await messageHandler(bookingCancelled, token);
 
             _consumer.StoreOffset(result);
             _consumer.Commit();
         }
-        catch (ConsumeException ex) 
+        catch (ConsumeException ex)
         {
-            if(ex.Error.IsFatal)
+            if (ex.Error.IsFatal)
             {
                 //ToDo: тут надо как-то перебилдить консьюмер
             }
 
             throw new ConsumerException($"Ошибка получения сообщения из Kafka: {ex.Error.Reason}");
-        }        
-    } 
+        }
+    }
 
     public void Dispose()
     {

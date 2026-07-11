@@ -155,7 +155,7 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
         }
     }
 
-    ///<inheritdoc/>
+    /////<inheritdoc/>
     //public async Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token)
     //{
     //    if (_context.Database.CurrentTransaction == null)

@@ -40,7 +40,7 @@ public class BookingHandlerService(ILogger<BookingHandlerService> logger
         booking.Confirm(_dateTimeProvider.GetUtcNow());
         var message = new BookingConfirmed(Guid.NewGuid(), booking.Id, booking.EventId, booking.UserId, booking.SeatsCount, _dateTimeProvider.GetUtcNow());
         var payload = JsonSerializer.Serialize(message);
-        var outboxMessage = new OutboxMessage(booking.EventId, MessageTypeConsts.BookingConfirmed, _dateTimeProvider.GetUtcNow(), payload, 0, false);
+        var outboxMessage = new OutboxMessage(Guid.NewGuid(), booking.EventId, MessageTypeConsts.BookingConfirmed, _dateTimeProvider.GetUtcNow(), payload, 0, false);
         
         await _outboxMessageRepository.AddAsync(outboxMessage, token);
         await _bookingRepository.SaveChangesAsync(token);

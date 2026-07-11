@@ -1,6 +1,7 @@
 ﻿using Bookings.Application.AppSettings;
 using Bookings.Application.Common;
 using Bookings.Application.Interfaces.BookingServices;
+using Bookings.Application.Services;
 using Bookings.Application.Services.BackgrounServices.Producers;
 using Bookings.Application.Services.BookingServices;
 using Microsoft.Extensions.Configuration;
@@ -24,12 +25,15 @@ public static class ApplicationDIExt
     /// <returns>Коллекция сервисов</returns>
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
     {        
-        services.Configure<BackgroundProducerServiceSettings>(configuration.GetSection("BackgroundProducerServiceSettings"));
-        services.Configure<BookingSettings>(configuration.GetSection("BookingSettings"));
+        services.Configure<BackgroundProducerServiceSettings>(configuration.GetSection(nameof(BackgroundProducerServiceSettings)));
+        services.Configure<BookingSettings>(configuration.GetSection(nameof(BookingSettings)));
+        services.Configure<BackgroundBookingServiceSettings>(configuration.GetSection(nameof(BackgroundBookingServiceSettings)));
 
         services.AddScoped<IBookingService, BookingService>();
         services.AddScoped<IBookingValidator, BookingValidator>();
+        services.AddScoped<IBookingHandlerService, BookingHandlerService>();
         services.AddHostedService<BackgroundProducerService>();
+        services.AddHostedService<BackgroundBookingService>();
 
         return services;
     }

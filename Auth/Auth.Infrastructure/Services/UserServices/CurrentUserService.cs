@@ -23,7 +23,7 @@ public class CurrentUserService : ICurrentUserService
     ///<inheritdoc/>
     public bool IsInRole(string role)
     {
-        var user = _context.HttpContext.User;
+        var user = _context.HttpContext?.User;
         return user?.Identity?.IsAuthenticated ?? false 
             && user.IsInRole(role);
     }

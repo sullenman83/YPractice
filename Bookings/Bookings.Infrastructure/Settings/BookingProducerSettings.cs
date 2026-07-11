@@ -12,5 +12,5 @@ public class BookingProducerSettings
     /// <summary>
     /// Адрес сервера кафки
     /// </summary>
-    public string BootstrapServer { get; set; } = string.Empty;
+    public string BootstrapServers { get; set; } = string.Empty;
 }

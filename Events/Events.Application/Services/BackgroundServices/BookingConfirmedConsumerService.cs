@@ -41,9 +41,9 @@ public class BookingConfirmedConsumerService : BackgroundService
         {
             try
             {
-                using var scope = _factory.CreateScope();
+                await using var scope = _factory.CreateAsyncScope();
                 var handler = scope.ServiceProvider.GetRequiredService<IBookingConfirmedHandler>();
-                _consumer.Consume(handler.HandleMessage, stoppingToken);
+                await _consumer.ConsumeAsync(handler.HandleMessageAsync, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {

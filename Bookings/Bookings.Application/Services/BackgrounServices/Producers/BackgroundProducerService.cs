@@ -52,7 +52,7 @@ public class BackgroundProducerService: BackgroundService
         {
             try
             {
-                using var scope = _factory.CreateScope();
+                await using var scope = _factory.CreateAsyncScope();
                 var repository = scope.ServiceProvider.GetRequiredService<IOutboxMessageRepository>();
 
                 var messages = await repository.GetUnprocessed(stoppingToken);

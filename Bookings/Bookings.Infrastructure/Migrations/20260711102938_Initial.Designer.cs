@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Bookings.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260709113821_Initial")]
+    [Migration("20260711102938_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -27,6 +27,11 @@ namespace Bookings.Infrastructure.Migrations
 
             modelBuilder.Entity("Bookings.Application.Models.Messages.OutboxMessage", b =>
                 {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
                     b.Property<Guid>("Key")
                         .HasColumnType("uuid")
                         .HasColumnName("key");
@@ -52,6 +57,9 @@ namespace Bookings.Infrastructure.Migrations
                     b.Property<int>("RetryCount")
                         .HasColumnType("integer")
                         .HasColumnName("retry_count");
+
+                    b.HasKey("Id")
+                        .HasName("pk_outbox_messages");
 
                     b.HasIndex("Processed", "OccuredOn")
                         .HasDatabaseName("ix_outbox_messages_processed_occured_on");

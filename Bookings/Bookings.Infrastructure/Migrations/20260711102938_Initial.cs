@@ -34,6 +34,7 @@ namespace Bookings.Infrastructure.Migrations
                 name: "outbox_messages",
                 columns: table => new
                 {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
                     key = table.Column<Guid>(type: "uuid", nullable: false),
                     message_type = table.Column<string>(type: "text", nullable: false),
                     occured_on = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -43,6 +44,7 @@ namespace Bookings.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
+                    table.PrimaryKey("pk_outbox_messages", x => x.id);
                 });
 
             migrationBuilder.CreateIndex(

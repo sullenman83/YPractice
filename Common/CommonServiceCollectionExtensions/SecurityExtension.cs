@@ -20,8 +20,6 @@ public static class SecurityExtension
     /// <returns>Коллекция сервисов</returns>
     public static IServiceCollection AddSecurity(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<JwtTokenSettings>(configuration.GetSection("JwtTokenSettings"));
-
         var tokenSettings = configuration.GetSection(nameof(JwtTokenSettings)).Get<JwtTokenSettings>()
             ?? throw new InvalidOperationException("не найдены настройки для токена");
         var key = Environment.GetEnvironmentVariable("JWT_KEY") ?? throw new InvalidOperationException("Не найден секретный ключ.");

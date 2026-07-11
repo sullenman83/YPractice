@@ -1,99 +1,166 @@
 services:
-  events-app:
-    image: eventswebapi:latest
-    build:
-      context: .                          # Контекст сборки — корень решения
-      dockerfile: Events/Events.Presentation/Dockerfile  # Путь к конкретному Dockerfile
-    ports:
-      - "5001:8080"                       # Доступен на хосте по порту 5001
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - JWT_KEY=мой секретный ключ
-      - ConnectionStrings__PostgresConnection=Host=events-db;Port=5432;Database=events;Username=postgres;Password=postgres
-    depends_on:
-        events-db:
-            condition: service_healthy # Ждем, пока СУБД полностью поднимется и начнет принимать соединения
-
-  bookings-app:
-    image: bookingswebapi:latest
-    build:
-      context: .                          # Контекст сборки — корень решения
-      dockerfile: Bookings/Bookings.Presentation/Dockerfile
-    ports:
-      - "5002:8080"                       # Доступен на хосте по порту 5002
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - JWT_KEY=мой секретный ключ
-      - ConnectionStrings__PostgresConnection=Host=bookings-db;Port=5432;Database=bookings;Username=postgres;Password=postgres
-     
-  
-    depends_on:
-        bookings-db:
-            condition: service_healthy # Ждем, пока СУБД полностью поднимется и начнет принимать соединения  
-      
-  
   kafka:
     image: confluentinc/cp-kafka:7.6.0
+    container_name: eventapi-kafka
     ports:
-      - "9092:9092"
-    environment:
+      - "${KAFKA_EXTERNAL_PORT}:${KAFKA_EXTERNAL_PORT}"
+    environment:      
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: "INTERNAL://0.0.0.0:${KAFKA_INTERNAL_PORT},EXTERNAL://0.0.0.0:${KAFKA_EXTERNAL_PORT},CONTROLLER://0.0.0.0:${KAFKA_CONTROLLER_PORT}"
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://${KAFKA_HOST}:${KAFKA_INTERNAL_PORT},EXTERNAL://localhost:${KAFKA_EXTERNAL_PORT}"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@${KAFKA_HOST}:${KAFKA_CONTROLLER_PORT}"
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
- 
-  # ─────────────────────────── Базы данных (по одной на сервис) ───────────────────────────
-  users-db:
-    image: postgres:16
-    container_name: eventapi-users-db
-    environment:
-      POSTGRES_DB: users
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
     volumes:
-      - users-db-data:/var/lib/postgresql/data
+      - kafka_data:/var/lib/kafka/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:${KAFKA_INTERNAL_PORT} --list || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
 
-  events-db:
-    image: postgres:16
-    container_name: eventapi-events-db
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka-init
+    depends_on:
+      kafka:
+        condition: service_healthy
     environment:
-      POSTGRES_DB: events
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - events-db-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      KAFKA_TOPICS: ${KAFKA_TOPICS}
+    command: 
+      - /bin/sh
+      - -c
+      - |
+        echo "Creating topics..."
+        IFS=',' read -r -a topics <<< "$$KAFKA_TOPICS"
+        for topic in "$${topics[@]}"; do
+          echo "Creating topic: $$topic"
+          /usr/bin/kafka-topics --create --topic "$$topic" --bootstrap-server "$$KAFKA_BOOTSTRAP_SERVERS" --partitions 3 --replication-factor 1 --if-not-exists
+        done
+        echo "Topics created successfully!"
 
   bookings-db:
-    image: postgres:16
-    container_name: eventapi-bookings-db
+    image: postgres:18
+    container_name: bookings-db
     environment:
-      POSTGRES_DB: bookings
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - bookings-db-data:/var/lib/postgresql/data
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${BOOKINGS_DB_NAME}
+    ports:
+      - "${BOOKINGS_DB_EXTERNAL_PORT}:${BOOKINGS_DB_PORT}"
+    volumes:      
+      - bookings_data:/var/lib/postgresql/18/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
       timeout: 5s
-      retries: 10
-volumes:
-  users-db-data:
-  events-db-data:
-  bookings-db-data:
+      retries: 5
+
+  events-db:
+    image: postgres:18
+    container_name: events-db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${EVENTS_DB_NAME}
+    ports:
+      - "${EVENTS_DB_EXTERNAL_PORT}:${EVENTS_DB_PORT}"
+    volumes:
+      - events_data:/var/lib/postgresql/18/data   
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  users-db:
+    image: postgres:18
+    container_name: users-db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${USERS_DB_NAME}
+    ports:
+      - "${USERS_DB_EXTERNAL_PORT}:${USERS_DB_PORT}"
+    volumes:
+      - users_data:/var/lib/postgresql/18/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  
+  auth-api:
+    build:
+      context: .
+      dockerfile: Auth/Auth.Presentation/Dockerfile
+    container_name: auth-api
+    ports:
+      - "5003:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - JWT_KEY=${JWT_KEY}
+      - ConnectionStrings__DefaultConnection=Host=${USERS_DB_HOST};Port=${USERS_DB_PORT};Database=${USERS_DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}      
+    depends_on:
+      users-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    
+  bookings-api:
+    build: 
+      context: .
+      dockerfile: Bookings/Bookings.Presentation/Dockerfile
+    container_name: bookings-api
+    ports:
+      - "${BOOKINGS_API_PORT}:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - JWT_KEY=${JWT_KEY}
+      - ConnectionStrings__DefaultConnection=Host=${BOOKINGS_DB_HOST};Port=${BOOKINGS_DB_PORT};Database=${BOOKINGS_DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}      
+      - BookingProducerSettings__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}          
+    depends_on:
+      bookings-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+
+  events-api:
+    build:    
+      context: .
+      dockerfile: Events/Events.Presentation/Dockerfile
+    container_name: events-api
+    ports:
+      - "${EVENTS_API_PORT}:80"
+    environment:      
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - JWT_KEY=${JWT_KEY}
+      - ConnectionStrings__DefaultConnection=Host=events-db;Port=${EVENTS_DB_PORT};Database=${EVENTS_DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}      
+      - BookingConfirmedConsumerSettings__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
+      - BookingCancelledConsumerSettings__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}          
+    depends_on:
+      events-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+
+volumes:  
+  bookings_data:
+  events_data:
+  users_data:
+  kafka_data:

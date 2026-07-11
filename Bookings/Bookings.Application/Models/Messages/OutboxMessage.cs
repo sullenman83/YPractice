@@ -6,6 +6,11 @@
 public record OutboxMessage
 {
     /// <summary>
+    /// Ид сообщения
+    /// </summary>
+    public Guid Id { get; set; }
+
+    /// <summary>
     /// Ключ
     /// </summary>
     public Guid Key { get; init; }
@@ -38,14 +43,16 @@ public record OutboxMessage
     /// <summary>
     /// Конструктор
     /// </summary>
+    /// <param name="id">ид сообщения</param>
     /// <param name="key">ключ</param>
     /// <param name="messageType">тип сообщения</param>
     /// <param name="occuredOn">когда создано</param>
     /// <param name="payload">данные</param>
     /// <param name="retryCount">количесство повторных отправлений</param>
     /// <param name="processed">Обработано или нет</param>
-    public OutboxMessage(Guid key, string messageType, DateTimeOffset occuredOn, string payload, int retryCount, bool processed)
+    public OutboxMessage(Guid id, Guid key, string messageType, DateTimeOffset occuredOn, string payload, int retryCount, bool processed)
     {
+        Id = id;
         Key = key; 
         MessageType = messageType; 
         OccuredOn = occuredOn; 

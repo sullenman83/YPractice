@@ -12,5 +12,5 @@ public interface IBookingConfirmedHandler
     /// </summary>
     /// <param name="message">Сообщение</param>
     /// <param name="token">токен отмены</param>    
-    Task HandleMessage(BookingConfirmed message, CancellationToken token);
+    Task HandleMessageAsync(BookingConfirmed message, CancellationToken token);
 }

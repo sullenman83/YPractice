@@ -1,7 +1,6 @@
 ﻿using Auth.Application.Interfaces.Security;
 using Auth.Application.Models;
-using Auth.Infrastructure.Common;
-using DateTimeManager.Abstractions;
+using CommonServiceCollectionExtensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -15,17 +14,14 @@ namespace Auth.Infrastructure.Services.Securiry;
 public class JwtTokenGenerator : IJwtTokenGenerator
 {
     private readonly JwtTokenSettings _jwtTokenSettings;
-    private readonly IDateTimeProvider _dateTimeProvider;
 
     /// <summary>
     /// Конструкотр
     /// </summary>
     /// <param name="jwtToketSettings">Настройки для генератора токенов</param>
-    /// <param name="dateTimeProvider">Провайдер времени</param>
-    public JwtTokenGenerator(IOptions<JwtTokenSettings> jwtToketSettings, IDateTimeProvider dateTimeProvider)
+    public JwtTokenGenerator(IOptions<JwtTokenSettings> jwtToketSettings)
     {
         _jwtTokenSettings = jwtToketSettings.Value;
-        _dateTimeProvider = dateTimeProvider;
     }
 
     ///<inheritdoc/>

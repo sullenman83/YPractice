@@ -11,7 +11,7 @@ namespace Events.Application.Services.BackgroundServices;
 /// </summary>
 internal class BookingCancelledConsumerService : BackgroundService
 {
-    private readonly ILogger<BookingConfirmedConsumerService> _logger;
+    private readonly ILogger<BookingCancelledConsumerService> _logger;
     private readonly IServiceScopeFactory _factory;
     private readonly IBookingCancelledConsumer _consumer;
 
@@ -21,7 +21,7 @@ internal class BookingCancelledConsumerService : BackgroundService
     /// <param name="logger">Логер</param>
     /// <param name="consumer">Консьюмер</param>
     /// <param name="factory">фабрика сервисов</param>
-    public BookingCancelledConsumerService(ILogger<BookingConfirmedConsumerService> logger,
+    public BookingCancelledConsumerService(ILogger<BookingCancelledConsumerService> logger,
         IServiceScopeFactory factory,
         IBookingCancelledConsumer consumer)
     {
@@ -41,9 +41,9 @@ internal class BookingCancelledConsumerService : BackgroundService
         {
             try
             {
-                using var scope = _factory.CreateScope();
+                await using var scope = _factory.CreateAsyncScope();
                 var handler = scope.ServiceProvider.GetRequiredService<IBookingCancelledHandler>();
-                _consumer.Consume(handler.HandleMessage, stoppingToken);
+                await _consumer.ConsumeAsync(handler.HandleMessageAsync, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {

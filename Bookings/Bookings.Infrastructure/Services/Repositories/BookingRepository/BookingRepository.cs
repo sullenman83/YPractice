@@ -2,7 +2,6 @@
 using Bookings.Application.Interfaces.Repositories;
 using Bookings.Domain.Models;
 using Bookings.Infrastructure.Data;
-using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -66,7 +65,7 @@ public class BookingRepository(AppDbContext context, ILogger<BookingRepository> 
         }
     }    
 
-    ///<inheritdoc/>
+    ////<inheritdoc/>
     //public async Task<Booking?> GetBookingWithBlockingAsync(Guid id, CancellationToken token)
     //{
     //    //        if (_context.Database.CurrentTransaction == null)

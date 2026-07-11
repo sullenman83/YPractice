@@ -13,5 +13,5 @@ public interface IBookingCancelledConsumer: IDisposable
     /// </summary>
     /// <param name="messageHandler">Обработчик сообщения</param>
     /// <param name="token">токен отмены</param>
-    void Consume(Func<BookingCancelled, CancellationToken, Task> messageHandler, CancellationToken token);
+    Task ConsumeAsync(Func<BookingCancelled, CancellationToken, Task> messageHandler, CancellationToken token);
 }

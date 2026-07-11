@@ -36,7 +36,7 @@ public class BookingConfirmedHandler(IEventRepository eventRepository,
     private readonly IBookingConfirmedValidator _validator = validator;
 
     ///<inheritdoc/>
-    public async Task HandleMessage(BookingConfirmed message, CancellationToken token)
+    public async Task HandleMessageAsync(BookingConfirmed message, CancellationToken token)
     {
         try
         {
@@ -54,8 +54,9 @@ public class BookingConfirmedHandler(IEventRepository eventRepository,
             await _inboxMessageRepository.AddAsync(new InboxMessage(message.MessageId));            
             await tr.CommitAsync();
         }
-        catch(DublicateInsertionException)
+        catch(DublicateInsertionException ex)
         {
+            _logger.LogInformation(ex.Message);
             return;
         }
         catch(Exception ex)

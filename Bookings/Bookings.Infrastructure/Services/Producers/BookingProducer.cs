@@ -25,7 +25,7 @@ public class BookingProducer: IDisposable, IBookingProduсer
 
         _config = new ProducerConfig()
         {
-            BootstrapServers = settings.BootstrapServer,
+            BootstrapServers = settings.BootstrapServers,
             Acks = Acks.All
         };
 

@@ -3,6 +3,7 @@ using Bookings.Application.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
 
@@ -61,5 +62,40 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         await _bookingService.CancelBookingAsync(id, new Guid(userId), token);
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Создать новое бронирование
+    /// </summary>
+    /// <param name="id">Id события</param>
+    /// <param name="seatsCount">Количество мест для бронирования</param> 
+    /// <param name="token">Токен отмены операции</param>
+    /// <response code="202">Возвращает HTTP статус-код 202 в случае успешного ответа</response>
+    [Produces("application/json")]
+    [ProducesResponseType<BookingResponseDTO>(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status500InternalServerError)]
+    [HttpPost("{id}/book")]
+    public async Task<IActionResult> CreateBooking(Guid id,
+        [Required][Range(1, int.MaxValue)] int seatsCount,
+        CancellationToken token)
+    {
+        var userId = HttpContext.User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        if (userId == null)
+            throw new InvalidCredentialException("Пользователь не авторизован");
+
+        var result = await _bookingService.CreateBookingAsync(id, new Guid(userId), seatsCount, token);
+
+        var values = new RouteValueDictionary
+        {
+            { "controller", "bookings" },
+            { "action", "GetBookingByIdAsync" },
+            { "id", result.Id }
+        };
+
+        return AcceptedAtRoute(values, result);
     }
 }

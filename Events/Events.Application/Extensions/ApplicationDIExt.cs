@@ -28,6 +28,7 @@ public static class ApplicationDIExt
         services.AddScoped<IBookingConfirmedHandler, BookingConfirmedHandler>();
         services.AddScoped<IBookingCancelledHandler, BookingCancelledHandler>();
         services.AddHostedService<BookingConfirmedConsumerService>();
+        services.AddHostedService<BookingCancelledConsumerService>();
         services.AddScoped<IBookingConfirmedValidator, BookingConfirmedValidator>();
         
         return services;

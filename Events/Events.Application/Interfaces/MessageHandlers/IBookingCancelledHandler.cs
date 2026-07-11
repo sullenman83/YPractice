@@ -12,5 +12,5 @@ internal interface IBookingCancelledHandler
     /// </summary>
     /// <param name="message">Сообщение</param>
     /// <param name="token">токен отмены</param>    
-    Task HandleMessage(BookingCancelled message, CancellationToken token);
+    Task HandleMessageAsync(BookingCancelled message, CancellationToken token);
 }

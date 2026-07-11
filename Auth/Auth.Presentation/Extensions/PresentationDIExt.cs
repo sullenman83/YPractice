@@ -15,7 +15,8 @@ public static class PresentationDIExt
     /// <param name="configuration">Конфигурация</param>
     /// <returns>Коллекция сервисов</returns>
     public static IServiceCollection AddPresentation(this IServiceCollection services, IHostEnvironment env, IConfiguration configuration)
-    {
+    {        
+        services.Configure<JwtTokenSettings>(configuration.GetSection(nameof(JwtTokenSettings)));        
         services.AddSecurity(configuration);
         services.AddSwager(env);
                 
