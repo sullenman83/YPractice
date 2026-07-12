@@ -26,7 +26,6 @@ public class UserService : IUserService
     /// <param name="userRepository">Репозиторий пользователе</param>
     /// <param name="passwordHasher">объект для работы с паролями</param>
     /// <param name="tokenGenerator">Генератор токенов</param>
-    /// <param name="logger">Логгер</param>
     public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtTokenGenerator tokenGenerator)
     {
         _userRepository = userRepository;

@@ -2,10 +2,8 @@
 using Bookings.Application.Interfaces;
 using Bookings.Application.Interfaces.BookingServices;
 using Bookings.Application.Interfaces.Repositories;
-using Bookings.Application.Services;
 using Bookings.Application.Services.BookingServices;
 using Bookings.Domain.Models;
-using Castle.Core.Logging;
 using DateTimeManager.Abstractions;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
