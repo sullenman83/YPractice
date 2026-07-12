@@ -1,4 +1,4 @@
-﻿namespace Bookings.Application.Common.AppSettings;
+﻿namespace Bookings.Application.AppSettings;
 
 /// <summary>
 /// Настройки для фонового сервиса обработки бронирований
