@@ -2,7 +2,7 @@
 using EventManagement.Application.Models.UserModels;
 using EventManagement.Domain.Models;
 
-namespace EventManagement.Common;
+namespace TestData;
 
 /// <summary>
 /// Генератор тестовых данных

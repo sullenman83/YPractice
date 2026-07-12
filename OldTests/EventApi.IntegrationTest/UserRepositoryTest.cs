@@ -1,5 +1,4 @@
 ﻿using EventManagement.Application.Common.Exceptions;
-using EventManagement.Common;
 using EventManagement.Domain.Models;
 using EventManagement.Infrastructure.Services.UserServices;
 using FluentAssertions;

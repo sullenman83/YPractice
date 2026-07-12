@@ -1,0 +1,603 @@
+﻿using Bookings.Application.Services.BookingServices;
+using Bookings.Domain.Models;
+using Moq;
+using Bookings.Application.Interfaces.Repositories;
+using DateTimeManager.Abstractions;
+using Bookings.Application.Interfaces.BookingServices;
+using TransactionManager.Abstractions;
+using Bookings.Application.Interfaces;
+using FluentAssertions;
+
+
+namespace UnitTest;
+
+public class BookingServiceTest
+{
+    private readonly Mock<IBookingRepository> _mockBookingRepository = new Mock<IBookingRepository>();
+    private readonly Mock<IOutboxMessageRepository> _mockOutboxRepository = new Mock<IOutboxMessageRepository>();
+    private readonly Mock<ITransactionService> _mockTransactionService = new Mock<ITransactionService>();
+    private readonly Mock<ITransaction> _mockTransaction = new Mock<ITransaction>();
+    private readonly Mock<IDateTimeProvider> _mockDateTimeProvider = new Mock<IDateTimeProvider>();
+    private readonly Mock<ICurrentUserService> _mockCurrentUserService = new Mock<ICurrentUserService>();
+    private readonly Mock<IBookingValidator> _mockBookingValidator = new Mock<IBookingValidator>();    
+
+    public BookingServiceTest()
+    {
+        _mockDateTimeProvider.Setup(o => o.GetUtcNow()).Returns(DateTimeOffset.UtcNow.Date);
+        _mockTransactionService.Setup(o => o.BeginTransactionAsync()).ReturnsAsync(_mockTransaction.Object);
+        _mockBookingValidator.Setup(o => o.ValidateActiveBooking(It.IsAny<IReadOnlyCollection<Booking>>()));
+        _mockCurrentUserService.Setup(o => o.IsInRole(It.IsAny<string>())).Returns(true);
+    }
+
+    [Fact]
+    public async Task CreateBooking_ByEventId_ReturnsBookingWithPendingStatus()
+    {
+        // Arrange
+        var eventId = Guid.NewGuid();
+        var userId = Guid.NewGuid();        
+        var seats = 5;        
+        
+        _mockBookingRepository.Setup(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>())).ReturnsAsync(new List<Booking>());        
+        var service = new BookingService(_mockBookingRepository.Object, _mockDateTimeProvider.Object, _mockBookingValidator.Object, _mockCurrentUserService.Object, 
+            _mockTransactionService.Object, _mockOutboxRepository.Object);
+
+        // Act
+        var result = await service.CreateBookingAsync(eventId, userId, seats, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.EventId.Should().Be(eventId);
+        result.UserId.Should().Be(userId);
+        result.Status.Should().Be(BookingStatus.Pending);        
+        _mockBookingRepository.Verify(o => o.AddAsync(It.IsAny<Booking>()), Times.Once);
+        _mockBookingRepository.Verify(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>()), Times.Once);        
+        _mockBookingValidator.Verify(o => o.ValidateActiveBooking(It.IsAny<IReadOnlyCollection<Booking>>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateSeveralBookings_ByEventID_ReturnsUniqueBookingId()
+    {
+        // Arrange
+        var eventId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var bookingCount = 3;
+        var ids = new List<Guid>();
+
+        _mockBookingRepository.Setup(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>())).ReturnsAsync(new List<Booking>());
+        var service = new BookingService(_mockBookingRepository.Object, _mockDateTimeProvider.Object, _mockBookingValidator.Object, _mockCurrentUserService.Object,
+            _mockTransactionService.Object, _mockOutboxRepository.Object);
+
+        // Act
+        for (int i = 0; i < bookingCount; ++i)
+        {
+            var result = await service.CreateBookingAsync(eventId, userId, 1, CancellationToken.None);
+            ids.Add(result.Id);
+        }
+
+        // Assert
+        ids.Should().HaveCount(bookingCount);
+        ids.Should().OnlyHaveUniqueItems();
+        _mockBookingRepository.Verify(o => o.AddAsync(It.IsAny<Booking>()), Times.Exactly(bookingCount));
+        _mockBookingRepository.Verify(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>()), Times.Exactly(bookingCount));
+        _mockBookingValidator.Verify(o => o.ValidateActiveBooking(It.IsAny<IReadOnlyCollection<Booking>>()), Times.Exactly(bookingCount));
+    }
+
+    [Fact]
+    public async Task GetBooking_ById_ReturnsBooking()
+    {
+        // Arrange
+        var eventId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var booking = new Booking(BookingStatus.Pending, eventId, userId, 1, _mockDateTimeProvider.Object.GetUtcNow());
+        var id = booking.Id;
+        _mockBookingRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(booking);
+        var service = new BookingService(_mockBookingRepository.Object, _mockDateTimeProvider.Object, _mockBookingValidator.Object, _mockCurrentUserService.Object,
+            _mockTransactionService.Object, _mockOutboxRepository.Object);
+
+        // Act
+        var result = await service.GetBookingByIdAsync(booking.Id, CancellationToken.None);
+
+        // Assert
+        result.EventId.Should().Be(booking.EventId);
+        result.Id.Should().Be(booking.Id);
+        result.Status.Should().Be(booking.Status);
+    }
+        
+
+    //[Fact]
+    //public async Task CreateBooking_ByDeletedEventId_ThrowsNotFoundException()
+    //{
+    //    // Arrange
+    //    var ev = TestData.GetTestEvent();
+    //    var user = TestData.GetTestUser();
+    //    var eventId = ev.Id;
+    //    _eventRepository.Setup(o => o.GetByIdAsync(eventId)).ReturnsAsync(ev);
+    //    _eventRepository.Setup(o => o.GetEventWithBlockingAsync(eventId)).ReturnsAsync(ev);
+    //    _eventRepository.Setup(o => o.SaveChangesAsync());
+    //    _mockBookingRepository.Setup(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>())).ReturnsAsync(new List<Booking>());
+    //    _mockBookingRepository.Setup(o => o.AddAsync(It.IsAny<Booking>())).ReturnsAsync((Booking b, CancellationToken t) => b);
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        _mockBookingValidator.Object, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+    //    // Act
+    //    var result = await service.CreateBookingAsync(eventId, user.Id, 2, CancellationToken.None);
+    //    _eventRepository.Setup(o => o.GetEventWithBlockingAsync(It.IsAny<Guid>())).Throws<NotFoundException>();
+    //    Func<Task> act = async () => await service.CreateBookingAsync(eventId, user.Id, 2, CancellationToken.None);
+
+    //    // Assert
+    //    result.EventId.Should().Be(eventId);
+    //    await act.Should().ThrowAsync<NotFoundException>();
+    //    _eventRepository.Verify(o => o.GetEventWithBlockingAsync(eventId), Times.Exactly(2));
+    //    _eventRepository.Verify(o => o.SaveChangesAsync(), Times.Exactly(1));
+    //    _mockBookingRepository.Verify(o => o.AddAsync(It.IsAny<Booking>()), Times.Exactly(1));
+    //}
+
+    //[Fact]
+    //public async Task GetBooking_ByInvalidBookingId_ThrowsNotFoundException()
+    //{
+    //    // Arrange        
+    //    var bookingId = Guid.NewGuid();
+    //    _mockBookingRepository.Setup(o => o.GetByIdAsync(It.IsAny<Guid>())).Throws<NotFoundException>();
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        _mockBookingValidator.Object, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+    //    // Act
+    //    Func<Task> act = async () => await service.GetBookingByIdAsync(bookingId, CancellationToken.None);
+
+    //    // Assert
+    //    await act.Should().ThrowAsync<NotFoundException>();
+    //}
+
+    //[Fact]
+    //public async Task CreateSeveralBooking_ReturnsBookingWhitUniqueId()
+    //{
+    //    // Arrange        
+    //    var ev = TestData.GetTestEvent(3);
+    //    var user = TestData.GetTestUser();
+    //    var id = ev.Id;
+    //    var seats = 1;
+    //    var ids = new List<Guid>();
+    //    var cnt = 3;
+
+    //    _eventRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(ev);
+    //    _eventRepository.Setup(o => o.GetEventWithBlockingAsync(id)).ReturnsAsync(ev);
+    //    _eventRepository.Setup(o => o.SaveChangesAsync());
+    //    _mockBookingRepository.Setup(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>())).ReturnsAsync(new List<Booking>());
+    //    _mockBookingRepository.Setup(o => o.AddAsync(It.IsAny<Booking>())).ReturnsAsync((Booking b, CancellationToken t) => b);
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        _mockBookingValidator.Object, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+    //    // Act
+    //    for (int i = 0; i < cnt; ++i)
+    //    {
+    //        var result = await service.CreateBookingAsync(id, user.Id, seats, CancellationToken.None);
+    //        ids.Add(result.Id);
+    //    }
+
+    //    // Assert
+    //    ids.Should().HaveCount(cnt);
+    //    ids.Should().OnlyHaveUniqueItems();
+    //    _eventRepository.Verify(o => o.GetEventWithBlockingAsync(id), Times.Exactly(cnt));
+    //    _eventRepository.Verify(o => o.SaveChangesAsync(), Times.Exactly(cnt));
+    //    _mockBookingRepository.Verify(o => o.AddAsync(It.IsAny<Booking>()), Times.Exactly(cnt));
+    //}
+
+    //[Fact]
+    //public async Task CreateBooking_NoAvailableSeats_ThrowsNoAvailableSeatsException()
+    //{
+    //    //Arrange
+    //    var ev = TestData.GetTestEvent(1);
+    //    var user = TestData.GetTestUser();
+    //    var id = ev.Id;
+    //    var seatsCount = 2;
+
+    //    _eventRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(ev);
+    //    _eventRepository.Setup(o => o.GetEventWithBlockingAsync(id)).ReturnsAsync(ev);
+    //    _eventRepository.Setup(o => o.SaveChangesAsync());
+    //    _mockBookingRepository.Setup(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>())).ReturnsAsync(new List<Booking>());
+    //    _mockBookingRepository.Setup(o => o.AddAsync(It.IsAny<Booking>())).ReturnsAsync((Booking b, CancellationToken t) => b);
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        _mockBookingValidator.Object, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+    //    //Act
+    //    Func<Task<BookingResponseDTO>> act = async () => await service.CreateBookingAsync(id, user.Id, seatsCount, CancellationToken.None);
+
+    //    // Assert
+    //    await act.Should().ThrowAsync<NoAvailableSeatsException>();
+    //    _eventRepository.Verify(o => o.GetEventWithBlockingAsync(id), Times.Once);
+    //    _mockBookingRepository.Verify(o => o.AddAsync(It.IsAny<Booking>()), Times.Never);
+    //    _eventRepository.Verify(o => o.SaveChangesAsync(), Times.Never);
+    //}
+
+    //[Fact]
+    //public async Task ChangeBookingStatus_SetConfirm_ReturnChangedBooking()
+    //{
+    //    // Arrange                
+    //    var eventID = Guid.NewGuid();
+    //    var user = TestData.GetTestUser();
+    //    var booking = new Booking(BookingStatus.Pending, eventID, user.Id, 1, _mockDateTimeProvider.Object.GetUtcNow());
+    //    var id = booking.Id;
+    //    _mockBookingRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(booking);
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        _mockBookingValidator.Object, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+    //    // Act
+    //    var result = await service.GetBookingByIdAsync(id, CancellationToken.None);
+    //    booking.Confirm(_mockDateTimeProvider.Object.GetUtcNow());
+    //    var result1 = await service.GetBookingByIdAsync(id, CancellationToken.None);
+
+    //    // Assert
+    //    result.Status.Should().Be(BookingStatus.Pending);
+    //    result1.Status.Should().Be(BookingStatus.Confirmed);
+    //    result1.ProcessedAt.Should().NotBeNull();
+    //    _mockBookingRepository.Verify(o => o.GetByIdAsync(id), Times.Exactly(2));
+    //}
+
+    //[Fact]
+    //public async Task ChangeBookingStatus_SetCancelled_ReturnChangedBooking()
+    //{
+    //    // Arrange                
+    //    var eventID = Guid.NewGuid();
+    //    var user = TestData.GetTestUser();
+    //    var booking = new Booking(BookingStatus.Pending, eventID, user.Id, 1, _mockDateTimeProvider.Object.GetUtcNow());
+    //    var id = booking.Id;
+    //    _mockBookingRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(booking);
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        _mockBookingValidator.Object, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+    //    // Act
+    //    var result = await service.GetBookingByIdAsync(id, CancellationToken.None);
+    //    booking.Cancel(_mockDateTimeProvider.Object.GetUtcNow());
+    //    var result1 = await service.GetBookingByIdAsync(id, CancellationToken.None);
+
+    //    // Assert
+    //    result.Status.Should().Be(BookingStatus.Pending);
+    //    result1.Status.Should().Be(BookingStatus.Cancelled);
+    //    result1.ProcessedAt.Should().NotBeNull();
+    //    _mockBookingRepository.Verify(o => o.GetByIdAsync(id), Times.Exactly(2));
+    //}
+
+    //[Fact]
+    //public async Task ChangeBookingStatus_SetReject_ReturnChangedBooking()
+    //{
+    //    // Arrange                
+    //    var eventID = Guid.NewGuid();
+    //    var user = TestData.GetTestUser();
+    //    var booking = new Booking(BookingStatus.Pending, eventID, user.Id, 1, _mockDateTimeProvider.Object.GetUtcNow());
+    //    var id = booking.Id;
+    //    _mockBookingRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(booking);
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        _mockBookingValidator.Object, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+
+    //    // Act
+    //    var result = await service.GetBookingByIdAsync(id, CancellationToken.None);
+    //    booking.Reject(_mockDateTimeProvider.Object.GetUtcNow());
+    //    var result1 = await service.GetBookingByIdAsync(id, CancellationToken.None);
+
+    //    // Assert
+    //    result.Status.Should().Be(BookingStatus.Pending);
+    //    result1.Status.Should().Be(BookingStatus.Rejected);
+    //    result1.ProcessedAt.Should().NotBeNull();
+    //    _mockBookingRepository.Verify(o => o.GetByIdAsync(id), Times.Exactly(2));
+    //}
+
+    //[Fact]
+    //public async Task ReleaseSeatsAfterReject_ReturnRightAvailableSeats()
+    //{
+    //    // Arrange        
+    //    int cnt = 5;
+    //    var ev = TestData.GetTestEvent(10);
+    //    var user = TestData.GetTestUser();
+    //    var booking = new Booking(BookingStatus.Confirmed, Guid.NewGuid(), user.Id, cnt, _mockDateTimeProvider.Object.GetUtcNow());
+    //    ev.TryReserveSeats(cnt);
+    //    var availableSeats = ev.AvailableSeats;
+
+    //    // Act        
+    //    booking.Reject(_mockDateTimeProvider.Object.GetUtcNow());
+    //    ev.ReleaseSeats(cnt);
+
+    //    // Assert
+    //    booking.Status.Should().Be(BookingStatus.Rejected);
+    //    availableSeats.Should().Be(ev.TotalSeats - cnt);
+    //    ev.AvailableSeats.Should().Be(ev.TotalSeats);
+    //}
+
+    //[Fact]
+    //public async Task BookingSeatsAfterRelease()
+    //{
+    //    // Arrange        
+    //    int cnt = 5;
+    //    var user = TestData.GetTestUser();
+    //    var ev = TestData.GetTestEvent(10);
+    //    var booking = new Booking(BookingStatus.Confirmed, Guid.NewGuid(), user.Id, cnt, _mockDateTimeProvider.Object.GetUtcNow());
+    //    ev.TryReserveSeats(cnt);
+    //    var availableSeats = ev.AvailableSeats;
+
+    //    // Act        
+    //    booking.Reject(_mockDateTimeProvider.Object.GetUtcNow());
+    //    ev.ReleaseSeats(cnt);
+    //    var availableSeats1 = ev.AvailableSeats;
+    //    ev.TryReserveSeats(cnt);
+
+    //    // Assert
+    //    booking.Status.Should().Be(BookingStatus.Rejected);
+    //    availableSeats.Should().Be(ev.TotalSeats - cnt);
+    //    availableSeats1.Should().Be(ev.TotalSeats);
+    //    ev.AvailableSeats.Should().Be(ev.TotalSeats - cnt);
+    //}
+
+    //[Fact]
+    //public async Task CreateBooking_NegativeSeatsCount_ThrowsArgumentException()
+    //{
+    //    // Arrange
+    //    int totalSeats = 10;
+    //    var ev = TestData.GetTestEvent(totalSeats);
+    //    var user = TestData.GetTestUser();
+    //    var id = ev.Id;
+    //    var bookingCnt = -1;
+
+    //    _eventRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(ev);
+    //    _eventRepository.Setup(o => o.SaveChangesAsync());
+    //    _mockBookingRepository.Setup(o => o.AddAsync(It.IsAny<Booking>())).ReturnsAsync((Booking b, CancellationToken t) => b);
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        _mockBookingValidator.Object, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+    //    // Act
+    //    Func<Task<BookingResponseDTO>> act = async () => await service.CreateBookingAsync(id, user.Id, bookingCnt, CancellationToken.None);
+
+    //    // Assert
+    //    await act.Should().ThrowAsync<ArgumentException>();
+    //    _eventRepository.Verify(o => o.GetByIdAsync(id), Times.Once);
+    //    _mockBookingRepository.Verify(o => o.AddAsync(It.IsAny<Booking>()), Times.Never);
+    //    _eventRepository.Verify(o => o.SaveChangesAsync(), Times.Never);
+    //}
+
+    //[Fact]
+    //public async Task ReleaseSeats_MoreThenTotalSeats_ThrowsInvalidOperationException()
+    //{
+    //    // Arrange
+    //    int totalSeats = 10;
+    //    var ev = TestData.GetTestEvent(totalSeats);
+    //    var seatsCount = 1;
+
+    //    // Act
+    //    ev.TryReserveSeats(seatsCount);
+    //    var result1 = ev.ReleaseSeats(seatsCount);
+    //    var result2 = ev.ReleaseSeats(seatsCount);
+
+    //    // Assert
+    //    result1.Should().BeTrue();
+    //    result2.Should().BeFalse();
+    //}
+
+    //[Fact]
+    //public async Task CreateBooking_StartDateLessCurrentDate_ThrowsPastEventBookingException()
+    //{
+    //    //Arrange
+    //    var ev = TestData.GetTestEvent();
+    //    var user = TestData.GetTestUser();
+    //    var id = ev.Id;
+    //    ev.StartAt = ev.StartAt.AddDays(-1);
+    //    var seatsCount = 1;
+    //    var bookingSettings = new BookingSettings()
+    //    {
+    //        MaxActiveBookingCount = 1
+    //    };
+    //    var options = Options.Create(bookingSettings);
+    //    var bookingValidator = new BookingValidator(_mockDateTimeProvider.Object, options);
+
+    //    _eventRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(ev);
+    //    _mockBookingRepository.Setup(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>())).ReturnsAsync(new List<Booking>());
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        bookingValidator, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+    //    //Act
+    //    Func<Task<BookingResponseDTO>> act = async () => await service.CreateBookingAsync(id, user.Id, seatsCount, CancellationToken.None);
+
+    //    // Assert
+    //    await act.Should().ThrowAsync<PastEventBookingException>();
+    //    _eventRepository.Verify(o => o.GetByIdAsync(id), Times.Once);
+    //}
+
+    //[Fact]
+    //public async Task CreateBooking_CurrentDateLessStartDate_ReturnsBooking()
+    //{
+    //    //Arrange
+    //    var ev = TestData.GetTestEvent();
+    //    var user = TestData.GetTestUser();
+    //    var id = ev.Id;
+    //    ev.StartAt = DateTimeOffset.UtcNow.AddDays(2);
+    //    var seatsCount = 1;
+    //    var bookingSettings = new BookingSettings()
+    //    {
+    //        MaxActiveBookingCount = 1
+    //    };
+    //    var options = Options.Create(bookingSettings);
+    //    var bookingValidator = new BookingValidator(_mockDateTimeProvider.Object, options);
+
+    //    _eventRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(ev);
+    //    _eventRepository.Setup(o => o.GetEventWithBlockingAsync(id)).ReturnsAsync(ev);
+    //    _eventRepository.Setup(o => o.SaveChangesAsync());
+    //    _mockBookingRepository.Setup(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>())).ReturnsAsync(new List<Booking>());
+    //    _mockBookingRepository.Setup(o => o.AddAsync(It.IsAny<Booking>())).ReturnsAsync((Booking b, CancellationToken t) => b);
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        bookingValidator, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+    //    //Act
+    //    var result = await service.CreateBookingAsync(id, user.Id, seatsCount, CancellationToken.None);
+
+    //    // Assert
+    //    result.EventId.Should().Be(id);
+    //    result.Status.Should().Be(BookingStatus.Pending);
+    //    _eventRepository.Verify(o => o.GetByIdAsync(id), Times.Once);
+    //    _eventRepository.Verify(o => o.SaveChangesAsync(), Times.Once);
+    //    _mockBookingRepository.Verify(o => o.AddAsync(It.IsAny<Booking>()), Times.Once);
+    //    _eventRepository.Verify(o => o.GetEventWithBlockingAsync(id), Times.Once);
+    //}
+
+
+    //[Fact]
+    //public async Task CreateBooking_BookingCountLessMaxActiveBooking_ReturnsBooking()
+    //{
+    //    //Arrange
+    //    var ev = TestData.GetTestEvent();
+    //    var user = TestData.GetTestUser();
+    //    var id = ev.Id;
+    //    ev.StartAt = DateTimeOffset.UtcNow.AddDays(2);
+    //    var seatsCount = 1;
+    //    var bookingSettings = new BookingSettings()
+    //    {
+    //        MaxActiveBookingCount = 2
+    //    };
+    //    var options = Options.Create(bookingSettings);
+    //    var bookingValidator = new BookingValidator(_mockDateTimeProvider.Object, options);
+
+    //    var bookinglist = new List<Booking>()
+    //    {
+    //        new Booking(BookingStatus.Pending, id, user.Id, 1, DateTimeOffset.UtcNow),
+    //    };
+
+    //    _eventRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(ev);
+    //    _eventRepository.Setup(o => o.GetEventWithBlockingAsync(id)).ReturnsAsync(ev);
+    //    _eventRepository.Setup(o => o.SaveChangesAsync());
+    //    _mockBookingRepository.Setup(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>())).ReturnsAsync(bookinglist);
+    //    _mockBookingRepository.Setup(o => o.AddAsync(It.IsAny<Booking>())).ReturnsAsync((Booking b, CancellationToken t) => b);
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        bookingValidator, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+    //    //Act
+    //    var result = await service.CreateBookingAsync(id, user.Id, seatsCount, CancellationToken.None);
+
+    //    // Assert
+    //    result.EventId.Should().Be(id);
+    //    result.Status.Should().Be(BookingStatus.Pending);
+    //    _eventRepository.Verify(o => o.GetByIdAsync(id), Times.Once);
+    //    _eventRepository.Verify(o => o.SaveChangesAsync(), Times.Once);
+    //    _mockBookingRepository.Verify(o => o.AddAsync(It.IsAny<Booking>()), Times.Once);
+    //    _eventRepository.Verify(o => o.GetEventWithBlockingAsync(id), Times.Once);
+    //}
+
+    //[Fact]
+    //public async Task CreateBooking_BookingCountMoreMaxActiveBooking_ThrowsActiveBookingLimitException()
+    //{
+    //    //Arrange
+    //    var ev = TestData.GetTestEvent();
+    //    var user = TestData.GetTestUser();
+    //    var id = ev.Id;
+    //    ev.StartAt = DateTimeOffset.UtcNow.AddDays(2);
+    //    var seatsCount = 1;
+    //    var bookingSettings = new BookingSettings()
+    //    {
+    //        MaxActiveBookingCount = 1
+    //    };
+    //    var options = Options.Create(bookingSettings);
+    //    var bookingValidator = new BookingValidator(_mockDateTimeProvider.Object, options);
+
+    //    var bookinglist = new List<Booking>()
+    //    {
+    //        new Booking(BookingStatus.Pending, id, user.Id, 1, DateTimeOffset.UtcNow),
+    //        new Booking(BookingStatus.Pending, id, user.Id, 1, DateTimeOffset.UtcNow),
+    //    };
+
+    //    _eventRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(ev);
+    //    _eventRepository.Setup(o => o.GetEventWithBlockingAsync(id)).ReturnsAsync(ev);
+    //    _eventRepository.Setup(o => o.SaveChangesAsync());
+    //    _mockBookingRepository.Setup(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>())).ReturnsAsync(bookinglist);
+    //    _mockBookingRepository.Setup(o => o.AddAsync(It.IsAny<Booking>())).ReturnsAsync((Booking b, CancellationToken t) => b);
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        bookingValidator, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+    //    //Act
+    //    Func<Task<BookingResponseDTO>> act = async () => await service.CreateBookingAsync(id, user.Id, seatsCount, CancellationToken.None);
+
+    //    // Assert
+    //    await act.Should().ThrowAsync<ActiveBookingLimitException>();
+    //    _eventRepository.Verify(o => o.GetByIdAsync(id), Times.Once);
+    //    _eventRepository.Verify(o => o.SaveChangesAsync(), Times.Never);
+    //    _mockBookingRepository.Verify(o => o.AddAsync(It.IsAny<Booking>()), Times.Never);
+    //    _eventRepository.Verify(o => o.GetEventWithBlockingAsync(id), Times.Never);
+    //}
+
+
+    //[Fact]
+    //public async Task CancelBooking_OwnBooking_ChangesBookingStatus()
+    //{
+    //    //Arrange
+    //    var ev = TestData.GetTestEvent();
+    //    var user = TestData.GetTestUser();
+    //    var id = ev.Id;
+    //    ev.StartAt = DateTimeOffset.UtcNow.AddDays(2);
+    //    var booking = TestData.GetTestBooking(ev, user, DateTimeOffset.UtcNow);
+
+    //    _mockBookingRepository.Setup(o => o.GetBookingWithBlockingAsync(It.IsAny<Guid>())).ReturnsAsync(booking);
+    //    _mockCurrentUserService.Setup(o => o.IsInRole(It.IsAny<string>())).Returns(false);
+
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        _mockBookingValidator.Object, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+    //    //Act
+    //    await service.CancelBookingAsync(booking.Id, user.Id);
+
+    //    // Assert
+    //    booking.Status.Should().Be(BookingStatus.Cancelled);
+    //    _mockBookingRepository.Verify(o => o.GetBookingWithBlockingAsync(booking.Id), Times.Once);
+    //    _mockCurrentUserService.Verify(o => o.IsInRole(It.IsAny<string>()), Times.Never);
+    //}
+
+    //[Fact]
+    //public async Task CancelBooking_NotOwnBooking_ThrowsNoRightsException()
+    //{
+    //    //Arrange
+    //    var ev = TestData.GetTestEvent();
+    //    var user = TestData.GetTestUser();
+    //    var user1 = new User("user2", "password2", UserRole.User);
+    //    var id = ev.Id;
+    //    ev.StartAt = DateTimeOffset.UtcNow.AddDays(2);
+    //    var booking = TestData.GetTestBooking(ev, user, DateTimeOffset.UtcNow);
+
+    //    _mockBookingRepository.Setup(o => o.GetBookingWithBlockingAsync(It.IsAny<Guid>())).ReturnsAsync(booking);
+    //    _mockCurrentUserService.Setup(o => o.IsInRole(It.IsAny<string>())).Returns(false);
+
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        _mockBookingValidator.Object, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+    //    //Act
+    //    Func<Task> act = async () => await service.CancelBookingAsync(booking.Id, user1.Id);
+
+    //    // Assert
+    //    await act.Should().ThrowAsync<NoRightsException>();
+    //    booking.Status.Should().Be(BookingStatus.Pending);
+    //    _mockBookingRepository.Verify(o => o.GetBookingWithBlockingAsync(booking.Id), Times.Once);
+    //    _mockCurrentUserService.Verify(o => o.IsInRole(It.IsAny<string>()), Times.Once);
+    //    _mockBookingRepository.Verify(o => o.SaveChangesAsync(), Times.Never);
+    //}
+
+    //[Fact]
+    //public async Task CancelBooking_NotOwnBooking_AdminRole_ChangesBookingStatus()
+    //{
+    //    //Arrange
+    //    var ev = TestData.GetTestEvent();
+    //    var user = TestData.GetTestUser();
+    //    var user1 = new User("user2", "password2", UserRole.Admin);
+    //    var id = ev.Id;
+    //    ev.StartAt = DateTimeOffset.UtcNow.AddDays(2);
+    //    var booking = TestData.GetTestBooking(ev, user, DateTimeOffset.UtcNow);
+
+    //    _mockBookingRepository.Setup(o => o.GetBookingWithBlockingAsync(It.IsAny<Guid>())).ReturnsAsync(booking);
+    //    _mockCurrentUserService.Setup(o => o.IsInRole(It.IsAny<string>())).Returns(true);
+
+    //    var service = new BookingService(_mockBookingRepository.Object, _eventRepository.Object, _mockTransactionService.Object, _mockDateTimeProvider.Object,
+    //        _mockBookingValidator.Object, _mockCurrentUserService.Object, _pipelineProvider.Object);
+
+    //    //Act
+    //    await service.CancelBookingAsync(booking.Id, user1.Id);
+
+    //    // Assert        
+    //    booking.Status.Should().Be(BookingStatus.Cancelled);
+    //    _mockBookingRepository.Verify(o => o.GetBookingWithBlockingAsync(booking.Id), Times.Once);
+    //    _mockCurrentUserService.Verify(o => o.IsInRole(It.IsAny<string>()), Times.Once);
+    //    _mockBookingRepository.Verify(o => o.SaveChangesAsync(), Times.Once);
+    //}
+
+}

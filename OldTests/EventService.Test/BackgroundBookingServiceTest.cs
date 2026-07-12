@@ -3,7 +3,6 @@ using EventManagement.Application.Interfaces;
 using EventManagement.Application.Interfaces.Repositories;
 using EventManagement.Application.Interfaces.Services;
 using EventManagement.Application.Services.BookingServices;
-using EventManagement.Common;
 using EventManagement.Domain.Models;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;

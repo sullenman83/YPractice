@@ -1,6 +1,5 @@
 ﻿using EventManagement.Application.Common.Exceptions;
 using EventManagement.Application.Interfaces;
-using EventManagement.Common;
 using EventManagement.Domain.Models;
 using EventManagement.Infrastructure.Services;
 using EventManagement.Infrastructure.Services.BookingServices;

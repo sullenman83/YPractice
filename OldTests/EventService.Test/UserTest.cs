@@ -3,7 +3,6 @@ using EventManagement.Application.Interfaces.Security;
 using EventManagement.Application.Models;
 using EventManagement.Application.Models.UserModels;
 using EventManagement.Application.Services.UserService;
-using EventManagement.Common;
 using EventManagement.Domain.Exceptions;
 using EventManagement.Domain.Models;
 using FluentAssertions;

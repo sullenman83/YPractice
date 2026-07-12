@@ -18,6 +18,7 @@ public static class BookingExtension
         {
             EventId = booking.EventId,
             Id = booking.Id,
+            UserId = booking.UserId,
             Status = booking.Status,
             SeatsCount = booking.SeatsCount,
             ProcessedAt = booking.ProcessedAt,

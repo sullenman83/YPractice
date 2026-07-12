@@ -3,7 +3,6 @@ using EventManagement.Application.Interfaces.Services.EventServices;
 using EventManagement.Application.Models.Events;
 using EventManagement.Application.Models.Events.Extensions;
 using EventManagement.Application.Services.EventServices;
-using EventManagement.Common;
 using EventManagement.Domain.Exceptions;
 using EventManagement.Domain.Models;
 using FluentAssertions;

@@ -19,6 +19,11 @@ public class BookingResponseDTO
     public required Guid EventId { get; set; }
 
     /// <summary>
+    /// Идентификатор пользователя
+    /// </summary>
+    public required Guid UserId { get; set; }
+
+    /// <summary>
     /// Кр=оличество мест в брони
     /// </summary>
     public int SeatsCount { get; set; }
