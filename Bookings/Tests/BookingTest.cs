@@ -3,7 +3,7 @@ using DateTimeManager.Abstractions;
 using FluentAssertions;
 using Moq;
 
-namespace UnitTest;
+namespace Bookings.UnitTests;
 
 public class BookingTest
 {

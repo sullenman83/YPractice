@@ -6,7 +6,7 @@
     <Project Path="Auth/Auth.Presentation/Auth.Presentation.csproj" />
   </Folder>
   <Folder Name="/Auth/Tests/">
-    <Project Path="Auth/Tests/UnitTests.csproj" />
+    <Project Path="Auth/Tests/Auth.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Bookings/">
     <Project Path="Bookings/Bookings.Application/Bookings.Application.csproj" Id="9a7421a2-6696-4981-bb06-b0224318b1b9" />
@@ -15,7 +15,7 @@
     <Project Path="Bookings/Bookings.Presentation/Bookings.Presentation.csproj" Id="d011b587-46cc-45ed-a268-a6469cb000ac" />
   </Folder>
   <Folder Name="/Bookings/Tests/">
-    <Project Path="Bookings/Tests/UnitTests.csproj" />
+    <Project Path="Bookings/Tests/Bookings.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Common/">
     <Project Path="Common/CommonMiddleware/CommonMiddleware.csproj" Id="63d641b8-eea8-47ae-a057-63d2419359a3" />
@@ -38,17 +38,13 @@
     <Project Path="Events/Events.Presentation/Events.Presentation.csproj" Id="52d32672-547c-46e9-ba27-c1f7eb4bf6d9" />
   </Folder>
   <Folder Name="/Events/Tests/">
-    <Project Path="Events/Tests/UnitTests/UnitTests.csproj" Id="10fa40d7-ff7a-4df5-9a40-d16eb6378763" />
+    <Project Path="Events/Tests/TestData/TestData.csproj" Id="bb1abde3-1202-42d4-a2c8-dca279082c44" />
+    <Project Path="Events/Tests/UnitTests/Events.UnitTests.csproj" Id="10fa40d7-ff7a-4df5-9a40-d16eb6378763" />
   </Folder>
   <Folder Name="/OldTests/">
     <Project Path="OldTests/EventApi.IntegrationTest/EventApi.IntegrationTest.csproj" />
     <Project Path="OldTests/EventService.Test/UnitTests.csproj" />
   </Folder>
-  <Folder Name="/Test/">
-    <Project Path="OldTests/TestData/TestData.csproj" />
-    <Project Path="Tests/BookingsTestData/BookingTestData.csproj" Id="55f2a763-38aa-4be8-9107-5e7811a55fa5" />
-  </Folder>
-  <Folder Name="/Test/UnitTests/" />
   <Project Path="EventManagement.Application/EventManagement.Application.csproj" Id="0fed859a-08c5-46d0-81dd-6f191b7b8011" />
   <Project Path="EventManagement.Domain/EventManagement.Domain.csproj" Id="3f791b3b-5fec-4c02-8219-306191cf1068" />
   <Project Path="EventManagement.Infrastructure/EventManagement.Infrastructure.csproj" Id="4880b8dd-3739-4b80-af0c-c611555618da" />

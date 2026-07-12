@@ -13,7 +13,7 @@ using Bookings.Application.AppSettings;
 using Microsoft.Extensions.Options;
 
 
-namespace UnitTest;
+namespace Bookings.UnitTests;
 
 public class BookingServiceTest
 {

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using TransactionManager.Abstractions;
 
-namespace UnitTest;
+namespace Bookings.UnitTests;
 
 public class BookingHandlerServiceTest
 {

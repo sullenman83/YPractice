@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\EventManagement.Application\EventManagement.Application.csproj" />
-    <ProjectReference Include="..\TestData\TestData.csproj" />
   </ItemGroup>
 
   <ItemGroup>
