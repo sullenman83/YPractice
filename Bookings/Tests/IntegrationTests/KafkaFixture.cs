@@ -20,8 +20,8 @@ internal class KafkaFixture : IAsyncLifetime
         await _kafkaContainer.DisposeAsync().ConfigureAwait(false);
     }
 
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
-        throw new NotImplementedException();
+        await _kafkaContainer.StartAsync().ConfigureAwait(false);
     }
 }
