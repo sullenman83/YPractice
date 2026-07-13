@@ -1,8 +1,11 @@
-﻿using Testcontainers.Kafka;
+﻿using Confluent.Kafka;
+using Confluent.Kafka.Admin;
+using System.Runtime.InteropServices;
+using Testcontainers.Kafka;
 
 namespace Bookings.IntegrationTests;
 
-internal class KafkaFixture : IAsyncLifetime
+public class KafkaFixture : IAsyncLifetime
 {
     private readonly KafkaContainer _kafkaContainer;
 
@@ -23,5 +26,24 @@ internal class KafkaFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         await _kafkaContainer.StartAsync().ConfigureAwait(false);
+    }
+
+
+    public async Task ResetTopicsAsync(params string[] topicNames)
+    {
+        var config = new AdminClientConfig { BootstrapServers = BootstrapServers };
+        using var adminClient =  new AdminClientBuilder(config).Build();
+        
+        await adminClient.DeleteTopicsAsync(topicNames).ConfigureAwait(false);
+        await Task.Delay(200);
+        
+        var specifications = topicNames.Select(name => new TopicSpecification()
+        {
+            Name = name,
+            NumPartitions = 1,
+            ReplicationFactor = 1
+        });
+
+        await adminClient.CreateTopicsAsync(specifications);
     }
 }
