@@ -1,23 +1,22 @@
-﻿using EventManagement.Application.Models.Events.Extensions;
-using EventManagement.Application.Models.FilterModels;
-using EventManagement.Domain.Models;
-using EventManagement.Infrastructure.Services;
-using EventManagement.Infrastructure.Services.EventServices;
+﻿using Events.Application.Models.Extensions;
+using Events.Application.Models.FilterModels;
+using Events.Infrastructure.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-namespace EventApi.IntegrationTest;
+using TestData;
+namespace Events.IntegrationTests;
 
 public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFixture>, IAsyncLifetime
 {
     private readonly DatabaseFixture _fixture = fixture;
-    private readonly ILogger<BaseRepository<Event>> _logger = NullLogger<BaseRepository<Event>>.Instance;
+    private readonly ILogger<EventRepository> _logger = NullLogger<EventRepository>.Instance;
 
     [Fact]
     public async Task Test_EmptyFilter_ReturnAllEvents()
     {
         // Arrange
-        var events = TestData.GetTestEvents();
+        var events = EventTestData.GetTestEvents();
         await using var context = _fixture.Context;
         await context.Events.AddRangeAsync(events);
         await context.SaveChangesAsync();
@@ -36,7 +35,7 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
     public async Task TestFilter_ByTitle_ReturnRelevantEvents()
     {
         // Arrange
-        var events = TestData.GetTestEvents();
+        var events = EventTestData.GetTestEvents();
         await using var context = _fixture.Context;
         await context.Events.AddRangeAsync(events);
         await context.SaveChangesAsync();
@@ -56,13 +55,13 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
     public async Task TestFilter_ByDate_ReturnRelevantEvents()
     {
         // Arrange
-        var events = TestData.GetTestEvents();
+        var events = EventTestData.GetTestEvents();
         await using var context = _fixture.Context;
         await context.Events.AddRangeAsync(events);
-        var ev = TestData.GetTestEvent();
+        var ev = EventTestData.GetTestEvent();
         ev.StartAt = events.First().StartAt.AddDays(-1);
         await context.Events.AddAsync(ev);
-        ev = TestData.GetTestEvent();
+        ev = EventTestData.GetTestEvent();
         ev.EndAt = events.Last().EndAt.AddDays(1);
         await context.Events.AddAsync(ev);
         await context.SaveChangesAsync();
@@ -85,7 +84,7 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
         await using var context = _fixture.Context;
         for (var i = 0; i < 3; i++)
         {
-            await context.Events.AddRangeAsync(TestData.GetTestEvents());
+            await context.Events.AddRangeAsync(EventTestData.GetTestEvents());
         }        
         await context.SaveChangesAsync();
         var eventsCount = context.Events.Count();
@@ -109,7 +108,7 @@ public class EventFilterTest(DatabaseFixture fixture) : IClassFixture<DatabaseFi
         await using var context = _fixture.Context;
         for (var i = 0; i < 3; i++)
         {
-            await context.Events.AddRangeAsync(TestData.GetTestEvents());
+            await context.Events.AddRangeAsync(EventTestData.GetTestEvents());
         }
         await context.SaveChangesAsync();
         var eventsCount = context.Events.Count();

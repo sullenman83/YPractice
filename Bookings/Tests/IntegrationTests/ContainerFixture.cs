@@ -1,8 +1,8 @@
-﻿using EventManagement.Infrastructure.Data;
+﻿using Bookings.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
 
-namespace EventApi.IntegrationTest;
+namespace Bookings.IntegrationTests;
 
 public class DatabaseFixture : IAsyncLifetime
 {
@@ -22,7 +22,7 @@ public class DatabaseFixture : IAsyncLifetime
     public DatabaseFixture()
     {
          _container = new PostgreSqlBuilder("postgres:16-alpine")
-        .WithDatabase("EventManagementTest")
+        .WithDatabase("users")
         .WithUsername("postgres")
         .WithPassword("postgres")
         .Build();
@@ -49,7 +49,7 @@ public class DatabaseFixture : IAsyncLifetime
     {
         await using var context = Context;
         await context.Database.ExecuteSqlRawAsync(
-"TRUNCATE TABLE bookings, users, events CASCADE"
+"TRUNCATE TABLE bookings, outbox_messages"
         );
     }
 }

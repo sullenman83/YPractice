@@ -10,7 +10,7 @@ using FluentAssertions;
 using Moq;
 using UserRooles;
 
-namespace UnitTest
+namespace Auth.UnitTests
 {
     public class UserServiceTest
     {

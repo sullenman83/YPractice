@@ -51,5 +51,5 @@ public class UserRepository(AppDbContext context, ILogger<UserRepository> logger
             _logger.LogDebug(message, ex);
             throw new DbOperationException(message);
         }
-    }    
+    }
 }

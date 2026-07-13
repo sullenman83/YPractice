@@ -1,6 +1,5 @@
 ﻿using Auth.Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace Auth.Infrastructure.Data;
 

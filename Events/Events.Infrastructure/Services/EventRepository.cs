@@ -75,37 +75,7 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
             throw new DbOperationException(message);
         }
     }
-
-    ///// <inheritdoc/>
-    //public async Task<IReadOnlyList<Event>> GetAllAsync(CancellationToken token = default)
-    //{
-    //    try
-    //    {
-    //        return await _context.Events.ToListAsync(token);
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        var message = "Ошибка чтения событий.";
-    //        _logger.LogDebug(message, ex);
-    //        throw new DbOperationException(message);
-    //    }
-    //}
-
-    ///// <inheritdoc/>
-    //public async Task<int> GetCountAsync(CancellationToken token = default)
-    //{
-    //    try
-    //    {
-    //        return await _context.Events.CountAsync(token);
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        var message = "Ошибка получения количества событий.";
-    //        _logger.LogDebug(message, ex);
-    //        throw new DbOperationException(message);
-    //    }
-    //}
-
+    
     /// <inheritdoc/>
     public async Task SaveChangesAsync(CancellationToken token = default)
     {
@@ -153,31 +123,5 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
             _logger.LogError(message, ex);
             throw new DbOperationException(message);
         }
-    }
-
-    /////<inheritdoc/>
-    //public async Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token)
-    //{
-    //    if (_context.Database.CurrentTransaction == null)
-    //        throw new InvalidOperationException("Транзакция не открыта.");
-    //    try
-    //    {
-    //        var result = await _context.Events.FromSql(
-    //$@"SELECT * FROM events WHERE id = {id} FOR UPDATE NOWAIT")
-    //            .FirstOrDefaultAsync(token);
-
-    //        return result;
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        var message = "Ошибка плучения собыия с блокировкой";
-    //        _logger.LogDebug(ex, message);
-
-    //        if (ex.InnerException != null && ex.InnerException is PostgresException pex)
-    //            if (pex.SqlState == DbErrorCodes.LockRowError)
-    //                throw new DbOperationWithBlockingRowException(message);
-
-    //        throw new DbOperationException(message, ex);
-    //    }
-    //}
+    }    
 }

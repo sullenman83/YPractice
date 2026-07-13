@@ -1,5 +1,4 @@
 ﻿using Contracts;
-using DateTimeManager.Abstractions;
 using Events.Application.Exceptions;
 using Events.Application.Interfaces.MessageHandlers;
 using Events.Application.Interfaces.Repositories;
@@ -17,21 +16,18 @@ namespace Events.Application.Services.MessageHandlers;
 /// <param name="eventRepository">Репозиторий событий</param>
 /// <param name="inboxRepository">inbox репозиторий</param>
 /// <param name="transactionService">сервис транзакций</param>
-/// <param name="dateTimeProvider">Провайдер времени</param>
 /// <param name="logger">Логер</param>
 /// <param name="validator">Проверка события на валидность даты начала</param>
 public class BookingConfirmedHandler(IEventRepository eventRepository, 
     IInboxMessageRepository inboxRepository,
     ITransactionService transactionService,
-    IDateTimeProvider dateTimeProvider,
     IBookingConfirmedValidator validator,
     ILogger<BookingConfirmedHandler> logger) 
     : IBookingConfirmedHandler
 {
     private readonly IEventRepository _eventRepository = eventRepository;
     private readonly IInboxMessageRepository _inboxMessageRepository = inboxRepository;
-    private readonly ITransactionService _transactionService = transactionService;
-    private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
+    private readonly ITransactionService _transactionService = transactionService;    
     private readonly ILogger<BookingConfirmedHandler> _logger = logger;
     private readonly IBookingConfirmedValidator _validator = validator;
 
