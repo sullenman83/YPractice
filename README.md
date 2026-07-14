@@ -241,7 +241,7 @@ BookingStatus
 		Адаптированы под новую  архитектуру
 
 ## спринт 8
-	# Добавлена родевая модель
+	# Добавлена ролевая модель
 		Без авторизации доступны только два метода 
 		POST /auth/register - добавление нового пользователя 
 		POST /auth/login - получения токена
@@ -285,6 +285,41 @@ BookingStatus
 			MaxActiveBookingCount - количество броней
 
 
+
+## Спринт 9
+	#Монолит был разделен на три сервиса
+		# Auth Сервис отвевчает за пользователей 
+			- добавление пользователей
+			- аутентификация пользователей (генерация токина доступа, который используется во всех сервисах)
+		Сервис доступен по адресу http://localhost:5003/
+		База данных users-db доступна по адресу localhost:5439
+
+		# Events Сервис отвечает за управление событиями 
+			- CRUD операции с событиями
+		Сервис доступен по адресу http://localhost:5002/
+		База данных users-db доступна по адресу localhost:5438
+
+		# Bookings Сервис отвечает за управление бронированиями
+			- Операции создания, удаления, получения информации по бронированияю
+		Сервис доступен по адресу http://localhost:5001/
+		База данных users-db доступна по адресу localhost:5437
+
+	Все настройки для запуска приложения находятся в фйайле docker-compose.yml Значяения переменных окружения лежат в файле .env
+
+	Приложение построену с применением микросервисной архитектуры. Каждый сервис - это независимое приложение со своей базой данных.
+	Взаимодействие меду сервисами осуществляется посредством брокера сообщений - Kafka. При создании брони, сервис bookings создает запись брони в таблике bookings 
+	и одновременно в оной транзакции записывает в таблицу outbox_messages информацию о созданном бронировании. outbox_messages  - это гарант доставки сообщения в kafka 
+	по ринципу at-least-one. Фоновый сервис (продюсер) вычитывает записи из outbo_messages и записывает его с виде контракта (специальный тип) в топик kafka. 
+	Топик именованнй. В микросервисе  events есть фоновый сервис (консьюмер) который читает из топика kafka сообщение и обрабатывает его. Получает согласно информации 
+	в сообщении событие из талицы events и списывает доступные места одновременно с этим в одной транзакции делается запись в таблицу inbox_messages. Это обеспечивает 
+	exactly-once обработку, т.е. сообщение будет обработано только один раз (предотвращение овербукинга).
+	Отмена бронирования работает по тому же принципу. Сервис bookings создает сообщение об отмене брони и записывает его в таблицу outbox_messages. Фоновый сервис (продюсер)
+	помещает его в топик kafka. В микросервисе events фоновый сервис консьюмер читает сообщение. находид используя информацию в сообщении нужное событие 
+	и восстанавливает доступные места.
+	Для каждой операции свой тип сообщения и топик в брокере сообщений.
+
+	Для запуска приложения используется команда docker compose up -d. Выполнять команду надо из папки с солюшеном
+
 ## Команда создания миграций 
 dotnet ef migrations add Initial --project EventManagement.Infrastructure.csproj --startup-project ..\EventManagement.Presentation\EventManagement.Presentation.csproj
 ## команда обновления бд 
@@ -294,29 +329,21 @@ dotnet ef database update --project EventManagement.Infrastructure.csproj --star
 dotnet build EventManagement.Presentation\EventManagement.Presentation.csproj
 
 ## Запуск осуществляется из директории репозитория командой 
-dotnet run --project EventManagement.Presentation\EventManagement.Presentation.csproj
+docker compose up -d
 
 ## Запуск осуществляется из директории репозитория командой 
 dotnet test
 
-
-
-
+## команды создания миграций и апдейта базы данных
 
 events 
-
 dotnet ef migrations add Initial --project Events.Infrastructure.csproj --startup-project ..\Events.Presentation\Events.Presentation.csproj
-
 dotnet ef database update --project Events.Infrastructure.csproj --startup-project ..\Events.Presentation\Events.Presentation.csproj
-
 
 auth
 dotnet ef migrations add Initial --project Auth.Infrastructure.csproj --startup-project ..\Auth.Presentation\Auth.Presentation.csproj
-
 dotnet ef database update --project Auth.Infrastructure.csproj --startup-project ..\Auth.Presentation\Auth.Presentation.csproj
 
 bookings
-
 dotnet ef migrations add Initial --project Bookings.Infrastructure.csproj --startup-project ..\Bookings.Presentation\Bookings.Presentation.csproj
-
 dotnet ef database update --project Bookings.Infrastructure.csproj --startup-project ..\Bookings.Presentation\Bookings.Presentation.csproj

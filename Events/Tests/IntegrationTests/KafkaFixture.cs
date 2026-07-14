@@ -1,17 +1,18 @@
 ﻿using Confluent.Kafka;
 using Confluent.Kafka.Admin;
+using System.Runtime.InteropServices;
 using Testcontainers.Kafka;
 
-namespace Bookings.IntegrationTests;
+namespace Events.IntegrationTests;
 
 public class KafkaFixture : IAsyncLifetime
 {
-    private readonly KafkaContainer _kafkaContainer;    
+    private readonly KafkaContainer _kafkaContainer;
 
     public KafkaFixture()
     {
         _kafkaContainer = new KafkaBuilder("confluentinc/cp-kafka:7.6.0")            
-            .Build();        
+            .Build();
     }
 
     public string BootstrapServers => _kafkaContainer.GetBootstrapAddress();
@@ -34,10 +35,10 @@ public class KafkaFixture : IAsyncLifetime
         try
         {
             await adminClient.DeleteTopicsAsync(topicNames).ConfigureAwait(false);
-            await Task.Delay(200);           
+            await Task.Delay(200);
         }
         catch (DeleteTopicsException)
-        {           
+        {
         }
 
         var specifications = topicNames.Select(name => new TopicSpecification()
@@ -46,6 +47,7 @@ public class KafkaFixture : IAsyncLifetime
             NumPartitions = 1,
             ReplicationFactor = 1
         });
+
         await adminClient.CreateTopicsAsync(specifications);
     }
 }

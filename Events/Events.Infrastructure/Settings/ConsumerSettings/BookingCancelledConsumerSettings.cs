@@ -1,6 +1,9 @@
 ﻿
 namespace Events.Infrastructure.Settings.ConsumerSettings;
 
-internal class BookingCancelledConsumerSettings : ConsumerBaseSettings
+/// <summary>
+/// Настройки для консьюмера обработывающего сообщения BookingCancelled 
+/// </summary>
+public class BookingCancelledConsumerSettings : ConsumerBaseSettings
 {
 }

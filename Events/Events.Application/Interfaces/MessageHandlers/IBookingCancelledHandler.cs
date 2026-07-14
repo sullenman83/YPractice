@@ -5,7 +5,7 @@ namespace Events.Application.Interfaces.MessageHandlers;
 /// <summary>
 /// Интерфейс обработчика сообщения BookingCancelled
 /// </summary>
-internal interface IBookingCancelledHandler
+public interface IBookingCancelledHandler
 {
     /// <summary>
     /// Обработать сообщение

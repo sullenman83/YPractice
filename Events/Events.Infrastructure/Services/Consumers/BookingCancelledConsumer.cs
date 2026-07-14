@@ -4,15 +4,22 @@ using Events.Application.Exceptions;
 using Events.Application.Interfaces.Consumers;
 using Events.Infrastructure.Settings.ConsumerSettings;
 using Microsoft.Extensions.Options;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace Events.Infrastructure.Services.Consumers;
 
-internal class BookingCancelledConsumer : IBookingCancelledConsumer
+/// <summary>
+/// Консьюмер для обработки отмены бронирования
+/// </summary>
+public class BookingCancelledConsumer : IBookingCancelledConsumer
 {
     private readonly IConsumer<string, string> _consumer;
 
+    /// <summary>
+    /// Конструктор
+    /// </summary>
+    /// <param name="options">Настройки консьюмера</param>
+    /// <exception cref="ArgumentNullException">Не заданы настройки</exception>
     public BookingCancelledConsumer(IOptions<BookingCancelledConsumerSettings> options)
     {
         var settings = options.Value ?? throw new ArgumentNullException("Не заданы настройки консьюмера 'BookingCancelledConsumer'");

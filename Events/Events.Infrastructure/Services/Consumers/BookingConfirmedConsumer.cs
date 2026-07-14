@@ -8,10 +8,18 @@ using System.Text.Json;
 
 namespace Events.Infrastructure.Services.Consumers;
 
-internal class BookingConfirmedConsumer : IBookingConfirmedConsumer
+/// <summary>
+/// Консьюмер для обработки BookingConfirmed сообщений
+/// </summary>
+public class BookingConfirmedConsumer : IBookingConfirmedConsumer
 {
     private readonly IConsumer<string, string> _consumer;
 
+    /// <summary>
+    /// Консруктор
+    /// </summary>
+    /// <param name="options">Настройки</param>
+    /// <exception cref="ArgumentNullException">Если настройки не заданы</exception>
     public BookingConfirmedConsumer(IOptions<BookingConfirmedConsumerSettings> options)
     {
         var settings = options.Value ?? throw new ArgumentNullException("Не заданы настройки консьюмера 'BookingConfirmedConsumer'");
