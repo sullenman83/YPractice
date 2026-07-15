@@ -297,12 +297,12 @@ BookingStatus
 		# Events Сервис отвечает за управление событиями 
 			- CRUD операции с событиями
 		Сервис доступен по адресу http://localhost:5002/
-		База данных users-db доступна по адресу localhost:5438
+		База данных bookings-db доступна по адресу localhost:5438
 
 		# Bookings Сервис отвечает за управление бронированиями
 			- Операции создания, удаления, получения информации по бронированияю
 		Сервис доступен по адресу http://localhost:5001/
-		База данных users-db доступна по адресу localhost:5437
+		База данных bookings-db доступна по адресу localhost:5437
 
 	Все настройки для запуска приложения находятся в фйайле docker-compose.yml Значяения переменных окружения лежат в файле .env
 
@@ -320,13 +320,21 @@ BookingStatus
 
 	Для запуска приложения используется команда docker compose up -d. Выполнять команду надо из папки с солюшеном
 
-## Команда создания миграций 
-dotnet ef migrations add Initial --project EventManagement.Infrastructure.csproj --startup-project ..\EventManagement.Presentation\EventManagement.Presentation.csproj
-## команда обновления бд 
-dotnet ef database update --project EventManagement.Infrastructure.csproj --startup-project ..\EventManagement.Presentation\EventManagement.Presentation.csproj
+## Команды создания миграций и обновления БД
+	events 
+	dotnet ef migrations add Initial --project Events.Infrastructure.csproj --startup-project ..\Events.Presentation\Events.Presentation.csproj
+	dotnet ef database update --project Events.Infrastructure.csproj --startup-project ..\Events.Presentation\Events.Presentation.csproj
+
+	auth
+	dotnet ef migrations add Initial --project Auth.Infrastructure.csproj --startup-project ..\Auth.Presentation\Auth.Presentation.csproj
+	dotnet ef database update --project Auth.Infrastructure.csproj --startup-project ..\Auth.Presentation\Auth.Presentation.csproj
+
+	bookings
+	dotnet ef migrations add Initial --project Bookings.Infrastructure.csproj --startup-project ..\Bookings.Presentation\Bookings.Presentation.csproj
+	dotnet ef database update --project Bookings.Infrastructure.csproj --startup-project ..\Bookings.Presentation\Bookings.Presentation.csproj
 		
 ## Сборка осуществляется из директории репозитория командой 
-dotnet build EventManagement.Presentation\EventManagement.Presentation.csproj
+dotnet build YPractice.slnx
 
 ## Запуск осуществляется из директории репозитория командой 
 docker compose up -d
@@ -334,16 +342,3 @@ docker compose up -d
 ## Запуск осуществляется из директории репозитория командой 
 dotnet test
 
-## команды создания миграций и апдейта базы данных
-
-events 
-dotnet ef migrations add Initial --project Events.Infrastructure.csproj --startup-project ..\Events.Presentation\Events.Presentation.csproj
-dotnet ef database update --project Events.Infrastructure.csproj --startup-project ..\Events.Presentation\Events.Presentation.csproj
-
-auth
-dotnet ef migrations add Initial --project Auth.Infrastructure.csproj --startup-project ..\Auth.Presentation\Auth.Presentation.csproj
-dotnet ef database update --project Auth.Infrastructure.csproj --startup-project ..\Auth.Presentation\Auth.Presentation.csproj
-
-bookings
-dotnet ef migrations add Initial --project Bookings.Infrastructure.csproj --startup-project ..\Bookings.Presentation\Bookings.Presentation.csproj
-dotnet ef database update --project Bookings.Infrastructure.csproj --startup-project ..\Bookings.Presentation\Bookings.Presentation.csproj

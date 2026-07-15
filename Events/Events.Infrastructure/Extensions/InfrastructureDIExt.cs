@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using StackExchange.Redis;
 using TransactionManager.Abstractions;
 using TransactionManager.Core;
 
@@ -35,6 +36,7 @@ public static  class InfrastructureDIExt
 
         services.Configure<BookingConfirmedConsumerSettings>(configuration.GetSection(nameof(BookingConfirmedConsumerSettings)));
         services.Configure<BookingCancelledConsumerSettings>(configuration.GetSection(nameof(BookingCancelledConsumerSettings)));
+        var redisSettings = configuration.GetSection("RedisSettings") ?? throw new InvalidOperationException("Не заданы настройки Redis");
 
         if (env.IsDevelopment())
         {
@@ -61,6 +63,11 @@ public static  class InfrastructureDIExt
         services.AddScoped<IDateTimeProvider, DateTimeProvider>();
         services.AddScoped<IInboxMessageRepository, InboxMessageRepository>();
         services.AddScoped<ITransactionService, TransactionService<AppDbContext>>();
+
+        var options = new ConfigurationOptions
+        {
+            EndPoints = 
+        }
 
 
         return services;
