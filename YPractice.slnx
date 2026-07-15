@@ -1,8 +1,62 @@
 <Solution>
-  <Folder Name="/Tests/">
-    <Project Path="Tests/EventApi.IntegrationTest/EventApi.IntegrationTest.csproj" />
-    <Project Path="Tests/EventService.Test/UnitTests.csproj" />
-    <Project Path="Tests/TestData/TestData.csproj" />
+  <Folder Name="/Auth/">
+    <Project Path="Auth/Auth.Application/Auth.Application.csproj" Id="43197892-7f14-4673-87fb-bc0483d449ee" />
+    <Project Path="Auth/Auth.Domain/Auth.Domain.csproj" Id="fbdfd67e-fd73-4a58-9189-d39347dfd76a" />
+    <Project Path="Auth/Auth.Infrastructure/Auth.Infrastructure.csproj" Id="b7a747a0-ee58-4d4f-a25a-3a448b981d4e" />
+    <Project Path="Auth/Auth.Presentation/Auth.Presentation.csproj" />
+  </Folder>
+  <Folder Name="/Auth/Tests/" />
+  <Folder Name="/Auth/Tests/IntegrationTests/">
+    <Project Path="Auth/Tests/IntegrationTest/Auth.IntegrationTest.csproj" />
+  </Folder>
+  <Folder Name="/Auth/Tests/UnitTests/">
+    <Project Path="Auth/Tests/UnitTests/Auth.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/Bookings/">
+    <Project Path="Bookings/Bookings.Application/Bookings.Application.csproj" Id="9a7421a2-6696-4981-bb06-b0224318b1b9" />
+    <Project Path="Bookings/Bookings.Domain/Bookings.Domain.csproj" Id="5a7f6cd4-a8cd-45a7-80dd-fcb72a40fbee" />
+    <Project Path="Bookings/Bookings.Infrastructure/Bookings.Infrastructure.csproj" Id="4127bcd8-6d59-4cde-8e0a-ffc81a948d37" />
+    <Project Path="Bookings/Bookings.Presentation/Bookings.Presentation.csproj" Id="d011b587-46cc-45ed-a268-a6469cb000ac" />
+  </Folder>
+  <Folder Name="/Bookings/Tests/" />
+  <Folder Name="/Bookings/Tests/IntegrationTests/">
+    <Project Path="Bookings/Tests/IntegrationTests/Bookings.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/Bookings/Tests/UnitTests/">
+    <Project Path="Bookings/Tests/UnitTests/Bookings.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/Common/">
+    <Project Path="Common/CommonMiddleware/CommonMiddleware.csproj" Id="63d641b8-eea8-47ae-a057-63d2419359a3" />
+    <Project Path="Common/CommonServiceCollectionExtensions/CommonServiceCollectionExtensions.csproj" Id="68be25aa-d129-46c9-a534-0ff022b3d50b" />
+    <Project Path="Common/Contracts/Contracts.csproj" Id="7ef0a219-bdb7-431e-a218-b33425365d66" />
+    <Project Path="Common/UserRooles/UserRooles.csproj" Id="b681baf0-9a47-47ea-99bc-a5e7d722109f" />
+  </Folder>
+  <Folder Name="/Common/DateTimeProvider/">
+    <Project Path="Common/DateTimeProvider/DateTimeProvider.Abstractions/DateTimeManager.Abstractions.csproj" Id="9e7c24f4-6d47-4481-ae2a-c10b588f5a27" />
+    <Project Path="Common/DateTimeProvider/DateTimeProvider.Core/DateTimeManager.Core.csproj" Id="a8a350a7-0878-4cff-bffe-e4712280c816" />
+  </Folder>
+  <Folder Name="/Common/KafkaTopicBuilder/" />
+  <Folder Name="/Common/TransactionManager/">
+    <Project Path="Common/TransactionManager/TransactionManager.Abstractions/TransactionManager.Abstractions.csproj" Id="6d250176-743d-41d9-8eee-69f6b9241b5c" />
+    <Project Path="Common/TransactionManager/TransactionManager.Core/TransactionManager.Core.csproj" Id="aac461e1-8ee2-4590-9db1-9b326a1c70c5" />
+  </Folder>
+  <Folder Name="/Events/">
+    <Project Path="Events/Events.Application/Events.Application.csproj" Id="ff8f7547-d562-41ba-ae97-0d4637e78b22" />
+    <Project Path="Events/Events.Domain/Events.Domain.csproj" Id="8a4f8267-6aa7-45b1-90b6-7d906c3a337a" />
+    <Project Path="Events/Events.Infrastructure/Events.Infrastructure.csproj" Id="eb7f762a-295b-446a-b98f-646c45282c58" />
+    <Project Path="Events/Events.Presentation/Events.Presentation.csproj" Id="52d32672-547c-46e9-ba27-c1f7eb4bf6d9" />
+  </Folder>
+  <Folder Name="/Events/Tests/">
+    <Project Path="Events/Tests/TestData/TestData.csproj" Id="bb1abde3-1202-42d4-a2c8-dca279082c44" />
+  </Folder>
+  <Folder Name="/Events/Tests/IntegrationTests/">
+    <Project Path="Events/Tests/IntegrationTests/Events.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/Events/Tests/UnitTests/">
+    <Project Path="Events/Tests/UnitTests/Events.UnitTests.csproj" Id="10fa40d7-ff7a-4df5-9a40-d16eb6378763" />
+  </Folder>
+  <Folder Name="/OldTests/">
+    <Project Path="OldTests/EventApi.IntegrationTest/EventApi.IntegrationTest.csproj" />
   </Folder>
   <Project Path="EventManagement.Application/EventManagement.Application.csproj" Id="0fed859a-08c5-46d0-81dd-6f191b7b8011" />
   <Project Path="EventManagement.Domain/EventManagement.Domain.csproj" Id="3f791b3b-5fec-4c02-8219-306191cf1068" />

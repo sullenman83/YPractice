@@ -1,0 +1,32 @@
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+USER $APP_UID
+WORKDIR /app
+EXPOSE 8080
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["Events/Events.Presentation/Events.Presentation.csproj", "Events/Events.Presentation/"]
+COPY ["Common/CommonMiddleware/CommonMiddleware.csproj", "Common/CommonMiddleware/"]
+COPY ["Common/CommonServiceCollectionExtensions/CommonServiceCollectionExtensions.csproj", "Common/CommonServiceCollectionExtensions/"]
+COPY ["Events/Events.Application/Events.Application.csproj", "Events/Events.Application/"]
+COPY ["Common/Contracts/Contracts.csproj", "Common/Contracts/"]
+COPY ["Common/DateTimeProvider/DateTimeProvider.Abstractions/DateTimeManager.Abstractions.csproj", "Common/DateTimeProvider/DateTimeProvider.Abstractions/"]
+COPY ["Common/TransactionManager/TransactionManager.Abstractions/TransactionManager.Abstractions.csproj", "Common/TransactionManager/TransactionManager.Abstractions/"]
+COPY ["Events/Events.Domain/Events.Domain.csproj", "Events/Events.Domain/"]
+COPY ["Events/Events.Infrastructure/Events.Infrastructure.csproj", "Events/Events.Infrastructure/"]
+COPY ["Common/DateTimeProvider/DateTimeProvider.Core/DateTimeManager.Core.csproj", "Common/DateTimeProvider/DateTimeProvider.Core/"]
+COPY ["Common/TransactionManager/TransactionManager.Core/TransactionManager.Core.csproj", "Common/TransactionManager/TransactionManager.Core/"]
+RUN dotnet restore "./Events/Events.Presentation/Events.Presentation.csproj"
+COPY . .
+WORKDIR "/src/Events/Events.Presentation"
+RUN dotnet build "./Events.Presentation.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./Events.Presentation.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "Events.Presentation.dll"]

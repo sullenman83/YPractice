@@ -1,0 +1,54 @@
+﻿using Auth.Application.Interfaces.Security;
+using Auth.Application.Models;
+using CommonServiceCollectionExtensions;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
+namespace Auth.Infrastructure.Services.Securiry;
+
+/// <summary>
+/// Генератор токенов
+/// </summary>
+public class JwtTokenGenerator : IJwtTokenGenerator
+{
+    private readonly JwtTokenSettings _jwtTokenSettings;
+
+    /// <summary>
+    /// Конструкотр
+    /// </summary>
+    /// <param name="jwtToketSettings">Настройки для генератора токенов</param>
+    public JwtTokenGenerator(IOptions<JwtTokenSettings> jwtToketSettings)
+    {
+        _jwtTokenSettings = jwtToketSettings.Value;
+    }
+
+    ///<inheritdoc/>
+    ///<exception cref="InvalidOperationException">НЕ найден ключ</exception>
+    public string CreateJwtToken(JwtToketDTO data)
+    {
+        var claims = new Dictionary<string, object>()
+        {
+            [JwtRegisteredClaimNames.Sub] = data.Id,
+            [JwtRegisteredClaimNames.Name] = data.Login,
+            ["role"] = data.Role.ToString()
+        };
+
+        var key = Environment.GetEnvironmentVariable("JWT_KEY") ?? throw new InvalidOperationException("Не найден секретный ключ.");
+
+        var signingkey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+        var creds = new SigningCredentials(signingkey, SecurityAlgorithms.HmacSha256);
+
+        var descriptor = new SecurityTokenDescriptor
+        {
+            Issuer = _jwtTokenSettings.Issuer,
+            Audience = _jwtTokenSettings.Audience,
+            Expires = DateTime.Now.AddMinutes(_jwtTokenSettings.Expires),
+            Claims = claims,
+            SigningCredentials = creds
+        };
+
+        return new JsonWebTokenHandler().CreateToken(descriptor);
+    }
+}

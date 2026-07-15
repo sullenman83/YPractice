@@ -72,6 +72,6 @@ FOR UPDATE NOWAIT")
 
         return await bookings.Where(o => o.Status == BookingStatus.Pending 
             || o.Status == BookingStatus.Confirmed)
-            .ToListAsync();
+            .ToListAsync(token);
     }
 }

@@ -83,7 +83,7 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
             ActiveBookingLimitException abe => StatusCodes.Status409Conflict,
             PastEventBookingException pee => StatusCodes.Status400BadRequest,
             NoRightsException nre => StatusCodes.Status403Forbidden,
-            InvalidCredentialsException ice => StatusCodes.Status404NotFound,
+            InvalidCredentialsException ice => StatusCodes.Status401Unauthorized,
             
             _ => StatusCodes.Status500InternalServerError
         };

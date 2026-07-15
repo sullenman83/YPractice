@@ -43,7 +43,7 @@ public class UserRepository(AppDbContext context, ILogger<UserRepository> logger
     {
         try
         {
-            return await _context.Users.FirstOrDefaultAsync(x => x.Login == login);
+            return await _context.Users.FirstOrDefaultAsync(x => x.Login == login, token);
         }
         catch (Exception ex)
         {

@@ -1,0 +1,59 @@
+﻿using Events.Application.Interfaces.Consumers;
+using Events.Application.Interfaces.MessageHandlers;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+namespace Events.Application.Services.BackgroundServices;
+
+/// <summary>
+/// Фоновый сервис для обработки сообщений  BookingConfirmed 
+/// </summary>
+public class BookingConfirmedConsumerService : BackgroundService
+{
+    private readonly ILogger<BookingConfirmedConsumerService> _logger;
+    private readonly IServiceScopeFactory _factory;
+    private readonly IBookingConfirmedConsumer _consumer;
+
+    /// <summary>
+    /// Конструктор
+    /// </summary>
+    /// <param name="logger">Логер</param>
+    /// <param name="consumer">Консьюмер</param>
+    /// <param name="factory">фабрика сервисов</param>
+    public BookingConfirmedConsumerService(ILogger<BookingConfirmedConsumerService> logger,
+        IServiceScopeFactory factory,
+        IBookingConfirmedConsumer consumer)
+    {
+        _logger = logger;
+        _factory = factory;
+        _consumer = consumer;
+    }
+
+    ///<inheritdoc/>
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("Фоновый сервис BookingConfirmedConsumerService запущен.");
+
+        stoppingToken.Register(() => _consumer.Dispose());
+
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await using var scope = _factory.CreateAsyncScope();
+                var handler = scope.ServiceProvider.GetRequiredService<IBookingConfirmedHandler>();
+                await _consumer.ConsumeAsync(handler.HandleMessageAsync, stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при бронировании события.");
+            }
+        }
+        _logger.LogInformation("Фоновый сервис BookingConfirmedConsumerService остановлен.");
+    }
+}
