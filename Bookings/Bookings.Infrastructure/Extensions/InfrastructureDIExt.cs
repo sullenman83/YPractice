@@ -1,6 +1,7 @@
 ﻿using Bookings.Application.Interfaces;
 using Bookings.Application.Interfaces.Repositories;
 using Bookings.Infrastructure.Data;
+using Bookings.Infrastructure.Services.Producers;
 using Bookings.Infrastructure.Services.Repositories.BookingRepository;
 using Bookings.Infrastructure.Services.Repositories.MessageRepositories;
 using Bookings.Infrastructure.Services.UserServices;
@@ -11,9 +12,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
 using TransactionManager.Abstractions;
 using TransactionManager.Core;
-using Bookings.Infrastructure.Services.Producers;
 
 namespace Bookings.Infrastructure.Extensions;
 
@@ -31,12 +32,16 @@ public static  class InfrastructureDIExt
     /// <returns>Коллекция сервисов</returns>
     /// <exception cref="InvalidOperationException"></exception>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IHostEnvironment env)
-    {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
+    {        
+        var baseConnectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Не задана строка подключения к базе даных");
-
+        var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? throw new InvalidOperationException("Не задана переменная окружения с паролем Postgres");
         services.Configure<BookingProducerSettings>(configuration.GetSection(nameof(BookingProducerSettings)));
         
+        var connectionString = new NpgsqlConnectionStringBuilder(baseConnectionString)
+        {
+            Password = dbPassword,
+        }.ConnectionString;
         if (env.IsDevelopment())
         {
             services.AddDbContext<AppDbContext>(options =>

@@ -1,4 +1,4 @@
-﻿using Events.Application.Interfaces;
+﻿using Events.Application.Interfaces.Validators;
 using Events.Application.Models;
 using Events.Domain.Exceptions;
 

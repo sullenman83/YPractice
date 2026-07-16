@@ -1,20 +1,26 @@
-﻿using Events.Application.Exceptions;
+﻿using Events.Application.Common;
+using Events.Application.Exceptions;
 using Events.Application.Interfaces;
 using Events.Application.Interfaces.Repositories;
+using Events.Application.Interfaces.Validators;
 using Events.Application.Models;
 using Events.Application.Models.Extensions;
 using Events.Application.Models.FilterModels;
+using Events.Application.Settings;
 using Events.Domain.Exceptions;
 using Events.Domain.Models;
+using Microsoft.Extensions.Options;
 namespace Events.Application.Services;
 
 /// <summary>
 /// Сервис для работы с событиями
 /// </summary>
-public class EventService(IEventValidator eventValidator, IEventRepository eventRepository) : IEventService
+public class EventService(IEventValidator eventValidator, IEventRepository eventRepository, ICacheService cacheService, IOptions<TTLSettings> ttlSettings) : IEventService
 {
     private readonly IEventValidator _eventValidator = eventValidator;
     private readonly IEventRepository _eventRepository = eventRepository;
+    private readonly ICacheService _cacheService = cacheService;
+    private readonly TTLSettings _ttlSettings = ttlSettings.Value ?? throw new InvalidOperationException("Не заданы настройки TTL");
 
     /// <summary>
     /// Создать событие
@@ -118,9 +124,15 @@ public class EventService(IEventValidator eventValidator, IEventRepository event
 
     private async Task<Event> GetById(Guid id, CancellationToken token)
     {
-        var ev = await _eventRepository.GetByIdAsync(id, token);
+        var ev = await _cacheService.StringGetAsync<Event>(CacheKeys.EventKey(id));
+        if (ev != null)
+            return ev;
+
+        ev = await _eventRepository.GetByIdAsync(id, token);
         if (ev == null)
             throw new NotFoundException($"Не найдено событие с id = {id}");
+
+        await _cacheService.StringSetAsync(CacheKeys.EventKey(id), ev, TimeSpan.FromSeconds(_ttlSettings.EventTTL));
 
         return ev;
     }   
