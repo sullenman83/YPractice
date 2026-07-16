@@ -6,7 +6,6 @@
 public static class CacheKeys
 {
     private const string EventPrefix = "event";
-    private const string Top10 = "top10";
     
     /// <summary>
     /// Ключ для события
@@ -14,4 +13,10 @@ public static class CacheKeys
     /// <param name="eventId">идентификатор события</param>
     /// <returns>ключ</returns>
     public static string EventKey(Guid eventId) => $"{EventPrefix}:{eventId}";
+
+    /// <summary>
+    /// Ключ для топ 10 событий
+    /// </summary>
+    /// <returns>Ключ</returns>
+    public static string Top10EventsKey() => "events:top10";
 }

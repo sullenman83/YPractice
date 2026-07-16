@@ -123,5 +123,23 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
             _logger.LogError(message, ex);
             throw new DbOperationException(message);
         }
-    }    
+    }
+
+    ///<inheritdoc/>
+    public async Task<List<Event>> GetTopEvents(int top, CancellationToken token = default)
+    {
+        try
+        {
+            return await _context.Events.Where(o => o.AvailableSeats < o.TotalSeats)
+                .OrderByDescending(o => (double)(o.TotalSeats - o.AvailableSeats) / o.TotalSeats)
+                .Take(top)
+                .ToListAsync(token);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Ошибка получения топ {top} событий";
+            _logger.LogDebug(message, ex);
+            throw new DbOperationException(message);
+        }
+    }
 }

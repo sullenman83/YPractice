@@ -1,5 +1,6 @@
 ﻿using Events.Application.Models;
 using Events.Application.Models.FilterModels;
+using Events.Domain.Models;
 
 namespace Events.Application.Interfaces;
 
@@ -47,4 +48,12 @@ public interface IEventService
     /// <param name="id">Идентификатор удаляемого события</param>
     /// <param name="token">Токен отмены операции</param>    
     Task DeleteEventAsync(Guid id, CancellationToken token);
+
+
+    /// <summary>
+    /// Получить топ 10самых популярных событий
+    /// </summary>
+    /// <param name="token">Токен отмены</param>
+    /// <returns>Список событий</returns>
+    Task<List<EventResponseDto>> GetTop10Events(CancellationToken token);
 }

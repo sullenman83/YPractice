@@ -15,12 +15,31 @@ namespace Events.Application.Services;
 /// <summary>
 /// Сервис для работы с событиями
 /// </summary>
-public class EventService(IEventValidator eventValidator, IEventRepository eventRepository, ICacheService cacheService, IOptions<TTLSettings> ttlSettings) : IEventService
+public class EventService : IEventService
 {
-    private readonly IEventValidator _eventValidator = eventValidator;
-    private readonly IEventRepository _eventRepository = eventRepository;
-    private readonly ICacheService _cacheService = cacheService;
-    private readonly TTLSettings _ttlSettings = ttlSettings.Value ?? throw new InvalidOperationException("Не заданы настройки TTL");
+    private readonly IEventValidator _eventValidator ;
+    private readonly IEventRepository _eventRepository;
+    private readonly ICacheService _cacheService;    
+    private readonly TimeSpan _eventTTL;
+    private readonly TimeSpan _top10TTL;
+
+    /// <summary>
+    /// конструктор
+    /// </summary>
+    /// <param name="eventValidator">валидатор событий</param>
+    /// <param name="eventRepository">Репозиторий событий</param>
+    /// <param name="cacheService">Кеш</param>>
+    /// <param name="ttlSettings">настройки TTL</param>
+    /// <exception cref="InvalidOperationException"></exception>
+    public EventService(IEventValidator eventValidator, IEventRepository eventRepository, ICacheService cacheService, IOptions<TTLSettings> ttlSettings)
+    {
+        _eventValidator = eventValidator;
+        _eventRepository = eventRepository;
+        _cacheService = cacheService;
+        var ttl = ttlSettings.Value ?? throw new InvalidOperationException("Не заданы настройки TTL");
+        _eventTTL = TimeSpan.FromSeconds(ttl.EventTTL);
+        _top10TTL = TimeSpan.FromSeconds(ttl.Top10TTL);
+    }
 
     /// <summary>
     /// Создать событие
@@ -58,6 +77,7 @@ public class EventService(IEventValidator eventValidator, IEventRepository event
         {
             throw new NotFoundException($"Не найдено событие с id = {id}");
         }
+        await _cacheService.DeleteAsync(CacheKeys.EventKey(id));
     }
 
     /// <summary>
@@ -111,20 +131,45 @@ public class EventService(IEventValidator eventValidator, IEventRepository event
         _eventValidator.Validate(ev);
 
         token.ThrowIfCancellationRequested();
-         
-        var e = await GetById(id, token);
+
+        var e = await _eventRepository.GetByIdAsync(id, token);
+        if (e == null)
+            throw new NotFoundException($"Не найдено событие с id = {id}");
+        
         e.Title = ev.Title;
         e.Description = ev.Description;
         e.StartAt = ev.StartAt.HasValue ? ev.StartAt.Value : throw new ArgumentNullException("Дата начала события должна быть заполнена");
         e.EndAt = ev.EndAt.HasValue ? ev.EndAt.Value : throw new ArgumentNullException("Дата окончания события должна быть заполнена");
                 
         await _eventRepository.SaveChangesAsync(token);
+
+        await _cacheService.DeleteAsync(CacheKeys.EventKey(id));
+
         return e.ToResponse();
+    }
+
+    ///<inheritdoc/>
+    ///<exception cref="DbOperationException">Ошибка операций с БД.</exception>
+    public async Task<List<EventResponseDto>> GetTop10Events(CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+
+        var list = await _cacheService.GetAsync<List<Event>>(CacheKeys.Top10EventsKey());
+        if (list != null)
+            return list.Select(o => o.ToResponse())
+                .ToList();
+
+        list = await _eventRepository.GetTopEvents(10);
+
+        await _cacheService.SetAsync<List<Event>>(CacheKeys.Top10EventsKey(), list, _top10TTL);
+
+        return list.Select(o => o.ToResponse())
+            .ToList();
     }
 
     private async Task<Event> GetById(Guid id, CancellationToken token)
     {
-        var ev = await _cacheService.StringGetAsync<Event>(CacheKeys.EventKey(id));
+        var ev = await _cacheService.GetAsync<Event>(CacheKeys.EventKey(id));
         if (ev != null)
             return ev;
 
@@ -132,8 +177,8 @@ public class EventService(IEventValidator eventValidator, IEventRepository event
         if (ev == null)
             throw new NotFoundException($"Не найдено событие с id = {id}");
 
-        await _cacheService.StringSetAsync(CacheKeys.EventKey(id), ev, TimeSpan.FromSeconds(_ttlSettings.EventTTL));
+        await _cacheService.SetAsync(CacheKeys.EventKey(id), ev, _eventTTL);
 
         return ev;
-    }   
+    }    
 }

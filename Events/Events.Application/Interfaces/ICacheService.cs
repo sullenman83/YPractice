@@ -13,25 +13,22 @@ public interface ICacheService
     /// <param name="key">Ключ</param>
     /// <param name="value">Вставляемый объект</param>
     /// <param name="ttl">Время жизни в секундах</param>
-    /// <param name="token">Токен отмены</param>
     /// <returns>true - успешно, false - ошибка</returns>
-    Task<bool> StringSetAsync<T>(string key, T value, TimeSpan ttl, CancellationToken token = default);
+    Task<bool> SetAsync<T>(string key, T value, TimeSpan ttl);
 
     /// <summary>
     /// Получить объект из кеша
     /// </summary>
     /// <typeparam name="T">Тип данных</typeparam>
     /// <param name="key">Ключ</param>
-    /// <param name="token">Токен отмены</param>
     /// <returns>Объект или null</returns>
-    Task<T?> StringGetAsync<T>(string key, CancellationToken token = default);
+    Task<T?> GetAsync<T>(string key);
 
     /// <summary>
     /// Удалить из кеша
     /// </summary>
     /// <param name="key">Ключ</param>
-    /// <param name="token">Токен отмены</param>
     /// <returns>true -успешно, false- ошибка</returns>
-    Task<bool> Delete(string key, CancellationToken token = default);
+    Task<bool> DeleteAsync(string key);
 
 }

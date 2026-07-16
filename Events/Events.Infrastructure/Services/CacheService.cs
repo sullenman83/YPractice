@@ -16,7 +16,7 @@ public class CacheService(IConnectionMultiplexer mulltiplexer, ILogger<CacheServ
     private readonly IDatabase _db = mulltiplexer.GetDatabase();
     private readonly ILogger<CacheService> _logger = logger;
     ///<inheritdoc/>
-    public async Task<bool> Delete(string key)
+    public async Task<bool> DeleteAsync(string key)
     {
         try
         {
@@ -30,7 +30,7 @@ public class CacheService(IConnectionMultiplexer mulltiplexer, ILogger<CacheServ
     }
 
     ///<inheritdoc/>
-    public async Task<T?> StringGetAsync<T>(string key)
+    public async Task<T?> GetAsync<T>(string key)
     {
         try
         {
@@ -52,7 +52,7 @@ public class CacheService(IConnectionMultiplexer mulltiplexer, ILogger<CacheServ
     }
 
     ///<inheritdoc/>
-    public async Task<bool> StringSetAsync<T>(string key, T value, TimeSpan ttl)
+    public async Task<bool> SetAsync<T>(string key, T value, TimeSpan ttl)
     {
         try
         {
