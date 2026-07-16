@@ -1,5 +1,7 @@
 ﻿using Contracts;
+using Events.Application.Common;
 using Events.Application.Exceptions;
+using Events.Application.Interfaces;
 using Events.Application.Interfaces.MessageHandlers;
 using Events.Application.Interfaces.Repositories;
 using Events.Application.Interfaces.Validators;
@@ -18,11 +20,13 @@ namespace Events.Application.Services.MessageHandlers;
 /// <param name="transactionService">сервис транзакций</param>
 /// <param name="logger">Логер</param>
 /// <param name="validator">Проверка события на валидность даты начала</param>
+/// <param name="cacheService">Кеш</param>
 public class BookingConfirmedHandler(IEventRepository eventRepository, 
     IInboxMessageRepository inboxRepository,
     ITransactionService transactionService,
     IBookingConfirmedValidator validator,
-    ILogger<BookingConfirmedHandler> logger) 
+    ILogger<BookingConfirmedHandler> logger,
+    ICacheService cacheService) 
     : IBookingConfirmedHandler
 {
     private readonly IEventRepository _eventRepository = eventRepository;
@@ -30,6 +34,7 @@ public class BookingConfirmedHandler(IEventRepository eventRepository,
     private readonly ITransactionService _transactionService = transactionService;    
     private readonly ILogger<BookingConfirmedHandler> _logger = logger;
     private readonly IBookingConfirmedValidator _validator = validator;
+    private readonly ICacheService _cacheService = cacheService;
 
     ///<inheritdoc/>
     public async Task HandleMessageAsync(BookingConfirmed message, CancellationToken token)
@@ -49,6 +54,8 @@ public class BookingConfirmedHandler(IEventRepository eventRepository,
 
             await _inboxMessageRepository.AddAsync(new InboxMessage(message.MessageId));            
             await tr.CommitAsync();
+
+            await _cacheService.DeleteAsync(CacheKeys.EventKey(ev.Id));
         }
         catch(DublicateInsertionException ex)
         {

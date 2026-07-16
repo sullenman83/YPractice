@@ -1,5 +1,7 @@
 ﻿using Contracts;
+using Events.Application.Common;
 using Events.Application.Exceptions;
+using Events.Application.Interfaces;
 using Events.Application.Interfaces.MessageHandlers;
 using Events.Application.Interfaces.Repositories;
 using Events.Application.Models.Messages;
@@ -16,18 +18,22 @@ namespace Events.Application.Services.MessageHandlers;
 /// <param name="inboxRepository">inbox репозиторий</param>
 /// <param name="transactionService">сервис транзакций</param>
 /// <param name="logger">Логер</param>
+/// <param name="cacheService">Кеш</param>
 
 public class BookingCancelledHandler(IEventRepository eventRepository,
     IInboxMessageRepository inboxRepository,
     ITransactionService transactionService,
-    ILogger<BookingCancelledHandler> logger
+    ILogger<BookingCancelledHandler> logger,
+    ICacheService cacheService
+
     ) : IBookingCancelledHandler
 {
     private readonly IEventRepository _eventRepository = eventRepository;
     private readonly IInboxMessageRepository _inboxMessageRepository = inboxRepository;
     private readonly ITransactionService _transactionService = transactionService;
     private readonly ILogger<BookingCancelledHandler> _logger = logger;
-    
+    private readonly ICacheService _cacheService = cacheService;
+
     ///<inheritdoc/>
     public async Task HandleMessageAsync(BookingCancelled message, CancellationToken token)
     {
@@ -39,11 +45,13 @@ public class BookingCancelledHandler(IEventRepository eventRepository,
             
             await using var tr = await _transactionService.BeginTransactionAsync(token);
             if (!ev.ReleaseSeats(message.SeatsCount))
-                throw new SeatsCountMoreThenTotalException("Чесло доступных мест превышает общее количество мест события.");
+                throw new SeatsCountMoreThenTotalException("Число доступных мест превышает общее количество мест события.");
             await _eventRepository.SaveChangesAsync();
 
             await _inboxMessageRepository.AddAsync(new InboxMessage(message.MessageId));
             await tr.CommitAsync();
+
+            await _cacheService.DeleteAsync(CacheKeys.EventKey(ev.Id));
         }
         catch (DublicateInsertionException ex)
         {

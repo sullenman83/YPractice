@@ -42,6 +42,7 @@ public class BookingCancelledConsumer : IBookingCancelledConsumer
         _consumer.Subscribe(settings.Topic);
     }
 
+    ///<inheritdoc/>
     public async Task ConsumeAsync(Func<BookingCancelled, CancellationToken, Task> messageHandler, CancellationToken token)
     {
         try
