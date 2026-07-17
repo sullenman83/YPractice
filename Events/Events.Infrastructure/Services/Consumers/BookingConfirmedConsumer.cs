@@ -48,6 +48,7 @@ public class BookingConfirmedConsumer : IBookingConfirmedConsumer
     {
         try
         {
+            
             var result = _consumer.Consume(token);
             if (result == null)
             {

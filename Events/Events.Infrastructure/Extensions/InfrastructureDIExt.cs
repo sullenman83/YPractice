@@ -1,5 +1,6 @@
 ﻿using DateTimeManager.Abstractions;
 using DateTimeManager.Core;
+using Events.Application.Interfaces;
 using Events.Application.Interfaces.Consumers;
 using Events.Application.Interfaces.Repositories;
 using Events.Infrastructure.Data;
@@ -81,7 +82,10 @@ public static  class InfrastructureDIExt
             var cfg = new ConfigurationOptions()
             {
                 ConnectTimeout = redisSettings.ConnectTimeout,
+                SyncTimeout = redisSettings.SyncTimeout,
+                AsyncTimeout = redisSettings.AsyncTimeout,
                 AbortOnConnectFail = redisSettings.AbortOnConnectFail,
+                Password = redisPassword
             };
 
             foreach (var e in endPoint)
@@ -95,6 +99,8 @@ public static  class InfrastructureDIExt
            
             return multiplexer;
         });
+
+        services.AddScoped<ICacheService, CacheService>();
         
         return services;
     }

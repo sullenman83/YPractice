@@ -129,7 +129,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     /// </summary>    
     /// <param name="token">Токен отмены операции</param>
     /// <response code="200">Возвращает HTTP статус-код 200 в случае успешного ответа</response>
-    [HttpGet("{id}")]
+    [HttpGet("top")]
     [AllowAnonymous]
     [Produces("application/json")]
     [ProducesResponseType<List<EventResponseDto>>(StatusCodes.Status200OK)]

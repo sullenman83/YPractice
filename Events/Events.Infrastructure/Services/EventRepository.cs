@@ -1,9 +1,7 @@
-﻿using Events.Application;
-using Events.Application.Models;
+﻿using Events.Application.Models;
 using Events.Application.Models.Extensions;
 using Events.Application.Models.FilterModels;
 using Events.Domain.Models;
-using Events.Infrastructure.Common;
 using Events.Infrastructure.Data;
 using Events.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;

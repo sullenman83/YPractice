@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Events.Domain.Models;
 
@@ -70,6 +71,7 @@ public class Event
     /// <summary>
     /// Текущее количество свободных мест
     /// </summary>
+    [JsonInclude]
     public int AvailableSeats { get; private set; }
         
     #endregion

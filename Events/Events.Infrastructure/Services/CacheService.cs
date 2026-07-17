@@ -38,7 +38,7 @@ public class CacheService(IConnectionMultiplexer mulltiplexer, ILogger<CacheServ
             if (!res.HasValue)
                 return default(T);
 
-            return JsonSerializer.Deserialize<T>(res.IsNull.ToString());
+            return JsonSerializer.Deserialize<T>(res.ToString());
         }
         catch (RedisException ex)
         {
