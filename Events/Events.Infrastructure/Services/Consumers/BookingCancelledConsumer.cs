@@ -73,6 +73,9 @@ public class BookingCancelledConsumer : IBookingCancelledConsumer
         }
     }
 
+    /// <summary>
+    /// Очистка ресурсов
+    /// </summary>
     public void Dispose()
     {
         _consumer?.Close();

@@ -74,7 +74,9 @@ public class BookingConfirmedConsumer : IBookingConfirmedConsumer
             throw new ConsumerException($"Ошибка получения сообщения из Kafka: {ex.Error.Reason}");
         }        
     } 
-
+    /// <summary>
+    /// Очистка ресурсов
+    /// </summary>
     public void Dispose()
     {
         _consumer?.Close();

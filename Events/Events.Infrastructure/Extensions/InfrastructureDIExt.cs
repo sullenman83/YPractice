@@ -91,12 +91,15 @@ public static  class InfrastructureDIExt
             foreach (var e in endPoint)
             {
                 cfg.EndPoints.Add(e);
-            }
+            }           
+            
+            var multiplexer = ConnectionMultiplexer.Connect(cfg);
+            if (multiplexer.IsConnected == false)
+                logger.LogWarning("Ошибка при создании соединения к Redis");
 
-            var  multiplexer = ConnectionMultiplexer.Connect(cfg);
-           
-            multiplexer.ConnectionFailed += (sender, e) =>  logger.LogWarning(e.Exception, "Ошибка при создании соединения к Redis");
-           
+            multiplexer.ConnectionFailed += (sender, e) => logger.LogWarning(e.Exception, "Потеря соединения с Redis.");
+            multiplexer.ConnectionRestored += (sender, e) => logger.LogInformation("Соединение с Redis успешно установлено/восстановлено.");
+                
             return multiplexer;
         });
 
