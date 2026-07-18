@@ -108,9 +108,18 @@ public class EventService : IEventService
     {
         token.ThrowIfCancellationRequested();
 
-        var ev = await GetById(id, token);
+        var eventResponse = await _cacheService.GetAsync<EventResponseDto>(CacheKeys.EventKey(id));
+        if (eventResponse != null)
+            return eventResponse;
 
-        return  ev.ToResponse();
+        var ev = await _eventRepository.GetByIdAsync(id, token);
+        if (ev == null)
+            throw new NotFoundException($"Не найдено событие с id = {id}");
+
+        var response = ev.ToResponse();
+        await _cacheService.SetAsync(CacheKeys.EventKey(id), response, _eventTTL);
+
+        return response;
     }
 
     /// <summary>
@@ -154,31 +163,17 @@ public class EventService : IEventService
     {
         token.ThrowIfCancellationRequested();
 
-        var list = await _cacheService.GetAsync<List<Event>>(CacheKeys.Top10EventsKey());
+        var list = await _cacheService.GetAsync<List<EventResponseDto>>(CacheKeys.Top10EventsKey());
         if (list != null)
-            return list.Select(o => o.ToResponse())
-                .ToList();
+            return list;
 
-        list = await _eventRepository.GetTopEvents(10);
+        var res = await _eventRepository.GetTopEvents(10, token);
 
-        await _cacheService.SetAsync<List<Event>>(CacheKeys.Top10EventsKey(), list, _top10TTL);
-
-        return list.Select(o => o.ToResponse())
+        list = res.Select(o => o.ToResponse())
             .ToList();
-    }
 
-    private async Task<Event> GetById(Guid id, CancellationToken token)
-    {
-        var ev = await _cacheService.GetAsync<Event>(CacheKeys.EventKey(id));
-        if (ev != null)
-            return ev;
+        await _cacheService.SetAsync<List<EventResponseDto>>(CacheKeys.Top10EventsKey(), list, _top10TTL);
 
-        ev = await _eventRepository.GetByIdAsync(id, token);
-        if (ev == null)
-            throw new NotFoundException($"Не найдено событие с id = {id}");
-
-        await _cacheService.SetAsync(CacheKeys.EventKey(id), ev, _eventTTL);
-
-        return ev;
+        return list;
     }    
 }

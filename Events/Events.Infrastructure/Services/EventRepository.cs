@@ -128,7 +128,7 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
     {
         try
         {
-            return await _context.Events.Where(o => o.AvailableSeats < o.TotalSeats)
+            return await _context.Events
                 .OrderByDescending(o => (double)(o.TotalSeats - o.AvailableSeats) / o.TotalSeats)
                 .Take(top)
                 .ToListAsync(token);

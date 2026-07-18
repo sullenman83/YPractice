@@ -85,6 +85,10 @@ services:
       - "${EVENTS_DB_EXTERNAL_PORT}:${EVENTS_DB_PORT}"
     volumes:
       - events_data:/var/lib/postgresql/18/data   
+      
+    depends_on:
+      redis:      
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 10s
