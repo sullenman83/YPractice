@@ -48,10 +48,12 @@ services:
     image: redis:7.2-alpine
     container_name: eventapi-redis
     ports:
-      - "${REDIS_INTERNAL_PORT}:${REDIS_EXTERNAL_PORT}"
+      - "${REDIS_EXTERNAL_PORT}:${REDIS_INTERNAL_PORT}"
     command: redis-server --requirepass ${REDIS_PASSWORD}
+    environment:
+      - REDISCLI_AUTH=${REDIS_PASSWORD}
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "ping"]    
       interval: 5s
       timeout: 5s
       retries: 10
