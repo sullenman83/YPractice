@@ -42,6 +42,7 @@ public class BookingCancelledConsumer : IBookingCancelledConsumer
         _consumer.Subscribe(settings.Topic);
     }
 
+    ///<inheritdoc/>
     public async Task ConsumeAsync(Func<BookingCancelled, CancellationToken, Task> messageHandler, CancellationToken token)
     {
         try
@@ -72,6 +73,9 @@ public class BookingCancelledConsumer : IBookingCancelledConsumer
         }
     }
 
+    /// <summary>
+    /// Очистка ресурсов
+    /// </summary>
     public void Dispose()
     {
         _consumer?.Close();

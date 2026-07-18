@@ -44,6 +44,21 @@ services:
         done
         echo "Topics created successfully!"
 
+  redis:
+    image: redis:7.2-alpine
+    container_name: eventapi-redis
+    ports:
+      - "${REDIS_EXTERNAL_PORT}:${REDIS_INTERNAL_PORT}"
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    environment:
+      - REDISCLI_AUTH=${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]    
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
   bookings-db:
     image: postgres:18
     container_name: bookings-db
@@ -72,6 +87,10 @@ services:
       - "${EVENTS_DB_EXTERNAL_PORT}:${EVENTS_DB_PORT}"
     volumes:
       - events_data:/var/lib/postgresql/18/data   
+      
+    depends_on:
+      redis:      
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 10s
@@ -107,7 +126,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
       - JWT_KEY=${JWT_KEY}
-      - ConnectionStrings__DefaultConnection=Host=${USERS_DB_HOST};Port=${USERS_DB_PORT};Database=${USERS_DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}      
+      - DB_PASSWORD=${DB_PASSWORD}
+      - ConnectionStrings__DefaultConnection=Host=${USERS_DB_HOST};Port=${USERS_DB_PORT};Database=${USERS_DB_NAME};Username=${DB_USER};
     depends_on:
       users-db:
         condition: service_healthy
@@ -127,7 +147,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
       - JWT_KEY=${JWT_KEY}
-      - ConnectionStrings__DefaultConnection=Host=${BOOKINGS_DB_HOST};Port=${BOOKINGS_DB_PORT};Database=${BOOKINGS_DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}      
+      - DB_PASSWORD=${DB_PASSWORD}
+      - ConnectionStrings__DefaultConnection=Host=${BOOKINGS_DB_HOST};Port=${BOOKINGS_DB_PORT};Database=${BOOKINGS_DB_NAME};Username=${DB_USER}
       - BookingProducerSettings__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}          
     depends_on:
       bookings-db:
@@ -148,7 +169,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
       - JWT_KEY=${JWT_KEY}
-      - ConnectionStrings__DefaultConnection=Host=events-db;Port=${EVENTS_DB_PORT};Database=${EVENTS_DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}      
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - RedisSettings__EndPoints=${REDIS_ENDPOINTS}
+      - ConnectionStrings__DefaultConnection=Host=events-db;Port=${EVENTS_DB_PORT};Database=${EVENTS_DB_NAME};Username=${DB_USER}
       - BookingConfirmedConsumerSettings__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
       - BookingCancelledConsumerSettings__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}          
     depends_on:

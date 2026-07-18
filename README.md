@@ -297,12 +297,12 @@ BookingStatus
 		# Events Сервис отвечает за управление событиями 
 			- CRUD операции с событиями
 		Сервис доступен по адресу http://localhost:5002/
-		База данных users-db доступна по адресу localhost:5438
+		База данных bookings-db доступна по адресу localhost:5438
 
 		# Bookings Сервис отвечает за управление бронированиями
 			- Операции создания, удаления, получения информации по бронированияю
 		Сервис доступен по адресу http://localhost:5001/
-		База данных users-db доступна по адресу localhost:5437
+		База данных bookings-db доступна по адресу localhost:5437
 
 	Все настройки для запуска приложения находятся в фйайле docker-compose.yml Значяения переменных окружения лежат в файле .env
 
@@ -320,13 +320,65 @@ BookingStatus
 
 	Для запуска приложения используется команда docker compose up -d. Выполнять команду надо из папки с солюшеном
 
-## Команда создания миграций 
-dotnet ef migrations add Initial --project EventManagement.Infrastructure.csproj --startup-project ..\EventManagement.Presentation\EventManagement.Presentation.csproj
-## команда обновления бд 
-dotnet ef database update --project EventManagement.Infrastructure.csproj --startup-project ..\EventManagement.Presentation\EventManagement.Presentation.csproj
+
+## Спринт 10
+	# Добавлена система кеширования на основе распределенной сисетмы кеширования Redis		
+		- кеширование реализовано для быстрого просмотра событий и для просмотра топ 10 самых популярных событий. Если Redis не доступен, сервис событий стартует и корректно рабдотает.
+		- настройки вынесены в файл с настройками appsettings.json в секцию RedisSettings		
+			EndPoints - в параметре указываетсяадрес Redis (если кластер, то через запятую)
+			ConnectTimeout - таймаут при соединении
+			SyncTimeout - таймаут при выполнении синхронных опенаций
+			ASyncTimeout - таймаут при выполнении асинхронных опенаций
+			AbortOnConnectFail - поведение Redis если связь не удалось установить. true - падение, false - продолжение работы с попыткой соединиться потом
+		- TTL (время жизни ключа в кеше) так же вынесены в настройки TTLSettings. Значения задаются в секундах
+			"EventTTL": 60 - TTL для события
+			"Top10TTL": 900 - TTL для топ 10 популярных событий
+		
+		Нам не известно как часто осуществляется бронирование или его отмена. Если установить TTL для EventTTL довольно большой, то пользователь может видеть устаревшие 
+		данные. Например, места события уже все забронированы, а ему отображается, что они есть. Пользователь будет введен в заблуждение и потратит время на попытку забронировать то,
+		чего уже нет. Поэтому я выбрал осторожное значение в 60 с. Но в любом случае надо проводить анализ частоты бронирований/отмен. И подобрать этот параметр исходя из нагрузок реальной системы.
+
+		Для Top10TTL мы может быть менее осторожны в выборе временного интервала. Информация о топ событиях конечно для пользователя важна, но меняется она не часто и даже если она будет не 
+		достоверной сильно это пользователям не навредит. Поэтому интервал в 15 минут мне кажется вполне нормальным.
+		
+	# Кеширование событий
+		Данные кешируются при запросе пользователей события по конкретному Id. Сначала проверяется кеш, если там данных нет система обращается к базе данных и заносит полученный 
+		результат (если он есть) в кеш. При операциях удаления, изменения, бронирования и отмены бронирования ключ с изененным событием удаляется из кеша. 
+		Для валидации данных я выбрал метод delete-on-write. Т.е. при изменении данных, они удаляются из кеша. 
+			Аргументация:
+			1. Нам неизвестно соотношение чтение/запись (если бы данные менялись редко, а читались намного чаще , то стратегия update-on-write была бы предпостительнее)
+			2. Нам неизвестна нагрузка (количество чтений в минуту/секунду). Если данные читались бы очень часто, то опять же стратегия update-on-write была бы предпостительнее
+			3. Удалении проще в реализации так как нет гонки  при изменение кеша
+			4. выббранный метод не требует изменения БД и ввода версионности событий для борьбы с проблемой пункта 3
+			5. как версия для снятия метрик вполне годится.
+			Также для данных задат TTL на случай если операция чтения/записи не будет долго.
+
+	# кеширование топ 10 событий
+		Данные также кешируютс при первом звпросе топ10. Если данные есть в кеше они возвращаются пользователю. Если нет - вычитываются из бд и записываются в кеш.  Данные 
+		обновляются только по истечении TTL.
+	
+	# Пароли 
+		для запуска приложения необходимо добавить следующие переменные окружения 
+			DB_PASSWORD - пароли для доступа к БД
+			REDIS_PASSWORD - пароль для доступа к Redis
+			JWT_KEY - ключ для подписи JWT токена 
+		команда добавления  setx <имя параметра> "<значение ключа>"
+
+## Команды создания миграций и обновления БД
+	events 
+	dotnet ef migrations add Initial --project Events.Infrastructure.csproj --startup-project ..\Events.Presentation\Events.Presentation.csproj
+	dotnet ef database update --project Events.Infrastructure.csproj --startup-project ..\Events.Presentation\Events.Presentation.csproj
+
+	auth
+	dotnet ef migrations add Initial --project Auth.Infrastructure.csproj --startup-project ..\Auth.Presentation\Auth.Presentation.csproj
+	dotnet ef database update --project Auth.Infrastructure.csproj --startup-project ..\Auth.Presentation\Auth.Presentation.csproj
+
+	bookings
+	dotnet ef migrations add Initial --project Bookings.Infrastructure.csproj --startup-project ..\Bookings.Presentation\Bookings.Presentation.csproj
+	dotnet ef database update --project Bookings.Infrastructure.csproj --startup-project ..\Bookings.Presentation\Bookings.Presentation.csproj
 		
 ## Сборка осуществляется из директории репозитория командой 
-dotnet build EventManagement.Presentation\EventManagement.Presentation.csproj
+dotnet build YPractice.slnx
 
 ## Запуск осуществляется из директории репозитория командой 
 docker compose up -d
@@ -334,16 +386,3 @@ docker compose up -d
 ## Запуск осуществляется из директории репозитория командой 
 dotnet test
 
-## команды создания миграций и апдейта базы данных
-
-events 
-dotnet ef migrations add Initial --project Events.Infrastructure.csproj --startup-project ..\Events.Presentation\Events.Presentation.csproj
-dotnet ef database update --project Events.Infrastructure.csproj --startup-project ..\Events.Presentation\Events.Presentation.csproj
-
-auth
-dotnet ef migrations add Initial --project Auth.Infrastructure.csproj --startup-project ..\Auth.Presentation\Auth.Presentation.csproj
-dotnet ef database update --project Auth.Infrastructure.csproj --startup-project ..\Auth.Presentation\Auth.Presentation.csproj
-
-bookings
-dotnet ef migrations add Initial --project Bookings.Infrastructure.csproj --startup-project ..\Bookings.Presentation\Bookings.Presentation.csproj
-dotnet ef database update --project Bookings.Infrastructure.csproj --startup-project ..\Bookings.Presentation\Bookings.Presentation.csproj

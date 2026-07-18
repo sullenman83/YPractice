@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Events.Application.Interfaces.MessageHandlers;
 using Events.Application.Interfaces.Validators;
 using Events.Application.Services.Validators;
+using Events.Application.Settings;
 
 namespace Events.Application.Extensions;
 
@@ -23,6 +24,8 @@ public static class ApplicationDIExt
     /// <returns>Коллекция сервисов</returns>
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<TTLSettings>(configuration.GetSection(nameof(TTLSettings)));
+
         services.AddScoped<IEventValidator, EventValidator>();
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IBookingConfirmedHandler, BookingConfirmedHandler>();

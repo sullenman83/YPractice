@@ -24,14 +24,7 @@ public interface IEventRepository
     /// <param name="token">токен отмены</param>
     /// <returns>Сохраненное событие</returns>
     Task<Event> AddAsync(Event ev, CancellationToken token = default);
-
-    ///// <summary>
-    ///// Получить все события
-    ///// </summary>
-    ///// <param name="token">токен отмены</param>
-    ///// <returns>Список событий</returns>
-    //Task<IReadOnlyList<Event>> GetAllAsync(CancellationToken token = default);
-
+        
     /// <summary>
     /// Удалить событие по id
     /// </summary>
@@ -39,13 +32,6 @@ public interface IEventRepository
     /// <param name="token">токен отмены</param>
     /// <returns>true - удаление прошло успешно, false - ошибка при удалении</returns>
     Task<bool> DeleteAsync(Guid id, CancellationToken token = default);
-
-    ///// <summary>
-    ///// Получить количество событий
-    ///// </summary>
-    ///// <param name="token">токен отмены</param>
-    ///// <returns>Количество событий</returns>
-    //Task<int> GetCountAsync(CancellationToken token = default);
 
     /// <summary>
     /// Сохранить данные
@@ -61,12 +47,11 @@ public interface IEventRepository
     /// <returns>Список событий</returns>
     Task<PaginatedResultDTO> GetEventsByFilterAsync(EventFilterRequestDTO filter, CancellationToken token = default);
 
-    ///// <summary>
-    ///// Вернуть событие с мягкой блокировкой
-    ///// </summary>
-    ///// <param name="id">Идентификатор события</param>
-    ///// <param name="token">Токен отмены</param>
-    ///// <returns>Событие</returns>
-    ///// <exception cref="InvalidOperationException"></exception>
-    //Task<Event?> GetEventWithBlockingAsync(Guid id, CancellationToken token = default);
+    /// <summary>
+    /// Вернуть топ событий по популярности
+    /// </summary>
+    /// <param name="top">Сколько событий из топа вернуть</param>
+    /// <param name="token">Токен отмены</param>
+    /// <returns>Список событий</returns>
+    Task<List<Event>> GetTopEvents(int top, CancellationToken token = default);
 }

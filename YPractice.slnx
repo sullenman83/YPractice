@@ -55,11 +55,4 @@
   <Folder Name="/Events/Tests/UnitTests/">
     <Project Path="Events/Tests/UnitTests/Events.UnitTests.csproj" Id="10fa40d7-ff7a-4df5-9a40-d16eb6378763" />
   </Folder>
-  <Folder Name="/OldTests/">
-    <Project Path="OldTests/EventApi.IntegrationTest/EventApi.IntegrationTest.csproj" />
-  </Folder>
-  <Project Path="EventManagement.Application/EventManagement.Application.csproj" Id="0fed859a-08c5-46d0-81dd-6f191b7b8011" />
-  <Project Path="EventManagement.Domain/EventManagement.Domain.csproj" Id="3f791b3b-5fec-4c02-8219-306191cf1068" />
-  <Project Path="EventManagement.Infrastructure/EventManagement.Infrastructure.csproj" Id="4880b8dd-3739-4b80-af0c-c611555618da" />
-  <Project Path="EventManagement.Presentation/EventManagement.Presentation.csproj" />
 </Solution>

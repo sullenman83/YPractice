@@ -50,33 +50,7 @@ public class BookingProducerTest: IClassFixture<DatabaseFixture>, IClassFixture<
         consumeResult.Should().NotBeNull();
         consumeResult.Message.Value.Should().Be(value);
         consumer.Close();
-    }
-
-    [Fact]
-    public async Task Produce_DeliveredMessage1()
-    {
-        // Arrange
-        var producer = new BookingProducer(_options);
-        var key = "testKey";
-        var value = "testvalue";
-        var consumerConfig = new ConsumerConfig
-        {
-            BootstrapServers = _kafkaFixture.BootstrapServers,
-            GroupId = "test-group",
-            AutoOffsetReset = AutoOffsetReset.Earliest
-        };
-        using var consumer = new ConsumerBuilder<string, string>(consumerConfig).Build();
-        consumer.Subscribe(TopicNames.BookingConfirmed);
-
-        // Act
-        await producer.ProduceAsync(TopicNames.BookingConfirmed, key, value, CancellationToken.None);
-        var consumeResult = consumer.Consume(TimeSpan.FromSeconds(10));
-
-        // Assert:                
-        consumeResult.Should().NotBeNull();
-        consumeResult.Message.Value.Should().Be(value);
-        consumer.Close();
-    }
+    }    
 
     public Task DisposeAsync()
     {

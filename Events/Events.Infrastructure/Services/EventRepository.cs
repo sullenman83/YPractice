@@ -1,9 +1,7 @@
-﻿using Events.Application;
-using Events.Application.Models;
+﻿using Events.Application.Models;
 using Events.Application.Models.Extensions;
 using Events.Application.Models.FilterModels;
 using Events.Domain.Models;
-using Events.Infrastructure.Common;
 using Events.Infrastructure.Data;
 using Events.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -123,5 +121,23 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
             _logger.LogError(message, ex);
             throw new DbOperationException(message);
         }
-    }    
+    }
+
+    ///<inheritdoc/>
+    public async Task<List<Event>> GetTopEvents(int top, CancellationToken token = default)
+    {
+        try
+        {
+            return await _context.Events
+                .OrderByDescending(o => (double)(o.TotalSeats - o.AvailableSeats) / o.TotalSeats)
+                .Take(top)
+                .ToListAsync(token);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Ошибка получения топ {top} событий";
+            _logger.LogDebug(message, ex);
+            throw new DbOperationException(message);
+        }
+    }
 }

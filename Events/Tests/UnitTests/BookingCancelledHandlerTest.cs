@@ -1,6 +1,8 @@
 ﻿
 using Contracts;
+using Events.Application.Common;
 using Events.Application.Exceptions;
+using Events.Application.Interfaces;
 using Events.Application.Interfaces.Repositories;
 using Events.Application.Models.Messages;
 using Events.Application.Services.MessageHandlers;
@@ -18,6 +20,7 @@ public class BookingCancelledHandlerTest
     private readonly Mock<IInboxMessageRepository> _mockInboxRepository = new Mock<IInboxMessageRepository>();
     private readonly Mock<ITransactionService> _mockTransactionService = new Mock<ITransactionService>();
     private readonly Mock<ITransaction> _mockTransaction = new Mock<ITransaction>();
+    private readonly Mock<ICacheService> _mockCache = new Mock<ICacheService>();
     private readonly Mock<ILogger<BookingCancelledHandler>> _mockLogger = new Mock<ILogger<BookingCancelledHandler>>();
 
     public BookingCancelledHandlerTest()
@@ -36,7 +39,8 @@ public class BookingCancelledHandlerTest
         _mockEventRepository.Setup(o => o.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(ev);
         var message = new BookingCancelled(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), seatsCount, DateTimeOffset.UtcNow);
 
-        var service = new BookingCancelledHandler(_mockEventRepository.Object, _mockInboxRepository.Object, _mockTransactionService.Object, _mockLogger.Object);
+        var service = new BookingCancelledHandler(_mockEventRepository.Object, _mockInboxRepository.Object, _mockTransactionService.Object, 
+            _mockLogger.Object, _mockCache.Object);
 
         // Act
 
@@ -61,7 +65,8 @@ public class BookingCancelledHandlerTest
         _mockEventRepository.Setup(o => o.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(ev);
         var message = new BookingCancelled(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), seatsCount, DateTimeOffset.UtcNow);
         
-        var service = new BookingCancelledHandler(_mockEventRepository.Object, _mockInboxRepository.Object, _mockTransactionService.Object, _mockLogger.Object);
+        var service = new BookingCancelledHandler(_mockEventRepository.Object, _mockInboxRepository.Object, _mockTransactionService.Object, 
+            _mockLogger.Object, _mockCache.Object);
 
         // Act
 
@@ -73,7 +78,7 @@ public class BookingCancelledHandlerTest
             x => x.Log(
                 LogLevel.Error,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Чесло доступных мест превышает общее количество мест события.")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Число доступных мест превышает общее количество мест события.")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
@@ -83,6 +88,7 @@ public class BookingCancelledHandlerTest
         _mockEventRepository.Verify(o => o.SaveChangesAsync(), Times.Never);
         _mockInboxRepository.Verify(o => o.AddAsync(It.IsAny<InboxMessage>()), Times.Never);
         _mockTransaction.Verify(o => o.CommitAsync(), Times.Never);
+        _mockCache.Verify(o => o.DeleteAsync(CacheKeys.EventKey(ev.Id)), Times.Never);
         ev.AvailableSeats.Should().Be(totalSeats);
     }
 
@@ -97,7 +103,8 @@ public class BookingCancelledHandlerTest
         _mockEventRepository.Setup(o => o.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(ev);
         var message = new BookingCancelled(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), seatsCount, DateTimeOffset.UtcNow);
         _mockInboxRepository.Setup(o => o.AddAsync(It.IsAny<InboxMessage>())).Throws<DublicateInsertionException>();        
-        var service = new BookingCancelledHandler(_mockEventRepository.Object, _mockInboxRepository.Object, _mockTransactionService.Object, _mockLogger.Object);
+        var service = new BookingCancelledHandler(_mockEventRepository.Object, _mockInboxRepository.Object, _mockTransactionService.Object,
+            _mockLogger.Object, _mockCache.Object);
 
         // Act
 
@@ -110,6 +117,7 @@ public class BookingCancelledHandlerTest
         _mockEventRepository.Verify(o => o.SaveChangesAsync(), Times.Once);
         _mockInboxRepository.Verify(o => o.AddAsync(It.IsAny<InboxMessage>()), Times.Once);
         _mockTransaction.Verify(o => o.CommitAsync(), Times.Never);
+        _mockCache.Verify(o => o.DeleteAsync(CacheKeys.EventKey(ev.Id)), Times.Never);
         ev.AvailableSeats.Should().Be(totalSeats);
     }
 
@@ -123,7 +131,8 @@ public class BookingCancelledHandlerTest
         ev.TryReserveSeats(seatsCount);
         _mockEventRepository.Setup(o => o.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Guid id, CancellationToken t) => null);
         var message = new BookingCancelled(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), seatsCount, DateTimeOffset.UtcNow);        
-        var service = new BookingCancelledHandler(_mockEventRepository.Object, _mockInboxRepository.Object, _mockTransactionService.Object, _mockLogger.Object);
+        var service = new BookingCancelledHandler(_mockEventRepository.Object, _mockInboxRepository.Object, _mockTransactionService.Object, 
+            _mockLogger.Object, _mockCache.Object);
 
         // Act
 
@@ -136,8 +145,30 @@ public class BookingCancelledHandlerTest
         _mockEventRepository.Verify(o => o.SaveChangesAsync(), Times.Never);
         _mockInboxRepository.Verify(o => o.AddAsync(It.IsAny<InboxMessage>()), Times.Never);
         _mockTransaction.Verify(o => o.CommitAsync(), Times.Never);
+        _mockCache.Verify(o => o.DeleteAsync(CacheKeys.EventKey(ev.Id)), Times.Never);
         ev.AvailableSeats.Should().Be(totalSeats - seatsCount);
     }
 
+    [Fact]
+    public async Task HandleMessage_ReleaseSeats_DeletesCaheKey()
+    {
+        // Arrange
+        var totalSeats = 10;
+        var seatsCount = 5;
+        var ev = EventTestData.GetTestEvent(totalSeats);
+        ev.TryReserveSeats(seatsCount);
+        _mockEventRepository.Setup(o => o.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(ev);
+        var message = new BookingCancelled(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), seatsCount, DateTimeOffset.UtcNow);
 
+        var service = new BookingCancelledHandler(_mockEventRepository.Object, _mockInboxRepository.Object, _mockTransactionService.Object,
+            _mockLogger.Object, _mockCache.Object);
+
+        // Act
+
+        await service.HandleMessageAsync(message, CancellationToken.None);
+
+        // Assert
+        _mockTransaction.Verify(o => o.CommitAsync(), Times.Once);
+        _mockCache.Verify(o => o.DeleteAsync(CacheKeys.EventKey(ev.Id)), Times.Once);
+    }
 }

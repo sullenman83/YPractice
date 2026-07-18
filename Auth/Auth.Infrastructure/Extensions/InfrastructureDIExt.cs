@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
 
 namespace Auth.Infrastructure.Extensions;
 
@@ -28,8 +29,13 @@ public static  class InfrastructureDIExt
     /// <exception cref="InvalidOperationException"></exception>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IHostEnvironment env)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
+        var baseConnectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Не задана строка подключения к базе даных");
+        var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? throw new InvalidOperationException("Не задана переменная окружения с паролем Postgres");
+        var connectionString = new NpgsqlConnectionStringBuilder(baseConnectionString)
+        {
+            Password = dbPassword,
+        }.ConnectionString;
 
         if (env.IsDevelopment())
         {
