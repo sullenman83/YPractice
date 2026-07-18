@@ -244,8 +244,8 @@ namespace Events.UnitTests
             // Arrange
             var ev = EventTestData.GetTestEvent();
             var id = ev.Id;
-            var expectedResponse = ev.ToResponse();
-            _mockCache.Setup(o => o.GetAsync<Event>(CacheKeys.EventKey(ev.Id))).ReturnsAsync(ev);
+            var expectedResponse = ev.ToResponse();            
+            _mockCache.Setup(o => o.GetAsync<EventResponseDto>(CacheKeys.EventKey(ev.Id))).ReturnsAsync(ev.ToResponse());
             var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings);
 
             // Act
@@ -253,8 +253,8 @@ namespace Events.UnitTests
 
             // Assert
             _mockEventRepository.Verify(o => o.GetByIdAsync(id), Times.Never);
-            _mockCache.Verify(o => o.GetAsync<Event>(CacheKeys.EventKey(ev.Id)), Times.Once);
-            _mockCache.Verify(o => o.SetAsync<Event>(CacheKeys.EventKey(ev.Id), ev, It.IsAny<TimeSpan>()), Times.Never);
+            _mockCache.Verify(o => o.GetAsync<EventResponseDto>(CacheKeys.EventKey(ev.Id)), Times.Once);
+            _mockCache.Verify(o => o.SetAsync(CacheKeys.EventKey(ev.Id), It.IsAny<EventResponseDto>(), It.IsAny<TimeSpan>()), Times.Never);
             result.Should().BeEquivalentTo(expectedResponse);
         }
 
@@ -265,7 +265,7 @@ namespace Events.UnitTests
             var ev = EventTestData.GetTestEvent();
             var id = ev.Id;
             var expectedResponse = ev.ToResponse();
-            _mockCache.Setup(o => o.GetAsync<Event>(CacheKeys.EventKey(ev.Id))).ReturnsAsync(() => null);
+            _mockCache.Setup(o => o.GetAsync<EventResponseDto>(CacheKeys.EventKey(ev.Id))).ReturnsAsync(() => null);
             _mockEventRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(ev);
             var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings);
 
@@ -274,8 +274,8 @@ namespace Events.UnitTests
 
             // Assert
             _mockEventRepository.Verify(o => o.GetByIdAsync(id), Times.Once);
-            _mockCache.Verify(o => o.GetAsync<Event>(CacheKeys.EventKey(ev.Id)), Times.Once);
-            _mockCache.Verify(o => o.SetAsync<Event>(CacheKeys.EventKey(ev.Id), ev, It.IsAny<TimeSpan>()), Times.Once);
+            _mockCache.Verify(o => o.GetAsync<EventResponseDto>(CacheKeys.EventKey(ev.Id)), Times.Once);
+            _mockCache.Verify(o => o.SetAsync(CacheKeys.EventKey(ev.Id), It.IsAny<EventResponseDto>(), It.IsAny<TimeSpan>()), Times.Once);
             result.Should().BeEquivalentTo(expectedResponse);
         }
 
