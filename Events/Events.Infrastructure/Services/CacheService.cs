@@ -29,7 +29,7 @@ public class CacheService(IConnectionMultiplexer multiplexer, ILogger<CacheServi
         }
         catch (RedisException ex)
         {
-            _logger.LogError(ex, "Ошибка удаления ключа");
+            _logger.LogError(ex, "Ошибка удаления ключа {Key}", key);
             return false;
         }
     }
@@ -50,11 +50,11 @@ public class CacheService(IConnectionMultiplexer multiplexer, ILogger<CacheServi
         }
         catch (RedisException ex)
         {
-            _logger.LogError(ex, "Ошибка получения данных из кеша.");
+            _logger.LogError(ex, "Ошибка получения данных из кеша {Key}.", key);
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex, "Непредвиденная ошибка.");
+            _logger.LogError(ex, "Непредвиденная ошибка чтении данных из кеша {Key}.", key);
         }
         return default(T);
     }
@@ -72,11 +72,11 @@ public class CacheService(IConnectionMultiplexer multiplexer, ILogger<CacheServi
         }
         catch (RedisException ex)
         {
-            _logger.LogError(ex, "Ошбика сохранения в кеш.");
+            _logger.LogError(ex, "Ошбика сохранения в кеш {Key}", key);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Непредвиденная ошибка.");
+            _logger.LogError(ex, "Непредвиденная ошибка при сохранении в кеш {Key}.", key);
         }
 
         return false;

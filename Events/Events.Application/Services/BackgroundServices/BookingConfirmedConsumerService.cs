@@ -51,7 +51,7 @@ public class BookingConfirmedConsumerService : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при бронировании события.");
+                _logger.LogError(ex, "Ошибка чтения сообщения из брокера сообщений.");
             }
         }
         _logger.LogInformation("Фоновый сервис BookingConfirmedConsumerService остановлен.");
