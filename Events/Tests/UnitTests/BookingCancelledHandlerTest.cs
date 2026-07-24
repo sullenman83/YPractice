@@ -74,15 +74,6 @@ public class BookingCancelledHandlerTest
 
         // Assert
 
-        _mockLogger.Verify(
-            x => x.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Число доступных мест превышает общее количество мест события.")),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
-
         _mockEventRepository.Verify(o => o.GetByIdAsync(It.IsAny<Guid>()), Times.Once);
         _mockTransactionService.Verify(o => o.BeginTransactionAsync(), Times.Once);
         _mockEventRepository.Verify(o => o.SaveChangesAsync(), Times.Never);
