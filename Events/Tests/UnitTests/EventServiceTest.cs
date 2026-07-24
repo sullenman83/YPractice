@@ -10,6 +10,8 @@ using Events.Application.Settings;
 using Events.Domain.Exceptions;
 using Events.Domain.Models;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using TestData;
@@ -22,6 +24,7 @@ namespace Events.UnitTests
         private readonly Mock<IEventRepository> _mockEventRepository;
         private readonly Mock<ICacheService> _mockCache;
         private readonly IOptions<TTLSettings> _settings;
+        private readonly ILogger<EventService> _logger = NullLogger<EventService>.Instance;
 
         public EventServiceTest()
         {
@@ -47,7 +50,7 @@ namespace Events.UnitTests
             var expectedResponse = ev.ToResponse();
 
             _mockEventRepository.Setup(o => o.AddAsync(It.IsAny<Event>())).ReturnsAsync((Event e, CancellationToken t) => e);            
-            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings);
+            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings, _logger);
 
             // Act
             var result = await service.CreateEventAsync(evCreationDTO, CancellationToken.None);
@@ -87,7 +90,7 @@ namespace Events.UnitTests
             _mockEventRepository.Setup(o => o.GetByIdAsync(ev.Id)).ReturnsAsync(ev);
             _mockEventRepository.Setup(o => o.SaveChangesAsync());
 
-            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings);
+            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings, _logger);
 
             // Act
             var result = await service.UpdateEventAsync(id, eventUpdateDTO, CancellationToken.None);
@@ -110,7 +113,7 @@ namespace Events.UnitTests
             // Arrange
             var id = Guid.NewGuid();
             _mockEventRepository.Setup(r => r.DeleteAsync(id)).ReturnsAsync(true);
-            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings);
+            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings, _logger);
 
             // Act
             await service.DeleteEventAsync(id, CancellationToken.None);
@@ -127,7 +130,7 @@ namespace Events.UnitTests
             var id = ev.Id;
             var expectedResponse = ev.ToResponse();
             _mockEventRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(ev);
-            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings);
+            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings, _logger);
 
             // Act
             var result = await service.GetEventByIdAsync(id, CancellationToken.None);
@@ -144,7 +147,7 @@ namespace Events.UnitTests
             var id = new Guid("BBA0E5B9-B2D4-4B54-A9D0-7442969CBBF2");
 
             _mockEventRepository.Setup(o => o.GetByIdAsync(id)).Throws<NotFoundException>();
-            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings);
+            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings, _logger);
 
             // Act
             Func<Task<EventResponseDto>> act = async () => await service.GetEventByIdAsync(id, CancellationToken.None);
@@ -168,7 +171,7 @@ namespace Events.UnitTests
                 StartAt = testEvent.StartAt,
             };
             _mockEventRepository.Setup(o => o.GetByIdAsync(id)).Throws<NotFoundException>();
-            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings);
+            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings, _logger);
 
             // Act
             Func<Task<EventResponseDto>> act = async () => await service.UpdateEventAsync(id, ev, CancellationToken.None);
@@ -186,7 +189,7 @@ namespace Events.UnitTests
             var id = new Guid("BBA0E5B9-B2D4-4B54-A9D0-7442969CBBF2");
 
             _mockEventRepository.Setup(o => o.DeleteAsync(id)).Throws<NotFoundException>();
-            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings);
+            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings, _logger);
 
             // Act
             Func<Task> act = async () => await service.DeleteEventAsync(id, CancellationToken.None);
@@ -210,7 +213,7 @@ namespace Events.UnitTests
                 StartAt = testEvent.StartAt,
             };
             ev.EndAt = ev.StartAt?.AddDays(-1);
-            var service = new EventService(new EventValidator(), _mockEventRepository.Object, _mockCache.Object, _settings);
+            var service = new EventService(new EventValidator(), _mockEventRepository.Object, _mockCache.Object, _settings, _logger);
 
             // Act
             Func<Task<EventResponseDto>> act = async () => await service.UpdateEventAsync(id, ev, CancellationToken.None);
@@ -228,7 +231,7 @@ namespace Events.UnitTests
 
             _mockValidator.Setup(v => v.Validate(It.IsAny<EventCreationDTO>()))
                 .Throws(new EventValidationException(message));
-            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings);
+            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings, _logger);
 
             // Act
             Func<Task<EventResponseDto>> act = async () => await service.CreateEventAsync(newEvent, CancellationToken.None);
@@ -246,7 +249,7 @@ namespace Events.UnitTests
             var id = ev.Id;
             var expectedResponse = ev.ToResponse();            
             _mockCache.Setup(o => o.GetAsync<EventResponseDto>(CacheKeys.EventKey(ev.Id))).ReturnsAsync(ev.ToResponse());
-            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings);
+            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings, _logger);
 
             // Act
             var result = await service.GetEventByIdAsync(id, CancellationToken.None);
@@ -267,7 +270,7 @@ namespace Events.UnitTests
             var expectedResponse = ev.ToResponse();
             _mockCache.Setup(o => o.GetAsync<EventResponseDto>(CacheKeys.EventKey(ev.Id))).ReturnsAsync(() => null);
             _mockEventRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(ev);
-            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings);
+            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings, _logger);
 
             // Act
             var result = await service.GetEventByIdAsync(id, CancellationToken.None);
@@ -295,7 +298,7 @@ namespace Events.UnitTests
             _mockEventRepository.Setup(o => o.GetByIdAsync(ev.Id)).ReturnsAsync(ev);
             _mockEventRepository.Setup(o => o.SaveChangesAsync());
 
-            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings);
+            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings, _logger);
 
             // Act
             var result = await service.UpdateEventAsync(id, eventUpdateDTO, CancellationToken.None);
@@ -310,7 +313,7 @@ namespace Events.UnitTests
             // Arrange
             var id = Guid.NewGuid();
             _mockEventRepository.Setup(r => r.DeleteAsync(id)).ReturnsAsync(true);
-            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings);
+            var service = new EventService(_mockValidator.Object, _mockEventRepository.Object, _mockCache.Object, _settings, _logger);
 
             // Act
             await service.DeleteEventAsync(id, CancellationToken.None);

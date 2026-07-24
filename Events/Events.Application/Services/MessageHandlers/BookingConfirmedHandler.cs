@@ -43,13 +43,19 @@ public class BookingConfirmedHandler(IEventRepository eventRepository,
         {
             var ev = await _eventRepository.GetByIdAsync(message.EventId, token);
             if (ev == null)
-                throw new NotFoundException($"Не найдено событие с id = {message.EventId}");
+            {
+                _logger.LogWarning("Не найдено событие с id = {EventId}", message.EventId);
+                throw new NotFoundException("Не найдено событие");
+            }
 
             _validator.ValidateEventDate(ev.StartAt);
 
             await using var tr = await _transactionService.BeginTransactionAsync(token);
             if (!ev.TryReserveSeats(message.SeatsCount))
+            {
+                _logger.LogWarning("Недостаточно мест для бронирования события {EventId}.", message.EventId);
                 throw new NoAvailableSeatsException("Недостаточно мест для бронирования.");
+            }
             await _eventRepository.SaveChangesAsync();
 
             await _inboxMessageRepository.AddAsync(new InboxMessage(message.MessageId));            
@@ -64,7 +70,7 @@ public class BookingConfirmedHandler(IEventRepository eventRepository,
         }
         catch(Exception ex)
         {
-            _logger.LogError($"Не удалось зарезервировать места для брони '{message.BookingId}' на событие {message.EventId} по причине {ex.Message}");
+            _logger.LogError(ex, "Не удалось зарезервировать места для брони {BookingId} на событие {EventId}.", message.BookingId, message.EventId);
             
             //ToDo: Тут по хорошему надо было создать outbox сообщение и переправить его в топик проблемных событий (для которых не удалось списать места) и bookings
             // отловить их и отменить бронирование, но на все времени не хватило            

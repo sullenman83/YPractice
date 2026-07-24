@@ -11,6 +11,8 @@ using Bookings.Domain.Exceptions;
 using Bookings.Application.Models;
 using Bookings.Application.AppSettings;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 
 
 namespace Bookings.UnitTests;
@@ -23,7 +25,9 @@ public class BookingServiceTest
     private readonly Mock<ITransaction> _mockTransaction = new Mock<ITransaction>();
     private readonly Mock<IDateTimeProvider> _mockDateTimeProvider = new Mock<IDateTimeProvider>();
     private readonly Mock<ICurrentUserService> _mockCurrentUserService = new Mock<ICurrentUserService>();
-    private readonly Mock<IBookingValidator> _mockBookingValidator = new Mock<IBookingValidator>();    
+    private readonly Mock<IBookingValidator> _mockBookingValidator = new Mock<IBookingValidator>();
+    private readonly ILogger<BookingService> _logger = NullLogger<BookingService>.Instance;
+    private readonly ILogger<BookingValidator> _validatorLogger = NullLogger<BookingValidator>.Instance;
 
     public BookingServiceTest()
     {
@@ -43,7 +47,7 @@ public class BookingServiceTest
         
         _mockBookingRepository.Setup(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>())).ReturnsAsync(new List<Booking>());        
         var service = new BookingService(_mockBookingRepository.Object, _mockDateTimeProvider.Object, _mockBookingValidator.Object, _mockCurrentUserService.Object, 
-            _mockTransactionService.Object, _mockOutboxRepository.Object);
+            _mockTransactionService.Object, _mockOutboxRepository.Object, _logger);
 
         // Act
         var result = await service.CreateBookingAsync(eventId, userId, seats, CancellationToken.None);
@@ -69,7 +73,7 @@ public class BookingServiceTest
 
         _mockBookingRepository.Setup(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>())).ReturnsAsync(new List<Booking>());
         var service = new BookingService(_mockBookingRepository.Object, _mockDateTimeProvider.Object, _mockBookingValidator.Object, _mockCurrentUserService.Object,
-            _mockTransactionService.Object, _mockOutboxRepository.Object);
+            _mockTransactionService.Object, _mockOutboxRepository.Object, _logger);
 
         // Act
         for (int i = 0; i < bookingCount; ++i)
@@ -96,7 +100,7 @@ public class BookingServiceTest
         var id = booking.Id;
         _mockBookingRepository.Setup(o => o.GetByIdAsync(id)).ReturnsAsync(booking);
         var service = new BookingService(_mockBookingRepository.Object, _mockDateTimeProvider.Object, _mockBookingValidator.Object, _mockCurrentUserService.Object,
-            _mockTransactionService.Object, _mockOutboxRepository.Object);
+            _mockTransactionService.Object, _mockOutboxRepository.Object, _logger);
 
         // Act
         var result = await service.GetBookingByIdAsync(booking.Id, CancellationToken.None);
@@ -114,7 +118,7 @@ public class BookingServiceTest
         var bookingId = Guid.NewGuid();
         _mockBookingRepository.Setup(o => o.GetByIdAsync(bookingId)).Throws<NotFoundException>();
         var service = new BookingService(_mockBookingRepository.Object, _mockDateTimeProvider.Object, _mockBookingValidator.Object, _mockCurrentUserService.Object,
-            _mockTransactionService.Object, _mockOutboxRepository.Object);
+            _mockTransactionService.Object, _mockOutboxRepository.Object, _logger);
 
         // Act
         Func<Task> act = async () => await service.GetBookingByIdAsync(bookingId, CancellationToken.None);
@@ -138,9 +142,9 @@ public class BookingServiceTest
 
         _mockBookingRepository.Setup(o => o.AddAsync(It.IsAny<Booking>())).ReturnsAsync((Booking b, CancellationToken token) => b);
         _mockBookingRepository.Setup(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>())).ReturnsAsync(new List<Booking>());
-        var bookingValidator = new BookingValidator(_mockDateTimeProvider.Object, mockOptions.Object);
+        var bookingValidator = new BookingValidator(_mockDateTimeProvider.Object, mockOptions.Object, _validatorLogger);
         var service = new BookingService(_mockBookingRepository.Object, _mockDateTimeProvider.Object, bookingValidator, _mockCurrentUserService.Object,
-            _mockTransactionService.Object, _mockOutboxRepository.Object);
+            _mockTransactionService.Object, _mockOutboxRepository.Object, _logger);
 
         // Act
         Func<Task<BookingResponseDTO>> act = async () => await service.CreateBookingAsync(eventId, userId, bookingCnt, CancellationToken.None);
@@ -162,7 +166,7 @@ public class BookingServiceTest
             MaxActiveBookingCount = 2
         };
         var options = Options.Create(bookingSettings);
-        var bookingValidator = new BookingValidator(_mockDateTimeProvider.Object, options);
+        var bookingValidator = new BookingValidator(_mockDateTimeProvider.Object, options, _validatorLogger);
 
         var bookinglist = new List<Booking>()
         {
@@ -172,7 +176,7 @@ public class BookingServiceTest
         _mockBookingRepository.Setup(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>())).ReturnsAsync(bookinglist);
         _mockBookingRepository.Setup(o => o.AddAsync(It.IsAny<Booking>())).ReturnsAsync((Booking b, CancellationToken t) => b);
         var service = new BookingService(_mockBookingRepository.Object, _mockDateTimeProvider.Object, bookingValidator, _mockCurrentUserService.Object,
-            _mockTransactionService.Object, _mockOutboxRepository.Object);
+            _mockTransactionService.Object, _mockOutboxRepository.Object, _logger);
 
         //Act
         var result = await service.CreateBookingAsync(eventId, userId, seatsCount, CancellationToken.None);
@@ -197,7 +201,7 @@ public class BookingServiceTest
             MaxActiveBookingCount = 1
         };
         var options = Options.Create(bookingSettings);
-        var bookingValidator = new BookingValidator(_mockDateTimeProvider.Object, options);
+        var bookingValidator = new BookingValidator(_mockDateTimeProvider.Object, options, _validatorLogger);
 
         var bookinglist = new List<Booking>()
         {
@@ -208,7 +212,7 @@ public class BookingServiceTest
         _mockBookingRepository.Setup(o => o.GetActiveUserBookingAsync(It.IsAny<Guid>())).ReturnsAsync(bookinglist);
         _mockBookingRepository.Setup(o => o.AddAsync(It.IsAny<Booking>())).ReturnsAsync((Booking b, CancellationToken t) => b);
         var service = new BookingService(_mockBookingRepository.Object, _mockDateTimeProvider.Object, bookingValidator, _mockCurrentUserService.Object,
-            _mockTransactionService.Object, _mockOutboxRepository.Object);
+            _mockTransactionService.Object, _mockOutboxRepository.Object, _logger);
 
         //Act
         Func<Task<BookingResponseDTO>> act = async () => await service.CreateBookingAsync(eventId, userId, seatsCount, CancellationToken.None);
@@ -234,7 +238,7 @@ public class BookingServiceTest
         _mockCurrentUserService.Setup(o => o.IsInRole(It.IsAny<string>())).Returns(false);
 
         var service = new BookingService(_mockBookingRepository.Object, _mockDateTimeProvider.Object, _mockBookingValidator.Object, _mockCurrentUserService.Object,
-            _mockTransactionService.Object, _mockOutboxRepository.Object);
+            _mockTransactionService.Object, _mockOutboxRepository.Object, _logger);
 
         //Act
         await service.CancelBookingAsync(booking.Id, userId);
@@ -260,7 +264,7 @@ public class BookingServiceTest
         _mockCurrentUserService.Setup(o => o.IsInRole(It.IsAny<string>())).Returns(false);
 
         var service = new BookingService(_mockBookingRepository.Object, _mockDateTimeProvider.Object, _mockBookingValidator.Object, _mockCurrentUserService.Object,
-            _mockTransactionService.Object, _mockOutboxRepository.Object);
+            _mockTransactionService.Object, _mockOutboxRepository.Object, _logger);
 
         //Act
         Func<Task> act = async () => await service.CancelBookingAsync(booking.Id, userId1);
@@ -288,7 +292,7 @@ public class BookingServiceTest
         _mockCurrentUserService.Setup(o => o.IsInRole(It.IsAny<string>())).Returns(true);
 
         var service = new BookingService(_mockBookingRepository.Object, _mockDateTimeProvider.Object, _mockBookingValidator.Object, _mockCurrentUserService.Object,
-            _mockTransactionService.Object, _mockOutboxRepository.Object);
+            _mockTransactionService.Object, _mockOutboxRepository.Object, _logger);
 
         //Act
         await service.CancelBookingAsync(booking.Id, userId1);

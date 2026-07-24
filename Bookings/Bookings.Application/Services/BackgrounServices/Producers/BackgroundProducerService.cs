@@ -64,7 +64,8 @@ public class BackgroundProducerService: BackgroundService
                         if (m.RetryCount >= _settings.MaxRetryCount)
                         {
                             //ToDO: тут что-то надо сделать с этим сообщением. Оменить бронь и удалить сообщений или поместить сообщения в отдельный топик
-                            _logger.LogCritical($"Достигнуто максимальное количество повторных отправлений смообщения {m.MessageType}, {m.OccuredOn}, {m.Payload}");
+                            _logger.LogCritical("Достигнуто максимальное количество повторных отправлений смообщения {MeeageType}, {OccuredOn}, {Payload}", 
+                                m.MessageType, m.OccuredOn, m.Payload);
                             continue;
                         }
 
@@ -75,7 +76,7 @@ public class BackgroundProducerService: BackgroundService
                     }
                     catch (BookingProducerException ex)
                     {
-                        _logger.LogError(ex.Message);                        
+                        _logger.LogError(ex, "Ошибка при отправке  сообщения {id}", m.Id);                        
                         m.RetryCount = m.RetryCount + 1;
                         await repository.SaveChangesAsync(stoppingToken);
                         break;
@@ -88,7 +89,7 @@ public class BackgroundProducerService: BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при бронировании события.");            
+                _logger.LogError(ex, "Ошибка при публикации события в брокер сообщений.");            
             }
             finally
             {

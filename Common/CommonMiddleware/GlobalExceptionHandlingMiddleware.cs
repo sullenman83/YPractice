@@ -63,7 +63,7 @@ public class GlobalExceptionHandlingMiddleware(RequestDelegate next,  ILogger<Gl
     private void LogError(Exception ex, HttpContext httpContext)
     {
         _logger.LogError(ex,
-            $"Unhandled exception. Method={httpContext.Request.Method}, Path={httpContext.Request.Path}");
+            "Необработанное исключение. Метод={Method}, путь={Path}", httpContext.Request.Method, httpContext.Request.Path);
     }
 
     /// <summary>

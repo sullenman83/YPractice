@@ -21,6 +21,8 @@ public static class WebAplicationExt
             db.Database.Migrate();
         }
 
+        app.MapPrometheusScrapingEndpoint();
+
         return app;
     }
 }

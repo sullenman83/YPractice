@@ -27,9 +27,8 @@ public class BookingRepository(AppDbContext context, ILogger<BookingRepository> 
         }
         catch (Exception ex)
         {
-            var message = "Ошибка добавления бронирования в БД";
-            _logger.LogDebug(message, ex);
-            throw new DbOperationException(message);
+            _logger.LogDebug(ex, "Ошибка добавления бронирования в БД  {id}", booking.Id);
+            throw new DbOperationException("Ошибка добавления бронирования в БД");
         }
     }
 
@@ -42,9 +41,8 @@ public class BookingRepository(AppDbContext context, ILogger<BookingRepository> 
         }
         catch (Exception ex)
         {
-            var message = $"Ошибка получения бронирования по Id = {id}";
-            _logger.LogDebug(message, ex);
-            throw new DbOperationException(message);
+            _logger.LogDebug(ex, "Ошибка получения бронирования по Id = {id}", id);
+            throw new DbOperationException("Ошибка получения бронирования");
         }
     }
 

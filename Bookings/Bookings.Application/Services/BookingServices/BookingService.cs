@@ -10,6 +10,7 @@ using Bookings.Domain.Exceptions;
 using Bookings.Domain.Models;
 using Contracts;
 using DateTimeManager.Abstractions;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using TransactionManager.Abstractions;
 using UserRooles;
@@ -25,6 +26,7 @@ public class BookingService(IBookingRepository bookingRepository
     , ICurrentUserService currentUserService
     , ITransactionService transactionService
     , IOutboxMessageRepository outboxRepository
+    , ILogger<BookingService> logger
     ): IBookingService
 
 {    
@@ -34,6 +36,7 @@ public class BookingService(IBookingRepository bookingRepository
     private readonly ICurrentUserService _currentUserService = currentUserService;    
     private readonly ITransactionService _transactionService = transactionService;
     private readonly IOutboxMessageRepository _outboxRepository = outboxRepository;
+    private readonly ILogger<BookingService> _logger = logger;
 
     ///<inheritdoc/>
     /// <exception cref="DbOperationException">Ошибка операций с БД.</exception>
@@ -63,7 +66,10 @@ public class BookingService(IBookingRepository bookingRepository
 
         var booking = await _bookingRepository.GetByIdAsync(bookingId, token);
         if (booking == null)
-            throw new NotFoundException($"Бронирование с id {bookingId} не найдено в базе данных.");
+        {
+            _logger.LogWarning("Бронирование с id {bookingId} не найдено в базе данных.", bookingId);
+            throw new NotFoundException("Бронирование не найдено в базе данных.");
+        }
                 
         return booking.ToResponse();
     }
@@ -78,7 +84,11 @@ public class BookingService(IBookingRepository bookingRepository
                 
         var booking = await _bookingRepository.GetByIdAsync(id, token);
         if (booking == null)
-            throw new NotFoundException($"Бронирование с id {id} не найдено в базе данных.");
+        if (booking == null)
+        {
+            _logger.LogWarning("Бронирование с id {BookingId} не найдено в базе данных.", id);
+            throw new NotFoundException("Бронирование не найдено в базе данных.");
+        }
 
         if (booking.Status == BookingStatus.Cancelled
             || booking.Status == BookingStatus.Rejected)
@@ -87,7 +97,10 @@ public class BookingService(IBookingRepository bookingRepository
         }
 
         if (booking.UserId != userId && !_currentUserService.IsInRole(UserRole.Admin.ToString()))
+        {
+            _logger.LogWarning("Недостаточно прав для удаления бронирования {BookingId}", id);
             throw new NoRightsException("Недостаточно прав для удаления бронирования");
+        }
 
         var message = new BookingCancelled(Guid.NewGuid(), booking.Id, booking.EventId, booking.UserId, booking.SeatsCount, _dateTimeProvider.GetUtcNow());
         var payload = JsonSerializer.Serialize(message);

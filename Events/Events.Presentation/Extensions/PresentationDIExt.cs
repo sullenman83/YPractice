@@ -1,4 +1,6 @@
 ﻿using CommonServiceCollectionExtensions;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 
 namespace Events.Presentation.Extensions;
 
@@ -23,6 +25,17 @@ public static class PresentationDIExt
         {
             options.SuppressAsyncSuffixInActionNames = false;
         });
+
+        services.AddOpenTelemetry()
+           .ConfigureResource(r => r.AddService(env.ApplicationName))
+           .WithMetrics(metrics =>
+               metrics
+                   .AddAspNetCoreInstrumentation()
+                   .AddHttpClientInstrumentation()
+                   .AddRuntimeInstrumentation()
+                   .AddPrometheusExporter()
+               )
+           ;
 
         return services;
     }

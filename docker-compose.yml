@@ -57,6 +57,46 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+  
+  
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: eventapi-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    
+    depends_on:
+      events-api:
+        condition: service_started
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.56
+    container_name: eventapi-jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    depends_on:
+      prometheus:
+        condition: service_started
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: eventapi-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana            
+    depends_on:
+      prometheus:
+        condition: service_started
+        
 
 
   bookings-db:
@@ -103,7 +143,7 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${USERS_DB_NAME}
+      POSTGRES_DB: ${USERS_DB_NAME}      
     ports:
       - "${USERS_DB_EXTERNAL_PORT}:${USERS_DB_PORT}"
     volumes:
@@ -128,6 +168,10 @@ services:
       - JWT_KEY=${JWT_KEY}
       - DB_PASSWORD=${DB_PASSWORD}
       - ConnectionStrings__DefaultConnection=Host=${USERS_DB_HOST};Port=${USERS_DB_PORT};Database=${USERS_DB_NAME};Username=${DB_USER};
+      - OtlpSettings__Endpoint=${OTLP_ENDPOINT}
+      - OtlpSettings__Protocol=${OTLP_PROTOCOL}
+      - OtlpSettings__ScheduledDelayMilliseconds=${OTLP_DELAY}      
+      - OtlpSettings__ExporterTimeoutMilliseconds=${OTLP_TIMEOUT}
     depends_on:
       users-db:
         condition: service_healthy
@@ -188,3 +232,4 @@ volumes:
   events_data:
   users_data:
   kafka_data:
+  grafana-data: 

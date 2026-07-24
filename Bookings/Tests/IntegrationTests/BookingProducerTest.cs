@@ -4,6 +4,8 @@ using Bookings.Infrastructure.Settings;
 using Confluent.Kafka;
 using Contracts;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Bookings.IntegrationTests;
@@ -13,6 +15,7 @@ public class BookingProducerTest: IClassFixture<DatabaseFixture>, IClassFixture<
     private readonly DatabaseFixture _databaseFixture;
     private readonly KafkaFixture _kafkaFixture;
     private readonly IOptions<BookingProducerSettings> _options;
+    private readonly ILogger<BookingProducer> _logger = NullLogger<BookingProducer>.Instance;
 
     public BookingProducerTest(DatabaseFixture databaseFixture, KafkaFixture kafkaFixture)
     {
@@ -30,7 +33,7 @@ public class BookingProducerTest: IClassFixture<DatabaseFixture>, IClassFixture<
     public async Task Produce_DeliveredMessage()
     {
         // Arrange
-        var producer = new BookingProducer(_options);
+        var producer = new BookingProducer(_options, _logger);
         var key = "testKey";
         var value = "testvalue";
         var consumerConfig = new ConsumerConfig

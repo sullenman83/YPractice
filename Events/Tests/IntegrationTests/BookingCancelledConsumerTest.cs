@@ -1,8 +1,11 @@
-﻿using Confluent.Kafka;
+﻿using Castle.Core.Logging;
+using Confluent.Kafka;
 using Contracts;
 using Events.Infrastructure.Services.Consumers;
 using Events.Infrastructure.Settings.ConsumerSettings;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 
@@ -15,6 +18,7 @@ public class BookingCancelledConsumerTest : IClassFixture<DatabaseFixture>, ICla
     private readonly KafkaFixture _kafkaFixture;
     private readonly IProducer<string, string> _producer;    
     private readonly IOptions<BookingCancelledConsumerSettings> _options;
+    private readonly ILogger<BookingCancelledConsumer> _logger = NullLogger<BookingCancelledConsumer>.Instance;
     private readonly string _groupId = "BookingCancelledConsumers";
 
     public BookingCancelledConsumerTest(DatabaseFixture databaseFixture, KafkaFixture kafkaFixture)
@@ -46,7 +50,7 @@ public class BookingCancelledConsumerTest : IClassFixture<DatabaseFixture>, ICla
         var messageId = Guid.NewGuid();
         var bookingCancelledMessage = new BookingCancelled(messageId, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 1, DateTimeOffset.UtcNow);
         var payload = JsonSerializer.Serialize(bookingCancelledMessage);
-        using var consumer = new BookingCancelledConsumer(_options);        
+        using var consumer = new BookingCancelledConsumer(_options, _logger);        
         var config = new AdminClientConfig() { BootstrapServers = _kafkaFixture.BootstrapServers };
         var admin = new AdminClientBuilder(config).Build();
         var isIdentical = false;
