@@ -75,9 +75,9 @@ services:
     image: jaegertracing/all-in-one:1.56
     container_name: eventapi-jaeger
     ports:
-      - "16686:16686"
-      - "4317:4317"
-      - "4318:4318"
+      - "${JAEGER_UI_EXTERNAL_PORT}:${JAEGER_UI_INTENAL_PORT}"
+      - "${JAEGER_GRPC_EXTERNAL_PORT}:${JAEGER_GRPC_INTERNAL_PORT}"
+      - "${JAEGER_HTTP_EXTERNAL_PORT}:${JAEGER_HTTP_INTERNAL_PORT}"
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
     depends_on:
