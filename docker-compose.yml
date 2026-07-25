@@ -65,7 +65,7 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
-      - "9090:9090"
+      - "${PROMETHEUS_EXTERNAL_PORT}:${PROMETHEUS_INTERNAL_PORT}"
     
     depends_on:
       events-api:
@@ -88,7 +88,7 @@ services:
     image: grafana/grafana:10.4.2
     container_name: eventapi-grafana
     ports:
-      - "3000:3000"
+      - "${GRAFANA_EXTERNAL_PORT}:${GRAFAN_INTERNAL_PORT}"
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
@@ -96,7 +96,6 @@ services:
     depends_on:
       prometheus:
         condition: service_started
-        
 
 
   bookings-db:
@@ -194,6 +193,10 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - ConnectionStrings__DefaultConnection=Host=${BOOKINGS_DB_HOST};Port=${BOOKINGS_DB_PORT};Database=${BOOKINGS_DB_NAME};Username=${DB_USER}
       - BookingProducerSettings__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}          
+      - OtlpSettings__Endpoint=${OTLP_ENDPOINT}
+      - OtlpSettings__Protocol=${OTLP_PROTOCOL}
+      - OtlpSettings__ScheduledDelayMilliseconds=${OTLP_DELAY}      
+      - OtlpSettings__ExporterTimeoutMilliseconds=${OTLP_TIMEOUT}
     depends_on:
       bookings-db:
         condition: service_healthy
@@ -218,7 +221,11 @@ services:
       - RedisSettings__EndPoints=${REDIS_ENDPOINTS}
       - ConnectionStrings__DefaultConnection=Host=events-db;Port=${EVENTS_DB_PORT};Database=${EVENTS_DB_NAME};Username=${DB_USER}
       - BookingConfirmedConsumerSettings__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
-      - BookingCancelledConsumerSettings__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}          
+      - BookingCancelledConsumerSettings__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}      
+      - OtlpSettings__Endpoint=${OTLP_ENDPOINT}
+      - OtlpSettings__Protocol=${OTLP_PROTOCOL}
+      - OtlpSettings__ScheduledDelayMilliseconds=${OTLP_DELAY}      
+      - OtlpSettings__ExporterTimeoutMilliseconds=${OTLP_TIMEOUT}      
     depends_on:
       events-db:
         condition: service_healthy
