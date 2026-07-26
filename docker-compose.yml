@@ -91,8 +91,11 @@ services:
       - "${GRAFANA_EXTERNAL_PORT}:${GRAFAN_INTERNAL_PORT}"
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
-    volumes:
+    volumes:      
       - grafana-data:/var/lib/grafana            
+      - ./provisioning/datasources:/etc/grafana/provisioning/datasources
+      # Монтируем ВСЮ папку dashboards со всем содержимым:
+      - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards
     depends_on:
       prometheus:
         condition: service_started
