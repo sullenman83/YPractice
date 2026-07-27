@@ -33,7 +33,7 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
         catch (Exception ex)
         {
             var message = "Ошибка добавления события в БД";
-            _logger.LogDebug(message, ex);
+            _logger.LogError(message, ex);
             throw new DbOperationException(message);
         }
     }
@@ -53,9 +53,8 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
         }
         catch (Exception ex)
         {
-            var message = $"Ошибка удаления события {id} из БД";
-            _logger.LogDebug(message, ex);
-            throw new DbOperationException(message);
+            _logger.LogError(ex, "Ошибка удаления события {id} из БД", id);
+            throw new DbOperationException("Ошибка удаления события");
         }
     }
 
@@ -68,9 +67,8 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
         }
         catch (Exception ex)
         {
-            var message = $"Ошибка получения события по Id = {id}";
-            _logger.LogDebug(message, ex);
-            throw new DbOperationException(message);
+            _logger.LogError(ex, "Ошибка получения события по Id = {id}", id);
+            throw new DbOperationException("Ошибка получения события");
         }
     }
     
@@ -84,7 +82,7 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
         catch (Exception ex)
         {
             var message = "Ошибка сохранения.";
-            _logger.LogDebug(message, ex);
+            _logger.LogError(ex, message);
             throw new DbOperationException(message);
         }
     }
@@ -116,10 +114,10 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
             };
         }
         catch (Exception ex)
-        {
-            var message = "Ошибка полечения событий с фильтром";
-            _logger.LogError(message, ex);
-            throw new DbOperationException(message);
+        {            
+            _logger.LogError(ex, "Ошибка полечения событий с фильтром {Title}, {To}, {From}, {PageSize}, {Page}", 
+                filter.Title, filter.To, filter.From, filter.PageSize, filter.Page);
+            throw new DbOperationException("Ошибка полечения событий с фильтром");
         }
     }
 
@@ -135,9 +133,8 @@ public class EventRepository(AppDbContext context, ILogger<EventRepository> logg
         }
         catch (Exception ex)
         {
-            var message = $"Ошибка получения топ {top} событий";
-            _logger.LogDebug(message, ex);
-            throw new DbOperationException(message);
+            _logger.LogError(ex, "Ошибка получения топ {top} событий", top);
+            throw new DbOperationException("Ошибка получения топ событий");
         }
     }
 }

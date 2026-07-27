@@ -3,6 +3,7 @@ using Contracts;
 using Events.Application.Exceptions;
 using Events.Application.Interfaces.Consumers;
 using Events.Infrastructure.Settings.ConsumerSettings;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 
@@ -14,14 +15,16 @@ namespace Events.Infrastructure.Services.Consumers;
 public class BookingConfirmedConsumer : IBookingConfirmedConsumer
 {
     private readonly IConsumer<string, string> _consumer;
-
+    private readonly ILogger<BookingConfirmedConsumer> _logger;
     /// <summary>
     /// Консруктор
     /// </summary>
     /// <param name="options">Настройки</param>
+    /// <param name="logger">логер</param>
     /// <exception cref="ArgumentNullException">Если настройки не заданы</exception>
-    public BookingConfirmedConsumer(IOptions<BookingConfirmedConsumerSettings> options)
+    public BookingConfirmedConsumer(IOptions<BookingConfirmedConsumerSettings> options, ILogger<BookingConfirmedConsumer> logger)
     {
+        _logger = logger;
         var settings = options.Value ?? throw new ArgumentNullException("Не заданы настройки консьюмера 'BookingConfirmedConsumer'");
         if (string.IsNullOrEmpty(settings.BootstrapServers)
             || string.IsNullOrEmpty(settings.GroupId)
@@ -57,7 +60,10 @@ public class BookingConfirmedConsumer : IBookingConfirmedConsumer
 
             var bookingConfirmed = JsonSerializer.Deserialize<BookingConfirmed>(result.Message.Value);
             if (bookingConfirmed == null)
+            {
+                _logger.LogError("Ошибка при десериализации ссобщения Kafka {Message}.", result.Message.Value);
                 throw new InvalidOperationException("Ошибка при десериализации ссобщения Kafka.");
+            }
 
             await messageHandler(bookingConfirmed, token);
 
@@ -71,6 +77,7 @@ public class BookingConfirmedConsumer : IBookingConfirmedConsumer
                 //ToDo: тут надо как-то перебилдить консьюмер
             }
 
+            _logger.LogError(ex, "Ошибка получения сообщения из Kafka: {Reason}", ex.Error.Reason);
             throw new ConsumerException($"Ошибка получения сообщения из Kafka: {ex.Error.Reason}");
         }        
     } 

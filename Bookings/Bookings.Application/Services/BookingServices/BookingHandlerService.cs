@@ -34,7 +34,10 @@ public class BookingHandlerService(ILogger<BookingHandlerService> logger
     {          
         var booking = await _bookingRepository.GetByIdAsync(id, token);
         if (booking == null)
-            throw new NotFoundException($"Не найдено бронирование с id {id}");
+        {
+            _logger.LogWarning("Не найдено бронирование с id {id}", id);
+            throw new NotFoundException("Не найдено бронирование");
+        }
 
         await using var transaction = await _transactionService.BeginTransactionAsync(token);
         booking.Confirm(_dateTimeProvider.GetUtcNow());

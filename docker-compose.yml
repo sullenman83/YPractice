@@ -57,6 +57,48 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+  
+  
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: eventapi-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "${PROMETHEUS_EXTERNAL_PORT}:${PROMETHEUS_INTERNAL_PORT}"
+    
+    depends_on:
+      events-api:
+        condition: service_started
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.56
+    container_name: eventapi-jaeger
+    ports:
+      - "${JAEGER_UI_EXTERNAL_PORT}:${JAEGER_UI_INTENAL_PORT}"
+      - "${JAEGER_GRPC_EXTERNAL_PORT}:${JAEGER_GRPC_INTERNAL_PORT}"
+      - "${JAEGER_HTTP_EXTERNAL_PORT}:${JAEGER_HTTP_INTERNAL_PORT}"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    depends_on:
+      prometheus:
+        condition: service_started
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: eventapi-grafana
+    ports:
+      - "${GRAFANA_EXTERNAL_PORT}:${GRAFAN_INTERNAL_PORT}"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:      
+      - grafana-data:/var/lib/grafana            
+      - ./provisioning/datasources:/etc/grafana/provisioning/datasources
+      # Монтируем ВСЮ папку dashboards со всем содержимым:
+      - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      prometheus:
+        condition: service_started
 
 
   bookings-db:
@@ -103,7 +145,7 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${USERS_DB_NAME}
+      POSTGRES_DB: ${USERS_DB_NAME}      
     ports:
       - "${USERS_DB_EXTERNAL_PORT}:${USERS_DB_PORT}"
     volumes:
@@ -128,6 +170,10 @@ services:
       - JWT_KEY=${JWT_KEY}
       - DB_PASSWORD=${DB_PASSWORD}
       - ConnectionStrings__DefaultConnection=Host=${USERS_DB_HOST};Port=${USERS_DB_PORT};Database=${USERS_DB_NAME};Username=${DB_USER};
+      - OtlpSettings__Endpoint=${OTLP_ENDPOINT}
+      - OtlpSettings__Protocol=${OTLP_PROTOCOL}
+      - OtlpSettings__ScheduledDelayMilliseconds=${OTLP_DELAY}      
+      - OtlpSettings__ExporterTimeoutMilliseconds=${OTLP_TIMEOUT}
     depends_on:
       users-db:
         condition: service_healthy
@@ -150,6 +196,10 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - ConnectionStrings__DefaultConnection=Host=${BOOKINGS_DB_HOST};Port=${BOOKINGS_DB_PORT};Database=${BOOKINGS_DB_NAME};Username=${DB_USER}
       - BookingProducerSettings__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}          
+      - OtlpSettings__Endpoint=${OTLP_ENDPOINT}
+      - OtlpSettings__Protocol=${OTLP_PROTOCOL}
+      - OtlpSettings__ScheduledDelayMilliseconds=${OTLP_DELAY}      
+      - OtlpSettings__ExporterTimeoutMilliseconds=${OTLP_TIMEOUT}
     depends_on:
       bookings-db:
         condition: service_healthy
@@ -174,7 +224,11 @@ services:
       - RedisSettings__EndPoints=${REDIS_ENDPOINTS}
       - ConnectionStrings__DefaultConnection=Host=events-db;Port=${EVENTS_DB_PORT};Database=${EVENTS_DB_NAME};Username=${DB_USER}
       - BookingConfirmedConsumerSettings__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}
-      - BookingCancelledConsumerSettings__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}          
+      - BookingCancelledConsumerSettings__BootstrapServers=${KAFKA_BOOTSTRAP_SERVERS}      
+      - OtlpSettings__Endpoint=${OTLP_ENDPOINT}
+      - OtlpSettings__Protocol=${OTLP_PROTOCOL}
+      - OtlpSettings__ScheduledDelayMilliseconds=${OTLP_DELAY}      
+      - OtlpSettings__ExporterTimeoutMilliseconds=${OTLP_TIMEOUT}      
     depends_on:
       events-db:
         condition: service_healthy
@@ -188,3 +242,4 @@ volumes:
   events_data:
   users_data:
   kafka_data:
+  grafana-data: 

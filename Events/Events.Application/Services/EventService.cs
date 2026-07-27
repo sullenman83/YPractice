@@ -9,7 +9,9 @@ using Events.Application.Models.FilterModels;
 using Events.Application.Settings;
 using Events.Domain.Exceptions;
 using Events.Domain.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Runtime.CompilerServices;
 namespace Events.Application.Services;
 
 /// <summary>
@@ -19,7 +21,8 @@ public class EventService : IEventService
 {
     private readonly IEventValidator _eventValidator ;
     private readonly IEventRepository _eventRepository;
-    private readonly ICacheService _cacheService;    
+    private readonly ICacheService _cacheService;
+    private readonly ILogger<EventService> _logger;
     private readonly TimeSpan _eventTTL;
     private readonly TimeSpan _top10TTL;
 
@@ -31,11 +34,13 @@ public class EventService : IEventService
     /// <param name="cacheService">Кеш</param>>
     /// <param name="ttlSettings">настройки TTL</param>
     /// <exception cref="InvalidOperationException"></exception>
-    public EventService(IEventValidator eventValidator, IEventRepository eventRepository, ICacheService cacheService, IOptions<TTLSettings> ttlSettings)
+    public EventService(IEventValidator eventValidator, IEventRepository eventRepository, ICacheService cacheService, IOptions<TTLSettings> ttlSettings,
+            ILogger<EventService> logger)
     {
         _eventValidator = eventValidator;
         _eventRepository = eventRepository;
         _cacheService = cacheService;
+        _logger = logger;
         var ttl = ttlSettings.Value ?? throw new InvalidOperationException("Не заданы настройки TTL");
         _eventTTL = TimeSpan.FromSeconds(ttl.EventTTL);
         _top10TTL = TimeSpan.FromSeconds(ttl.Top10TTL);
@@ -75,7 +80,8 @@ public class EventService : IEventService
         
         if (!await _eventRepository.DeleteAsync(id, token))
         {
-            throw new NotFoundException($"Не найдено событие с id = {id}");
+            _logger.LogWarning("Не найдено событие с id = {id}", id);
+            throw new NotFoundException("Не найдено событие");
         }
         await _cacheService.DeleteAsync(CacheKeys.EventKey(id));
     }
@@ -114,7 +120,10 @@ public class EventService : IEventService
 
         var ev = await _eventRepository.GetByIdAsync(id, token);
         if (ev == null)
-            throw new NotFoundException($"Не найдено событие с id = {id}");
+        {
+            _logger.LogWarning("Не найдено событие с id = {id}", id);
+            throw new NotFoundException("Не найдено событие");
+        }
 
         var response = ev.ToResponse();
         await _cacheService.SetAsync(CacheKeys.EventKey(id), response, _eventTTL);
@@ -143,7 +152,10 @@ public class EventService : IEventService
 
         var e = await _eventRepository.GetByIdAsync(id, token);
         if (e == null)
-            throw new NotFoundException($"Не найдено событие с id = {id}");
+        {
+            _logger.LogWarning("Не найдено событие с id = {id}", id);
+            throw new NotFoundException("Не найдено событие");
+        }    
         
         e.Title = ev.Title;
         e.Description = ev.Description;

@@ -41,7 +41,10 @@ public class BookingCancelledHandler(IEventRepository eventRepository,
         {
             var ev = await _eventRepository.GetByIdAsync(message.EventId, token);
             if (ev == null)
-                throw new NotFoundException($"Не найдено событие с id = {message.EventId}");
+            {
+                _logger.LogWarning("Не найдено событие с id = {EventId}", message.EventId);
+                throw new NotFoundException("Не найдено событие");
+            }
             
             await using var tr = await _transactionService.BeginTransactionAsync(token);
             if (!ev.ReleaseSeats(message.SeatsCount))
@@ -61,7 +64,7 @@ public class BookingCancelledHandler(IEventRepository eventRepository,
         catch (Exception ex)
         {
             //ToDo: Возможно тут надо кого-то чечрез событие уведомить о проблеме списния мест
-            _logger.LogError($"Не удалось освободить места для событие '{message.EventId}', бронирование '{message.BookingId}' по причине '{ex.Message}'");
+            _logger.LogError(ex, "Не удалось освободить места для событие {EventId}, бронирование {BookingId}.", message.EventId, message.BookingId);
         }
     }
 }

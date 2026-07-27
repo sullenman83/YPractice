@@ -1,9 +1,10 @@
 ﻿using Confluent.Kafka;
 using Contracts;
-using Events.Application.Interfaces.Consumers;
 using Events.Infrastructure.Services.Consumers;
 using Events.Infrastructure.Settings.ConsumerSettings;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 
@@ -17,6 +18,7 @@ public class BookingConfirmedConsumerTest : IClassFixture<DatabaseFixture>, ICla
     private readonly IProducer<string, string> _producer;
     private readonly IOptions<BookingConfirmedConsumerSettings> _options;
     private readonly string _groupId = "BookingConfirmedConsumers";
+    private readonly ILogger<BookingConfirmedConsumer> _logger = NullLogger<BookingConfirmedConsumer>.Instance;
 
     public BookingConfirmedConsumerTest(DatabaseFixture databaseFixture, KafkaFixture kafkaFixture)
     {
@@ -47,7 +49,7 @@ public class BookingConfirmedConsumerTest : IClassFixture<DatabaseFixture>, ICla
         var messageId = Guid.NewGuid();
         var bookingConfirmedMessage = new BookingConfirmed(messageId, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 1, DateTimeOffset.UtcNow);
         var payload = JsonSerializer.Serialize(bookingConfirmedMessage);
-        using var consumer = new BookingConfirmedConsumer(_options);
+        using var consumer = new BookingConfirmedConsumer(_options, _logger);
         var config = new AdminClientConfig() { BootstrapServers = _kafkaFixture.BootstrapServers };
         var admin = new AdminClientBuilder(config).Build();
         var isIdentical = false;

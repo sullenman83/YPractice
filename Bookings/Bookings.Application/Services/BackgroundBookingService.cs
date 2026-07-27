@@ -52,7 +52,7 @@ public class BackgroundBookingService(ILogger<BackgroundService> logger,
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при бронировании события.");            
+                _logger.LogError(ex, "Ошибка при обработке бронирований событий.");            
             }
         }
 
@@ -70,10 +70,11 @@ public class BackgroundBookingService(ILogger<BackgroundService> logger,
             var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
             await service.ConfirmBookingAsync(id, stoppingToken);
 
-            _logger.LogInformation($"Бронирование с id {id} обработано в {dateTimeProvider.GetUtcNow()}.");
+            _logger.LogInformation("Бронирование с {id} обработано в {Datetime}.", id, dateTimeProvider.GetUtcNow());
         }        
-        catch
+        catch(Exception ex)
         {
+            _logger.LogError(ex, "{message} событие {id}", ex.Message, id);
             await using var scope = _serviceFactory.CreateAsyncScope();
             var service = scope.ServiceProvider.GetRequiredService<IBookingHandlerService>();
             await service.RejectBookingAsync(id, stoppingToken);

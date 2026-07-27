@@ -51,7 +51,7 @@ internal class BookingCancelledConsumerService : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при освобождении мест события.");
+                _logger.LogError(ex, "Ошибка чтения сообщения из брокера сообщений.");
             }
         }
         _logger.LogInformation("Фоновый сервис BookingCancelledConsumerService остановлен.");

@@ -2,6 +2,7 @@
 using Bookings.Application.Interfaces;
 using Bookings.Infrastructure.Settings;
 using Confluent.Kafka;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Bookings.Infrastructure.Services.Producers;
@@ -13,14 +14,16 @@ public class BookingProducer: IDisposable, IBookingProduсer
 {    
     private readonly ProducerConfig _config;
     private readonly IProducer<string,string> _producer;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Конструктор
     /// </summary>
     /// <param name="options">Настройки продюсера</param>
     /// <exception cref="ArgumentNullException"></exception>
-    public BookingProducer(IOptions<BookingProducerSettings> options)
+    public BookingProducer(IOptions<BookingProducerSettings> options, ILogger<BookingProducer> logger)
     {
+        _logger = logger;
         var settings = options.Value ?? throw new ArgumentNullException("Не заданы настройки продюсера.");
 
         _config = new ProducerConfig()
@@ -50,6 +53,7 @@ public class BookingProducer: IDisposable, IBookingProduсer
         }
         catch(ProduceException<Null, string> ex)
         {
+            _logger.LogError("Ошибка отправки сообщения {Key}, {Value} в Kafka топик {Topic} причина: {Reason}", key, value, topic, ex.Error.Reason);
             throw new BookingProducerException($"Ошибка отправки сообщения в Kafka: {ex.Error.Reason}");
         }
     }

@@ -31,9 +31,8 @@ public class UserRepository(AppDbContext context, ILogger<UserRepository> logger
         }
         catch (Exception ex)
         {
-            var message = "Ошибка добавления элемента в БД";
-            _logger.LogDebug(message, ex);
-            throw new DbOperationException(message);
+            _logger.LogDebug(ex, "Ошибка добавления пользователя {userId} в БД", user.Id);
+            throw new DbOperationException("Ошибка добавления элемента в БД");
         }
     }
 
@@ -47,8 +46,8 @@ public class UserRepository(AppDbContext context, ILogger<UserRepository> logger
         }
         catch (Exception ex)
         {
-            var message = $"Ошибка получения записи по логину = {login}";
-            _logger.LogDebug(message, ex);
+            var message = "Ошибка получения записи по логину";
+            _logger.LogWarning(ex, message);
             throw new DbOperationException(message);
         }
     }
