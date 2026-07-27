@@ -1,4 +1,5 @@
-﻿using Bookings.Presentation.Settings;
+﻿using Bookings.Domain.Models;
+using Bookings.Presentation.Settings;
 using CommonServiceCollectionExtensions;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
@@ -35,7 +36,7 @@ public static class PresentationDIExt
         }
 
         services.AddOpenTelemetry()
-            .ConfigureResource(r => r.AddService(env.ApplicationName))
+            .ConfigureResource(r => r.AddService("bookings-service"))
             .WithMetrics(metrics =>
                 metrics
                     .AddAspNetCoreInstrumentation()

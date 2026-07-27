@@ -19,6 +19,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -873,7 +874,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "bft6rvamhdtkwb"
+        "uid": "PC273B850E4BD9BAA"
       },
       "fieldConfig": {
         "defaults": {
@@ -981,7 +982,7 @@
             "uid": "bft6rvamhdtkwb"
           },
           "editorMode": "code",
-          "expr": "sum(dotnet_thread_pool_queue_length{job=\"bookins-service\"})",
+          "expr": "sum(dotnet_thread_pool_queue_length{job=\"bookings-service\"})",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -1019,6 +1020,6 @@
   "timezone": "browser",
   "title": "Bookings",
   "uid": "cftaj169y6juoa",
-  "version": 5,
+  "version": 1,
   "weekStart": ""
 }

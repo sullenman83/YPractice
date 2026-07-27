@@ -36,7 +36,7 @@ public static class PresentationDIExt
         }
 
         services.AddOpenTelemetry()
-            .ConfigureResource(r => r.AddService(env.ApplicationName))
+            .ConfigureResource(r => r.AddService("users-service"))
             .WithMetrics(metrics =>
                 metrics
                     .AddAspNetCoreInstrumentation()
